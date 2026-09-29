@@ -1,4 +1,5 @@
 plugins { id("com.android.application"); id("org.jetbrains.kotlin.android") }
+base { archivesName.set("timercent") }
 android {
     namespace = "it.cronotimer"
     compileSdk = 34

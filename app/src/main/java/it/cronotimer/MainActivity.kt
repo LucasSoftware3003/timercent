@@ -184,7 +184,7 @@ class MainActivity : Activity() {
             val now = System.currentTimeMillis()
             for (t in L) {
                 tv[t.id]?.text = fmt(rem(t))
-                if (t.end in 1..now && t.id !in fin) { render(); return }
+                if (t.end in 1..now && t.id !in fin) { Notif.fire(this, t); render(); return }
             }
         } else swTv?.text = fmt(swNow())
     }

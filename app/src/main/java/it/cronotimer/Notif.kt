@@ -48,14 +48,16 @@ object Notif {
             Intent(c, AlarmReceiver::class.java).putExtra("id", t.id).putExtra("label", t.label),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     fun start(c: Context, t: T) {
-        val am = c.getSystemService(AlarmManager::class.java)
-        if (Build.VERSION.SDK_INT < 31 || am.canScheduleExactAlarms())
-            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, t.end, alarmPi(c, t))
-        else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, t.end, alarmPi(c, t))
+        c.getSystemService(AlarmManager::class.java)
+            .setAlarmClock(AlarmManager.AlarmClockInfo(t.end, open(c)), alarmPi(c, t))
         val n = Notification.Builder(c, RUN).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle(t.label.ifEmpty { "Timer" }).setWhen(t.end).setUsesChronometer(true)
             .setChronometerCountDown(true).setOngoing(true).setContentIntent(open(c)).build()
         c.getSystemService(NotificationManager::class.java).notify(t.id.hashCode(), n)
+    }
+    fun fire(c: Context, t: T) {
+        stop(c, t)
+        c.startForegroundService(Intent(c, AlarmService::class.java).putExtra("label", t.label))
     }
     fun stop(c: Context, t: T) {
         c.getSystemService(AlarmManager::class.java).cancel(alarmPi(c, t))
@@ -74,6 +76,7 @@ class AlarmReceiver : BroadcastReceiver() {
 
 class AlarmService : Service() {
     private var mp: MediaPlayer? = null
+    private var last = 0L
     private val h = Handler(Looper.getMainLooper())
     override fun onBind(i: Intent?): IBinder? = null
     override fun onStartCommand(i: Intent?, f: Int, id: Int): Int {
@@ -86,6 +89,8 @@ class AlarmService : Service() {
             .addAction(0, "Ferma", stop).build()
         if (Build.VERSION.SDK_INT >= 29) startForeground(77, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
         else startForeground(77, n)
+        if (mp?.isPlaying == true && SystemClock.elapsedRealtime() - last < 3000) return START_NOT_STICKY
+        last = SystemClock.elapsedRealtime()
         val alarm = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build()
         mp?.release(); mp = null
         try {
