@@ -3,8 +3,11 @@ package it.cronotimer
 import android.app.*
 import android.content.*
 import android.media.AudioAttributes
+import android.media.MediaPlayer
 import android.media.RingtoneManager
-import android.os.Build
+import android.content.pm.ServiceInfo
+import android.net.Uri
+import android.os.*
 import org.json.*
 
 class T(val id: String, var label: String, var ms: Long, var left: Long, var end: Long)
@@ -26,16 +29,18 @@ object Store {
 
 object Notif {
     const val RUN = "run"
-    const val END = "end"
+    const val RING = "ring"
     fun channels(c: Context) {
         val m = c.getSystemService(NotificationManager::class.java)
         m.createNotificationChannel(NotificationChannel(RUN, "Timer in corso", NotificationManager.IMPORTANCE_LOW))
-        val e = NotificationChannel(END, "Timer finito", NotificationManager.IMPORTANCE_HIGH)
-        e.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM),
-            AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build())
-        e.enableVibration(true)
+        val e = NotificationChannel(RING, "Timer finito", NotificationManager.IMPORTANCE_HIGH)
+        e.setSound(null, null); e.enableVibration(false)
         m.createNotificationChannel(e)
     }
+    fun sound(c: Context): Uri =
+        c.getSharedPreferences("ct", 0).getString("snd", null)?.let { Uri.parse(it) }
+            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+    fun halt(c: Context) { c.stopService(Intent(c, AlarmService::class.java)) }
     fun open(c: Context): PendingIntent =
         PendingIntent.getActivity(c, 0, Intent(c, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
     private fun alarmPi(c: Context, t: T): PendingIntent =
@@ -61,15 +66,42 @@ object Notif {
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(c: Context, i: Intent) {
-        Notif.channels(c)
-        val nm = c.getSystemService(NotificationManager::class.java)
         val id = i.getStringExtra("id") ?: return
-        val label = (i.getStringExtra("label") ?: "").ifEmpty { "Timer" }
-        nm.cancel(id.hashCode())
-        val n = Notification.Builder(c, Notif.END).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-            .setContentTitle(label).setContentText("Tempo scaduto").setContentIntent(Notif.open(c))
-            .setAutoCancel(true).setCategory(Notification.CATEGORY_ALARM).build()
-        n.flags = n.flags or Notification.FLAG_INSISTENT
-        nm.notify(id.hashCode() + 1, n)
+        c.getSystemService(NotificationManager::class.java).cancel(id.hashCode())
+        c.startForegroundService(Intent(c, AlarmService::class.java).putExtra("label", i.getStringExtra("label") ?: ""))
+    }
+}
+
+class AlarmService : Service() {
+    private var mp: MediaPlayer? = null
+    private val h = Handler(Looper.getMainLooper())
+    override fun onBind(i: Intent?): IBinder? = null
+    override fun onStartCommand(i: Intent?, f: Int, id: Int): Int {
+        if (i?.action == "STOP") { stopSelf(); return START_NOT_STICKY }
+        Notif.channels(this)
+        val stop = PendingIntent.getService(this, 1, Intent(this, AlarmService::class.java).setAction("STOP"), PendingIntent.FLAG_IMMUTABLE)
+        val n = Notification.Builder(this, Notif.RING).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setContentTitle((i?.getStringExtra("label") ?: "").ifEmpty { "Timer" }).setContentText("Tempo scaduto")
+            .setContentIntent(Notif.open(this)).setCategory(Notification.CATEGORY_ALARM)
+            .addAction(0, "Ferma", stop).build()
+        if (Build.VERSION.SDK_INT >= 29) startForeground(77, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+        else startForeground(77, n)
+        val alarm = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build()
+        mp?.release(); mp = null
+        try {
+            mp = MediaPlayer().apply { setAudioAttributes(alarm); setDataSource(this@AlarmService, Notif.sound(this@AlarmService)); isLooping = true; prepare(); start() }
+        } catch (e: Exception) { }
+        try {
+            getSystemService(Vibrator::class.java).vibrate(VibrationEffect.createWaveform(longArrayOf(0, 600, 400), 0), alarm)
+        } catch (e: Exception) { }
+        h.removeCallbacksAndMessages(null)
+        h.postDelayed({ stopSelf() }, 60000)
+        return START_NOT_STICKY
+    }
+    override fun onDestroy() {
+        mp?.release(); mp = null
+        try { getSystemService(Vibrator::class.java).cancel() } catch (e: Exception) { }
+        h.removeCallbacksAndMessages(null)
+        super.onDestroy()
     }
 }

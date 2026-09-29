@@ -2,6 +2,9 @@ package it.cronotimer
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Intent
+import android.media.RingtoneManager
+import android.net.Uri
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.*
@@ -59,10 +62,11 @@ class MainActivity : Activity() {
         if (Build.VERSION.SDK_INT >= 33) requestPermissions(arrayOf("android.permission.POST_NOTIFICATIONS"), 1)
         window.statusBarColor = BG; window.navigationBarColor = BG
         L = Store.load(this)
-        b0 = btn("Timer", CARD, FG) { tab = 0; render() }
-        b1 = btn("Cronometro", BG, FG) { tab = 1; render() }
+        b0 = btn("Timer", CARD, FG) { tab = 0; render() }.apply { textSize = 15f }
+        b1 = btn("Cronometro", BG, FG) { tab = 1; render() }.apply { textSize = 15f }
+        val b2 = btn("Suono", BG, FG) { pickSound() }.apply { textSize = 15f }
         val top = LinearLayout(this).apply { setPadding(dp(12), dp(12), dp(12), 0) }
-        top.addView(b0, lp(0, -2, 1f, 4)); top.addView(b1, lp(0, -2, 1f, 4))
+        top.addView(b0, lp(0, -2, 1f, 4)); top.addView(b1, lp(0, -2, 1f, 4)); top.addView(b2, lp(0, -2, 1f, 4))
         body = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(12), dp(12), dp(12), dp(24)) }
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(BG) }
         root.addView(top)
@@ -110,7 +114,7 @@ class MainActivity : Activity() {
         val label = if (done) "Ferma" else if (run) "Pausa" else if (t.left < t.ms) "Riprendi" else "Avvia"
         row.addView(btn(label, if (run) ACC else GO, DARK) {
             val d = t.end > 0 && rem(t) <= 0
-            if (d) { Notif.stop(this, t); t.end = 0; t.left = t.ms }
+            if (d) { Notif.stop(this, t); Notif.halt(this); t.end = 0; t.left = t.ms }
             else if (t.end > 0) { t.left = rem(t); t.end = 0; Notif.stop(this, t) }
             else { if (t.left <= 0) t.left = t.ms; t.end = System.currentTimeMillis() + t.left; Notif.start(this, t) }
             save(); render()
@@ -119,17 +123,45 @@ class MainActivity : Activity() {
         body.addView(c, lp(-1, -2).apply { bottomMargin = dp(12) })
     }
 
+    fun pickSound() {
+        val i = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
+            .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)
+            .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
+            .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true)
+            .putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, Notif.sound(this))
+        startActivityForResult(i, 2)
+    }
+    override fun onActivityResult(rq: Int, rs: Int, d: Intent?) {
+        super.onActivityResult(rq, rs, d)
+        if (rq == 2 && rs == RESULT_OK && d != null) {
+            val u = d.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+            getSharedPreferences("ct", 0).edit().putString("snd", u?.toString() ?: "").apply()
+        }
+    }
+
     fun addDlg() {
-        val lb = EditText(this).apply { hint = "Etichetta (es. Pasta)" }
-        fun n(hint: String, v: String) = EditText(this).apply { this.hint = hint; setText(v); inputType = InputType.TYPE_CLASS_NUMBER; gravity = Gravity.CENTER }
-        val eh = n("ore", "0"); val em = n("min", "5"); val es = n("sec", "0")
-        val r = LinearLayout(this)
-        listOf(eh, em, es).forEach { r.addView(it, lp(0, -2, 1f)) }
-        val c = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(20), dp(8), dp(20), 0); addView(lb); addView(r) }
-        fun v(e: EditText) = e.text.toString().toLongOrNull() ?: 0L
+        val lb = EditText(this).apply { hint = "Etichetta (facoltativa)"; textSize = 18f }
+        var d = ""
+        val disp = tvw("", 38f, FG).apply { gravity = Gravity.CENTER; fontFeatureSettings = "tnum" }
+        fun refresh() { val p = d.padStart(6, '0'); disp.text = "${p.substring(0, 2)}h ${p.substring(2, 4)}m ${p.substring(4)}s" }
+        refresh()
+        val keys = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "00", "0", "⌫")
+        val grid = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        for (r in 0 until 4) {
+            val row = LinearLayout(this)
+            for (k in keys.subList(r * 3, r * 3 + 3)) row.addView(btn(k, CARD, FG) {
+                if (k == "⌫") d = d.dropLast(1)
+                else { val n = (d + k).trimStart('0'); if (n.length <= 6) d = n }
+                refresh()
+            }.apply { textSize = 24f; minHeight = dp(68) }, lp(0, -2, 1f, 3))
+            grid.addView(row)
+        }
+        val c = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(8), dp(16), 0) }
+        c.addView(lb); c.addView(disp, lp(-1, -2).apply { topMargin = dp(16); bottomMargin = dp(12) }); c.addView(grid)
         AlertDialog.Builder(this).setTitle("Nuovo timer").setView(c)
             .setPositiveButton("Aggiungi") { _, _ ->
-                val ms = (v(eh) * 3600 + v(em) * 60 + v(es)) * 1000
+                val p = d.padStart(6, '0')
+                val ms = (p.substring(0, 2).toLong() * 3600 + p.substring(2, 4).toLong() * 60 + p.substring(4).toLong()) * 1000
                 if (ms > 0) { L.add(T(System.currentTimeMillis().toString(), lb.text.toString().trim(), ms, ms, 0)); save(); render() }
             }.setNegativeButton("Annulla", null).show()
     }
