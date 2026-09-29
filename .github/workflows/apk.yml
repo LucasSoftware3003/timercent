@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -30,6 +32,7 @@ jobs:
       - name: Build signed APK
         run: |
           gradle assembleRelease --no-daemon \
+            -Pvc=${{ github.run_number }} \
             -Pandroid.injected.signing.store.file="$GITHUB_WORKSPACE/release-key.jks" \
             -Pandroid.injected.signing.store.password="${{ secrets.KEYSTORE_PASSWORD }}" \
             -Pandroid.injected.signing.key.alias="${{ secrets.KEY_ALIAS }}" \
@@ -40,3 +43,9 @@ jobs:
         with:
           name: Timercent-apk
           path: app/build/outputs/apk/release/*.apk
+
+      # APK scaricabile direttamente (senza zip) dalla sezione Releases
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "v${{ github.run_number }}" app/build/outputs/apk/release/*.apk --title "Timercent v${{ github.run_number }}" --notes "Build automatica"

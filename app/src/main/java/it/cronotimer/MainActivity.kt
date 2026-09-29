@@ -2,13 +2,17 @@ package it.cronotimer
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.media.RingtoneManager
 import android.net.Uri
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.*
 import android.text.InputType
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
@@ -31,6 +35,10 @@ class MainActivity : Activity() {
     val tv = HashMap<String, TextView>()
     val fin = HashSet<String>()
     var tab = 0
+    var prec = 2
+    private val refresh = object : BroadcastReceiver() {
+        override fun onReceive(c: Context, i: Intent) { L = Store.load(this@MainActivity); render() }
+    }
     var swAcc = 0L
     var swT0 = 0L
     var swRun = false
@@ -47,10 +55,13 @@ class MainActivity : Activity() {
         setOnClickListener { f() }
     }
     fun fmt(ms: Long): String {
-        val t = maxOf(0L, ms) / 10
-        val hh = t / 360000
-        return (if (hh > 0) "$hh:" else "") + "%02d:%02d.%02d".format(t / 6000 % 60, t / 100 % 60, t % 100)
+        val m = maxOf(0L, ms)
+        val f = (m % 1000).toInt()
+        val fs = when (prec) { 1 -> "%d".format(f / 100); 2 -> "%02d".format(f / 10); else -> "%03d".format(f) }
+        val s = m / 1000
+        return (if (s >= 3600) "${s / 3600}:" else "") + "%02d:%02d.%s".format(s / 60 % 60, s % 60, fs)
     }
+    fun fit(v: TextView, max: Int) { v.maxLines = 1; v.setAutoSizeTextTypeUniformWithConfiguration(14, max, 1, TypedValue.COMPLEX_UNIT_SP) }
     fun rem(t: T) = if (t.end > 0) maxOf(0L, t.end - System.currentTimeMillis()) else t.left
     fun swNow() = swAcc + (if (swRun) SystemClock.elapsedRealtime() - swT0 else 0L)
     fun save() = Store.save(this, L)
@@ -62,9 +73,10 @@ class MainActivity : Activity() {
         if (Build.VERSION.SDK_INT >= 33) requestPermissions(arrayOf("android.permission.POST_NOTIFICATIONS"), 1)
         window.statusBarColor = BG; window.navigationBarColor = BG
         L = Store.load(this)
+        prec = getSharedPreferences("ct", 0).getInt("prec", 2).coerceIn(1, 3)
         b0 = btn("Timer", CARD, FG) { tab = 0; render() }.apply { textSize = 15f }
         b1 = btn("Cronometro", BG, FG) { tab = 1; render() }.apply { textSize = 15f }
-        val b2 = btn("Suono", BG, FG) { pickSound() }.apply { textSize = 15f }
+        val b2 = btn("Opzioni", BG, FG) { optDlg() }.apply { textSize = 15f }
         val top = LinearLayout(this).apply { setPadding(dp(12), dp(12), dp(12), 0) }
         top.addView(b0, lp(0, -2, 1f, 4)); top.addView(b1, lp(0, -2, 1f, 4)); top.addView(b2, lp(0, -2, 1f, 4))
         body = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(12), dp(12), dp(12), dp(24)) }
@@ -76,9 +88,27 @@ class MainActivity : Activity() {
     override fun onResume() {
         super.onResume()
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        L = Store.load(this)
+        val flt = IntentFilter("it.cronotimer.REFRESH")
+        if (Build.VERSION.SDK_INT >= 33) registerReceiver(refresh, flt, Context.RECEIVER_NOT_EXPORTED) else registerReceiver(refresh, flt)
         render(); h.post(ticker)
     }
-    override fun onPause() { super.onPause(); h.removeCallbacks(ticker) }
+    override fun onPause() {
+        super.onPause(); h.removeCallbacks(ticker)
+        try { unregisterReceiver(refresh) } catch (e: Exception) { }
+    }
+    fun optDlg() {
+        val names = listOf("decimi", "centesimi", "millesimi")
+        AlertDialog.Builder(this).setTitle("Opzioni")
+            .setItems(arrayOf("Suono allarme", "Precisione: " + names[prec - 1])) { _, w -> if (w == 0) pickSound() else precDlg() }
+            .show()
+    }
+    fun precDlg() {
+        AlertDialog.Builder(this).setTitle("Precisione")
+            .setSingleChoiceItems(arrayOf("Decimi (0.1 s)", "Centesimi (0.01 s)", "Millesimi (0.001 s)"), prec - 1) { d, w ->
+                prec = w + 1; getSharedPreferences("ct", 0).edit().putInt("prec", prec).apply(); d.dismiss(); render()
+            }.setNegativeButton("Chiudi", null).show()
+    }
 
     fun render() {
         body.removeAllViews(); tv.clear(); fin.clear(); swTv = null
@@ -105,7 +135,7 @@ class MainActivity : Activity() {
             setPadding(dp(12), 0, dp(4), 0)
             setOnClickListener { Notif.stop(this@MainActivity, t); L.remove(t); save(); render() }
         })
-        val time = tvw(fmt(rem(t)), 46f, if (done) ACC else FG); light(time)
+        val time = tvw(fmt(rem(t)), 46f, if (done) ACC else FG); light(time); fit(time, 46)
         tv[t.id] = time
         val row = LinearLayout(this)
         if (!done) row.addView(btn("Azzera", BG, FG) {
@@ -167,7 +197,7 @@ class MainActivity : Activity() {
     }
 
     fun stopwatch() {
-        val d = tvw(fmt(swNow()), 56f, FG).apply { gravity = Gravity.CENTER }; light(d)
+        val d = tvw(fmt(swNow()), 56f, FG).apply { gravity = Gravity.CENTER }; light(d); fit(d, 56)
         swTv = d
         body.addView(d, lp(-1, -2).apply { topMargin = dp(40); bottomMargin = dp(32) })
         val r = LinearLayout(this)

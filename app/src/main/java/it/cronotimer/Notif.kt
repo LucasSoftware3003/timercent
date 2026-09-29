@@ -57,7 +57,7 @@ object Notif {
     }
     fun fire(c: Context, t: T) {
         stop(c, t)
-        c.startForegroundService(Intent(c, AlarmService::class.java).putExtra("label", t.label))
+        c.startForegroundService(Intent(c, AlarmService::class.java).putExtra("label", t.label).putExtra("id", t.id))
     }
     fun stop(c: Context, t: T) {
         c.getSystemService(AlarmManager::class.java).cancel(alarmPi(c, t))
@@ -70,17 +70,26 @@ class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(c: Context, i: Intent) {
         val id = i.getStringExtra("id") ?: return
         c.getSystemService(NotificationManager::class.java).cancel(id.hashCode())
-        c.startForegroundService(Intent(c, AlarmService::class.java).putExtra("label", i.getStringExtra("label") ?: ""))
+        c.startForegroundService(Intent(c, AlarmService::class.java).putExtra("label", i.getStringExtra("label") ?: "").putExtra("id", id))
     }
 }
 
 class AlarmService : Service() {
     private var mp: MediaPlayer? = null
     private var last = 0L
+    private val ids = HashSet<String>()
+    private fun resetTimers() {
+        if (ids.isEmpty()) return
+        val l = Store.load(this)
+        l.forEach { if (it.id in ids) { it.end = 0; it.left = it.ms } }
+        Store.save(this, l); ids.clear()
+        sendBroadcast(Intent("it.cronotimer.REFRESH").setPackage(packageName))
+    }
     private val h = Handler(Looper.getMainLooper())
     override fun onBind(i: Intent?): IBinder? = null
     override fun onStartCommand(i: Intent?, f: Int, id: Int): Int {
-        if (i?.action == "STOP") { stopSelf(); return START_NOT_STICKY }
+        if (i?.action == "STOP") { resetTimers(); stopSelf(); return START_NOT_STICKY }
+        i?.getStringExtra("id")?.let { if (it.isNotEmpty()) ids.add(it) }
         Notif.channels(this)
         val stop = PendingIntent.getService(this, 1, Intent(this, AlarmService::class.java).setAction("STOP"), PendingIntent.FLAG_IMMUTABLE)
         val n = Notification.Builder(this, Notif.RING).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
