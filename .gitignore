@@ -1,2 +1,4 @@
 build
 .gradle
+.git-token.txt
+release-key.jks
