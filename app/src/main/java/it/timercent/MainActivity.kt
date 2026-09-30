@@ -1,4 +1,4 @@
-package it.cronotimer
+package it.timercent
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -89,7 +89,7 @@ class MainActivity : Activity() {
         super.onResume()
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         L = Store.load(this)
-        val flt = IntentFilter("it.cronotimer.REFRESH")
+        val flt = IntentFilter("it.timercent.REFRESH")
         if (Build.VERSION.SDK_INT >= 33) registerReceiver(refresh, flt, Context.RECEIVER_NOT_EXPORTED) else registerReceiver(refresh, flt)
         render(); h.post(ticker)
     }

@@ -1,4 +1,4 @@
-package it.cronotimer
+package it.timercent
 
 import android.app.*
 import android.content.*
@@ -83,7 +83,7 @@ class AlarmService : Service() {
         val l = Store.load(this)
         l.forEach { if (it.id in ids) { it.end = 0; it.left = it.ms } }
         Store.save(this, l); ids.clear()
-        sendBroadcast(Intent("it.cronotimer.REFRESH").setPackage(packageName))
+        sendBroadcast(Intent("it.timercent.REFRESH").setPackage(packageName))
     }
     private val h = Handler(Looper.getMainLooper())
     override fun onBind(i: Intent?): IBinder? = null
