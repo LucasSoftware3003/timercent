@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_bg">#181037</color>
-    <color name="w_bg">#F01E242D</color>
+    <color name="w_bg">#1E242D</color>
     <color name="w_fg">#EEF0F3</color>
     <color name="w_mute">#8A93A0</color>
     <color name="w_acc">#FFB020</color>
