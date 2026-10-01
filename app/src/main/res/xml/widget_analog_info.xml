@@ -9,4 +9,4 @@
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="0"
     android:widgetCategory="home_screen"
-    android:initialLayout="@layout/widget_analog_0"/>
+    android:initialLayout="@layout/widget_analog"/>

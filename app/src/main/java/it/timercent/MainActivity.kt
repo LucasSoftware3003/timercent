@@ -31,6 +31,7 @@ class MainActivity : Activity() {
     lateinit var body: LinearLayout
     lateinit var b0: Button
     lateinit var b1: Button
+    lateinit var b2: Button
     val h = Handler(Looper.getMainLooper())
     val tv = HashMap<String, TextView>()
     val fin = HashSet<String>()
@@ -74,11 +75,13 @@ class MainActivity : Activity() {
         window.statusBarColor = BG; window.navigationBarColor = BG
         L = Store.load(this)
         prec = getSharedPreferences("ct", 0).getInt("prec", 2).coerceIn(1, 3)
-        b0 = btn("Timer", CARD, FG) { tab = 0; render() }.apply { textSize = 15f }
-        b1 = btn("Cronometro", BG, FG) { tab = 1; render() }.apply { textSize = 15f }
-        val b2 = btn("Opzioni", BG, FG) { optDlg() }.apply { textSize = 15f }
+        fun small(x: Button) = x.apply { textSize = 13f; minWidth = 0; maxLines = 1; setPadding(dp(2), 0, dp(2), 0) }
+        b0 = small(btn("Timer", CARD, FG) { tab = 0; render() })
+        b1 = small(btn("Cronometro", BG, FG) { tab = 1; render() })
+        b2 = small(btn("Orologio", BG, FG) { tab = 2; render() })
+        val b3 = small(btn("⋮", BG, FG) { optDlg() })
         val top = LinearLayout(this).apply { setPadding(dp(12), dp(12), dp(12), 0) }
-        top.addView(b0, lp(0, -2, 1f, 4)); top.addView(b1, lp(0, -2, 1f, 4)); top.addView(b2, lp(0, -2, 1f, 4))
+        top.addView(b0, lp(0, -2, 1f, 4)); top.addView(b1, lp(0, -2, 1f, 4)); top.addView(b2, lp(0, -2, 1f, 4)); top.addView(b3, lp(0, -2, 0.45f, 4))
         body = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(12), dp(12), dp(12), dp(24)) }
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(BG) }
         root.addView(top)
@@ -111,14 +114,15 @@ class MainActivity : Activity() {
     }
 
     fun render() {
-        body.removeAllViews(); tv.clear(); fin.clear(); swTv = null
+        body.removeAllViews(); tv.clear(); fin.clear(); swTv = null; wRows.clear()
         (b0.background as GradientDrawable).setColor(if (tab == 0) CARD else BG)
         (b1.background as GradientDrawable).setColor(if (tab == 1) CARD else BG)
+        (b2.background as GradientDrawable).setColor(if (tab == 2) CARD else BG)
         if (tab == 0) {
             L.forEach { card(it) }
             if (L.isEmpty()) body.addView(tvw("Nessun timer. Aggiungine uno con etichetta e durata.", 15f, MUTE).apply { setPadding(dp(8), dp(24), dp(8), dp(24)) })
             body.addView(btn("Nuovo timer", CARD, FG) { addDlg() })
-        } else stopwatch()
+        } else if (tab == 1) stopwatch() else world()
     }
 
     fun card(t: T) {
@@ -216,6 +220,125 @@ class MainActivity : Activity() {
                 tv[t.id]?.text = fmt(rem(t))
                 if (t.end in 1..now && t.id !in fin) { Notif.fire(this, t); render(); return }
             }
-        } else swTv?.text = fmt(swNow())
+        } else if (tab == 1) swTv?.text = fmt(swNow())
+        else { val sec = System.currentTimeMillis() / 1000; if (sec != wLast) { wLast = sec; updWorld() } }
+    }
+
+    // ---------- Orologio internazionale ----------
+    class WRow(val z: java.time.ZoneId, val time: TextView, val sub: TextView)
+    val wRows = ArrayList<WRow>()
+    var wLast = 0L
+
+    fun zones(): MutableList<String> =
+        (getSharedPreferences("ct", 0).getString("wc", "") ?: "").split("|").filter { it.isNotEmpty() }.toMutableList()
+    fun saveZones(l: List<String>) { getSharedPreferences("ct", 0).edit().putString("wc", l.joinToString("|")).apply() }
+
+    fun cityName(id: String): String {
+        val n: String? = try { android.icu.text.TimeZoneNames.getInstance(java.util.Locale.getDefault()).getExemplarLocationName(id) } catch (e: Exception) { null }
+        return if (!n.isNullOrBlank()) n else id.substringAfterLast('/').replace('_', ' ')
+    }
+
+    fun gmt(z: java.time.ZoneId, now: java.time.Instant): String {
+        val m = z.rules.getOffset(now).totalSeconds / 60
+        val a = Math.abs(m)
+        return "GMT" + (if (m < 0) "-" else "+") + (a / 60) + (if (a % 60 != 0) ":%02d".format(a % 60) else "")
+    }
+
+    fun subText(z: java.time.ZoneId, now: java.time.Instant): String {
+        val here = java.time.ZoneId.systemDefault()
+        val d = java.time.temporal.ChronoUnit.DAYS.between(now.atZone(here).toLocalDate(), now.atZone(z).toLocalDate())
+        val day = when (d) { 0L -> "Oggi"; 1L -> "Domani"; -1L -> "Ieri"; else -> "" }
+        val diff = (z.rules.getOffset(now).totalSeconds - here.rules.getOffset(now).totalSeconds) / 60
+        val off = if (diff == 0) "stesso fuso" else {
+            val a = Math.abs(diff); val hh = a / 60; val mm = a % 60
+            (if (diff > 0) "+" else "-") + (if (hh > 0) "$hh h" else "") + (if (hh > 0 && mm > 0) " " else "") + (if (mm > 0) "$mm min" else "")
+        }
+        return listOf(day, off).filter { it.isNotEmpty() }.joinToString(" · ")
+    }
+
+    fun updWorld() {
+        val now = java.time.Instant.now()
+        val f = java.time.format.DateTimeFormatter.ofPattern(
+            if (android.text.format.DateFormat.is24HourFormat(this)) "HH:mm" else "h:mm a", java.util.Locale.getDefault())
+        for (r in wRows) {
+            val t = f.format(now.atZone(r.z)); if (r.time.text.toString() != t) r.time.text = t
+            val x = subText(r.z, now); if (r.sub.text.toString() != x) r.sub.text = x
+        }
+    }
+
+    fun world() {
+        worldCard(java.time.ZoneId.systemDefault().id, true, 0, mutableListOf())
+        val l = zones()
+        l.forEachIndexed { i, id -> worldCard(id, false, i, l) }
+        if (l.isEmpty()) body.addView(tvw("Aggiungi le città di cui vuoi vedere l'ora.", 15f, MUTE).apply { setPadding(dp(8), dp(12), dp(8), dp(24)) })
+        body.addView(btn("Aggiungi città", CARD, FG) { cityDlg() })
+        updWorld()
+    }
+
+    fun worldCard(id: String, local: Boolean, idx: Int, l: MutableList<String>) {
+        val z = try { java.time.ZoneId.of(id) } catch (e: Exception) { return }
+        val c = LinearLayout(this).apply {
+            gravity = Gravity.CENTER_VERTICAL; setPadding(dp(16), dp(12), dp(8), dp(12))
+            background = GradientDrawable().apply { setColor(CARD); cornerRadius = dp(20).toFloat() }
+        }
+        val left = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        left.addView(tvw(cityName(id) + if (local) " (qui)" else "", 18f, FG).apply { typeface = Typeface.DEFAULT_BOLD; maxLines = 1 })
+        val sub = tvw("", 13f, MUTE)
+        left.addView(sub)
+        val time = tvw("", 36f, FG); light(time)
+        c.addView(left, lp(0, -2, 1f)); c.addView(time)
+        if (local) time.setPadding(0, 0, dp(8), 0)
+        else {
+            c.addView(tvw("✕", 20f, MUTE).apply {
+                setPadding(dp(16), dp(8), dp(8), dp(8))
+                setOnClickListener { l.removeAt(idx); saveZones(l); render() }
+            })
+            c.setOnLongClickListener { moveDlg(idx, l); true }
+        }
+        wRows.add(WRow(z, time, sub))
+        body.addView(c, lp(-1, -2).apply { bottomMargin = dp(12) })
+    }
+
+    fun moveDlg(i: Int, l: MutableList<String>) {
+        val o = ArrayList<String>()
+        if (i > 0) o.add("Sposta su")
+        if (i < l.size - 1) o.add("Sposta giù")
+        if (o.isEmpty()) return
+        AlertDialog.Builder(this).setTitle(cityName(l[i])).setItems(o.toTypedArray()) { _, w ->
+            val j = if (o[w] == "Sposta su") i - 1 else i + 1
+            val x = l[i]; l[i] = l[j]; l[j] = x; saveZones(l); render()
+        }.show()
+    }
+
+    fun cityDlg() {
+        val pre = listOf("Africa/", "America/", "Antarctica/", "Arctic/", "Asia/", "Atlantic/", "Australia/", "Europe/", "Indian/", "Pacific/")
+        val now = java.time.Instant.now()
+        val all = java.time.ZoneId.getAvailableZoneIds().filter { id -> pre.any { id.startsWith(it) } }
+            .map { id -> Triple(cityName(id), id, gmt(java.time.ZoneId.of(id), now)) }
+            .distinctBy { it.first + it.third }.sortedBy { it.first.lowercase() }
+        var shown = all
+        val ad = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, ArrayList<String>())
+        fun filt(q: String) {
+            val k = q.trim().lowercase()
+            shown = if (k.isEmpty()) all else all.filter { it.first.lowercase().contains(k) || it.second.lowercase().replace('_', ' ').contains(k) }
+            ad.clear(); ad.addAll(shown.map { "${it.first}  (${it.third})" }); ad.notifyDataSetChanged()
+        }
+        filt("")
+        val et = EditText(this).apply { hint = "Cerca città"; setSingleLine() }
+        et.addTextChangedListener(object : android.text.TextWatcher {
+            override fun afterTextChanged(s: android.text.Editable?) { filt(s?.toString() ?: "") }
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+        })
+        val lv = ListView(this); lv.adapter = ad
+        val c = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(8), dp(16), 0) }
+        c.addView(et); c.addView(lv, LinearLayout.LayoutParams(-1, dp(320)))
+        var dlg: AlertDialog? = null
+        lv.setOnItemClickListener { _, _, pos, _ ->
+            val id = shown[pos].second
+            val l = zones(); if (id !in l) { l.add(id); saveZones(l) }
+            dlg?.dismiss(); render()
+        }
+        dlg = AlertDialog.Builder(this).setTitle("Aggiungi città").setView(c).setNegativeButton("Chiudi", null).show()
     }
 }

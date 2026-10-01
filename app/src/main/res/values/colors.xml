@@ -5,4 +5,5 @@
     <color name="w_fg">#EEF0F3</color>
     <color name="w_mute">#8A93A0</color>
     <color name="w_acc">#FFB020</color>
+    <color name="cfg_bg">#14181E</color>
 </resources>
