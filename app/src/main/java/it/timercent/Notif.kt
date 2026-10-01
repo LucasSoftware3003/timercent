@@ -30,12 +30,18 @@ object Store {
 object Notif {
     const val RUN = "run"
     const val RING = "ring"
+    const val WAKE = "wake"
+    const val MISS = "miss"
     fun channels(c: Context) {
         val m = c.getSystemService(NotificationManager::class.java)
-        m.createNotificationChannel(NotificationChannel(RUN, "Timer in corso", NotificationManager.IMPORTANCE_LOW))
+        m.createNotificationChannel(NotificationChannel(RUN, "In corso", NotificationManager.IMPORTANCE_LOW))
         val e = NotificationChannel(RING, "Timer finito", NotificationManager.IMPORTANCE_HIGH)
         e.setSound(null, null); e.enableVibration(false)
         m.createNotificationChannel(e)
+        val w = NotificationChannel(WAKE, "Sveglie", NotificationManager.IMPORTANCE_HIGH)
+        w.setSound(null, null); w.enableVibration(false)
+        m.createNotificationChannel(w)
+        m.createNotificationChannel(NotificationChannel(MISS, "Sveglie perse", NotificationManager.IMPORTANCE_DEFAULT))
     }
     fun sound(c: Context): Uri =
         c.getSharedPreferences("ct", 0).getString("snd", null)?.let { Uri.parse(it) }

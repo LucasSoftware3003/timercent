@@ -18,13 +18,13 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.*
 
-private val BG = 0xFF12161C.toInt()
-private val CARD = 0xFF1E242D.toInt()
-private val FG = 0xFFEEF0F3.toInt()
-private val MUTE = 0xFF8A93A0.toInt()
-private val ACC = 0xFFFFB020.toInt()
-private val GO = 0xFF34D399.toInt()
-private val DARK = 0xFF111111.toInt()
+internal val BG = 0xFF12161C.toInt()
+internal val CARD = 0xFF1E242D.toInt()
+internal val FG = 0xFFEEF0F3.toInt()
+internal val MUTE = 0xFF8A93A0.toInt()
+internal val ACC = 0xFFFFB020.toInt()
+internal val GO = 0xFF34D399.toInt()
+internal val DARK = 0xFF111111.toInt()
 
 class MainActivity : Activity() {
     lateinit var L: MutableList<T>
@@ -32,6 +32,9 @@ class MainActivity : Activity() {
     lateinit var b0: Button
     lateinit var b1: Button
     lateinit var b2: Button
+    lateinit var bA: Button
+    var expAl: String? = null
+    var pickAl: String? = null
     val h = Handler(Looper.getMainLooper())
     val tv = HashMap<String, TextView>()
     val fin = HashSet<String>()
@@ -75,13 +78,14 @@ class MainActivity : Activity() {
         window.statusBarColor = BG; window.navigationBarColor = BG
         L = Store.load(this)
         prec = getSharedPreferences("ct", 0).getInt("prec", 2).coerceIn(1, 3)
-        fun small(x: Button) = x.apply { textSize = 13f; minWidth = 0; maxLines = 1; setPadding(dp(2), 0, dp(2), 0) }
+        fun small(x: Button) = x.apply { textSize = 13f; minWidth = 0; maxLines = 1; setPadding(dp(2), 0, dp(2), 0); setAutoSizeTextTypeUniformWithConfiguration(9, 13, 1, TypedValue.COMPLEX_UNIT_SP) }
+        bA = small(btn("Sveglie", BG, FG) { tab = 3; render() })
         b0 = small(btn("Timer", CARD, FG) { tab = 0; render() })
         b1 = small(btn("Cronometro", BG, FG) { tab = 1; render() })
         b2 = small(btn("Orologio", BG, FG) { tab = 2; render() })
         val b3 = small(btn("⋮", BG, FG) { optDlg() })
-        val top = LinearLayout(this).apply { setPadding(dp(12), dp(12), dp(12), 0) }
-        top.addView(b0, lp(0, -2, 1f, 4)); top.addView(b1, lp(0, -2, 1f, 4)); top.addView(b2, lp(0, -2, 1f, 4)); top.addView(b3, lp(0, -2, 0.45f, 4))
+        val top = LinearLayout(this).apply { setPadding(dp(8), dp(12), dp(8), 0) }
+        top.addView(bA, lp(0, -2, 1f, 2)); top.addView(b0, lp(0, -2, 1f, 2)); top.addView(b1, lp(0, -2, 1.1f, 2)); top.addView(b2, lp(0, -2, 1f, 2)); top.addView(b3, lp(0, -2, 0.45f, 2))
         body = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(12), dp(12), dp(12), dp(24)) }
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(BG) }
         root.addView(top)
@@ -108,7 +112,7 @@ class MainActivity : Activity() {
     fun optDlg() {
         val names = listOf("decimi", "centesimi", "millesimi")
         AlertDialog.Builder(this).setTitle("Opzioni")
-            .setItems(arrayOf("Suono allarme", "Precisione: " + names[prec - 1])) { _, w -> if (w == 0) pickSound() else precDlg() }
+            .setItems(arrayOf("Suono timer", "Precisione: " + names[prec - 1], "Impostazioni sveglie")) { _, w -> if (w == 0) pickSound() else if (w == 1) precDlg() else alarmSettings() }
             .show()
     }
     fun precDlg() {
@@ -123,11 +127,12 @@ class MainActivity : Activity() {
         (b0.background as GradientDrawable).setColor(if (tab == 0) CARD else BG)
         (b1.background as GradientDrawable).setColor(if (tab == 1) CARD else BG)
         (b2.background as GradientDrawable).setColor(if (tab == 2) CARD else BG)
+        (bA.background as GradientDrawable).setColor(if (tab == 3) CARD else BG)
         if (tab == 0) {
             L.forEach { card(it) }
             if (L.isEmpty()) body.addView(tvw("Nessun timer. Aggiungine uno con etichetta e durata.", 15f, MUTE).apply { setPadding(dp(8), dp(24), dp(8), dp(24)) })
             body.addView(btn("Nuovo timer", CARD, FG) { addDlg() })
-        } else if (tab == 1) stopwatch() else world()
+        } else if (tab == 1) stopwatch() else if (tab == 3) alarmsTab() else world()
     }
 
     fun card(t: T) {
@@ -175,6 +180,11 @@ class MainActivity : Activity() {
         if (rq == 2 && rs == RESULT_OK && d != null) {
             val u = d.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
             getSharedPreferences("ct", 0).edit().putString("snd", u?.toString() ?: "").apply()
+        }
+        if (rq == 3 && rs == RESULT_OK && d != null) {
+            val u = d.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+            pickAl?.let { id -> Alarms.find(this, id)?.let { it.snd = u?.toString() ?: ""; Alarms.put(this, it) } }
+            render()
         }
     }
 
@@ -226,7 +236,7 @@ class MainActivity : Activity() {
                 if (t.end in 1..now && t.id !in fin) { Notif.fire(this, t); render(); return }
             }
         } else if (tab == 1) swTv?.text = fmt(swNow())
-        else { val sec = System.currentTimeMillis() / 1000; if (sec != wLast) { wLast = sec; updWorld() } }
+        else if (tab == 2) { val sec = System.currentTimeMillis() / 1000; if (sec != wLast) { wLast = sec; updWorld() } }
     }
 
     // ---------- Orologio internazionale ----------
