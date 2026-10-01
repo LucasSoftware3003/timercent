@@ -35,8 +35,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:dial="@drawable/clock_dial_empty"
-                android:hand_hour="@drawable/clock_hour_h0"
-                android:hand_minute="@drawable/clock_minute_h0"/>
+                android:hand_hour="@drawable/clock_hour_h6"
+                android:hand_minute="@drawable/clock_minute_h6"/>
         </FrameLayout>
         <TextClock
             android:id="@+id/date_bottom"

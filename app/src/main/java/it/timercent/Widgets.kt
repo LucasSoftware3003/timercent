@@ -11,10 +11,12 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
+import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.HorizontalScrollView
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RemoteViews
 import android.widget.ScrollView
@@ -37,7 +39,10 @@ class WC(
     var dBottom: Boolean = true,
     var dFmt: Int = 0,          // indice in Wg.DATE_FMT
     var dSize: Int = 16,        // sp
-    var dCol: Int = Color.parseColor("#8A93A0")
+    var dCol: Int = Color.parseColor("#8A93A0"),
+    var font: Int = 0,          // indice in Wg.FONT_FAM
+    var dial: String = "p0",     // quadrante (vedi Dials)
+    var hand: Int = 0           // schema colore lancette (Wg.HAND_LBL)
 )
 
 object Wg {
@@ -47,7 +52,16 @@ object Wg {
     val DATE_FMT = arrayOf("EEEE d MMMM", "EEE d MMM", "d MMMM yyyy", "dd/MM/yyyy", "dd/MM/yy", "EEE dd/MM", "d MMM", "yyyy-MM-dd", "EEE d MMM yyyy", "EEEE d MMMM yyyy", "EEE dd/MM/yy")
     val PAL: IntArray = listOf("#EEF0F3", "#000000", "#8A93A0", "#FFB020", "#FF7043", "#F44336",
         "#EC407A", "#AB47BC", "#42A5F5", "#26C6DA", "#66BB6A", "#D4E157").map { Color.parseColor(it) }.toIntArray()
-    private val KEYS = listOf("bg", "ts", "tc", "sp", "st", "do", "db", "df", "ds", "dc")
+    val HAND_LBL = listOf("Classico (bianca e ambra)", "Bianco", "Nero", "Grigio", "Ambra", "Arancio", "Rosso", "Rosa", "Viola", "Azzurro", "Turchese", "Verde", "Lime")
+    // Colori per sfondo, bordo, numeri e tacche del quadrante
+    val DPAL: IntArray = listOf("#000000", "#14181F", "#1B2430", "#2B3A55", "#37474F", "#4E342E", "#1B5E20", "#880E4F",
+        "#F5F1E6", "#EEF0F3", "#FFFFFF", "#FFB020", "#FF7043", "#42A5F5", "#26C6DA", "#66BB6A").map { Color.parseColor(it) }.toIntArray()
+    val FONT_LBL = listOf("Predefinito (leggero)", "Normale", "Medio", "Nero", "Condensato", "Serif", "Monospace", "Corsivo")
+    val FONT_FAM = arrayOf("sans-serif-light", "sans-serif", "sans-serif-medium", "sans-serif-black", "sans-serif-condensed", "serif", "monospace", "cursive")
+    // Un layout per carattere: nei widget il carattere si sceglie solo nell'XML. Il numero 0 è il layout originale.
+    private val DIG = intArrayOf(R.layout.widget_digital, R.layout.widget_digital_f1, R.layout.widget_digital_f2, R.layout.widget_digital_f3,
+        R.layout.widget_digital_f4, R.layout.widget_digital_f5, R.layout.widget_digital_f6, R.layout.widget_digital_f7)
+    private val KEYS = listOf("bg", "ts", "tc", "sp", "st", "do", "db", "df", "ds", "dc", "fn", "dl", "hc")
 
     private fun p(c: Context) = c.getSharedPreferences("ct", 0)
 
@@ -63,7 +77,10 @@ object Wg {
             dBottom = s.getBoolean("db$id", true),
             dFmt = s.getInt("df$id", 0).coerceIn(0, DATE_FMT.size - 1),
             dSize = s.getInt("ds$id", if (digital) 16 else 12),
-            dCol = s.getInt("dc$id", d.dCol)
+            dCol = s.getInt("dc$id", d.dCol),
+            font = s.getInt("fn$id", 0).coerceIn(0, FONT_FAM.size - 1),
+            dial = s.getString("dl$id", "p0") ?: "p0",
+            hand = s.getInt("hc$id", 0).coerceIn(0, HAND_LBL.size - 1)
         )
     }
 
@@ -72,7 +89,7 @@ object Wg {
             .putInt("bg$id", k.bg).putInt("ts$id", k.tSize).putInt("tc$id", k.tCol)
             .putInt("sp$id", k.sep).putBoolean("st$id", k.stack).putBoolean("do$id", k.dOn)
             .putBoolean("db$id", k.dBottom).putInt("df$id", k.dFmt).putInt("ds$id", k.dSize)
-            .putInt("dc$id", k.dCol).apply()
+            .putInt("dc$id", k.dCol).putInt("fn$id", k.font).putString("dl$id", k.dial).putInt("hc$id", k.hand).apply()
     }
 
     fun forget(c: Context, ids: IntArray) {
@@ -93,7 +110,7 @@ object Wg {
 
     fun refresh(c: Context, id: Int, digital: Boolean) {
         val k = load(c, id, digital)
-        val v = RemoteViews(c.packageName, if (digital) R.layout.widget_digital else R.layout.widget_analog)
+        val v = RemoteViews(c.packageName, if (digital) DIG[k.font] else AnaRes.LAYOUTS[k.font * AnaRes.HANDS + k.hand])
         v.setInt(R.id.bg, "setImageAlpha", ALPHA[k.bg])
 
         // Data: sopra o sotto, formato, dimensione e colore.
@@ -111,6 +128,9 @@ object Wg {
             fmt(v, R.id.t_hour, "h", "HH"); txt(v, R.id.t_hour, k.tSize, k.tCol)
             fmt(v, R.id.t_min, "mm", "mm"); txt(v, R.id.t_min, k.tSize, k.tCol)
         }
+        else {
+            try { v.setImageViewBitmap(R.id.dial_img, Dials.bitmap(c, k.dial)) } catch (e: Exception) { }
+        }
         v.setOnClickPendingIntent(R.id.root, Notif.openTimer(c))
         AppWidgetManager.getInstance(c).updateAppWidget(id, v)
     }
@@ -126,71 +146,28 @@ class DigitalWidget : ClockBase(true)
 class AnalogWidget : ClockBase(false)
 
 // Si apre quando aggiungi il widget e dal "Riconfigura" del launcher.
-class WidgetConfig : Activity() {
-    private val FG = Color.parseColor("#EEF0F3")
-    private val MUTE = Color.parseColor("#8A93A0")
-    private val ACC = Color.parseColor("#FFB020")
-    private fun dp(x: Int) = (x * resources.displayMetrics.density).toInt()
+class WidgetConfig : CfgBase() {
+    private var k = WC()
+    private lateinit var dialSpin: Spinner
+    private lateinit var dialPrev: ImageView
+    private var dialList: List<DialSpec> = emptyList()
 
-    private fun title(box: LinearLayout, t: String) {
-        box.addView(TextView(this).apply {
-            text = t; setTextColor(ACC); textSize = 16f; setTypeface(typeface, Typeface.BOLD)
-            setPadding(0, dp(22), 0, dp(2))
-        })
+    private fun updPrev() { dialPrev.setImageBitmap(Dials.preview(this, Dials.find(this, k.dial), k.hand)) }
+
+    private fun fillDials() {
+        dialList = Dials.all(this)
+        dialSpin.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, dialList.map { it.name })
+        dialSpin.setSelection(dialList.indexOfFirst { it.id == k.dial }.coerceAtLeast(0))
+        updPrev()
     }
 
-    private fun label(box: LinearLayout, t: String) {
-        box.addView(TextView(this).apply { text = t; setTextColor(MUTE); textSize = 13f; setPadding(0, dp(10), 0, 0) })
-    }
-
-    private fun spin(box: LinearLayout, lbl: String, items: List<String>, cur: Int, on: (Int) -> Unit): Spinner {
-        label(box, lbl)
-        val s = Spinner(this)
-        s.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, items)
-        s.setSelection(cur)
-        s.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(p: AdapterView<*>?, v: View?, pos: Int, i: Long) { on(pos) }
-            override fun onNothingSelected(p: AdapterView<*>?) {}
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(rq: Int, rs: Int, d: Intent?) {
+        super.onActivityResult(rq, rs, d)
+        if (rq == 5) {
+            if (rs == RESULT_OK) d?.getStringExtra("dial")?.let { k.dial = it }
+            fillDials()
         }
-        box.addView(s)
-        return s
-    }
-
-    private fun seek(box: LinearLayout, lbl: String, lo: Int, hi: Int, cur: Int, on: (Int) -> Unit) {
-        val t = TextView(this).apply { setTextColor(MUTE); textSize = 13f; setPadding(0, dp(10), 0, 0) }
-        t.text = "$lbl: $cur sp"
-        val s = SeekBar(this)
-        s.max = hi - lo
-        s.progress = cur - lo
-        s.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(sb: SeekBar?, p: Int, fromUser: Boolean) { t.text = "$lbl: ${p + lo} sp"; on(p + lo) }
-            override fun onStartTrackingTouch(sb: SeekBar?) {}
-            override fun onStopTrackingTouch(sb: SeekBar?) {}
-        })
-        box.addView(t); box.addView(s)
-    }
-
-    private fun colors(box: LinearLayout, lbl: String, cur: Int, on: (Int) -> Unit) {
-        label(box, lbl)
-        val row = LinearLayout(this).apply { setPadding(0, dp(6), 0, dp(2)) }
-        val views = ArrayList<View>()
-        var sel = cur
-        fun paint() {
-            views.forEachIndexed { i, v ->
-                val chosen = Wg.PAL[i] == sel
-                val edge = if (Color.luminance(Wg.PAL[i]) > 0.5f) Color.BLACK else Color.WHITE
-                (v.background as GradientDrawable).setStroke(dp(if (chosen) 3 else 1), if (chosen) edge else 0x55FFFFFF)
-            }
-        }
-        Wg.PAL.forEachIndexed { i, col ->
-            val v = View(this)
-            v.background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(col) }
-            v.layoutParams = LinearLayout.LayoutParams(dp(38), dp(38)).apply { rightMargin = dp(10) }
-            v.setOnClickListener { sel = Wg.PAL[i]; paint(); on(sel) }
-            views.add(v); row.addView(v)
-        }
-        paint()
-        box.addView(HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false; addView(row) })
     }
 
     override fun onCreate(b: Bundle?) {
@@ -200,7 +177,7 @@ class WidgetConfig : Activity() {
             ?: AppWidgetManager.INVALID_APPWIDGET_ID
         if (id == AppWidgetManager.INVALID_APPWIDGET_ID) { finish(); return }
         val digital = AppWidgetManager.getInstance(this).getAppWidgetInfo(id)?.provider?.className?.endsWith("DigitalWidget") == true
-        val k = Wg.load(this, id, digital)
+        k = Wg.load(this, id, digital)
 
         val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(20), dp(12), dp(20), dp(24)) }
         box.addView(TextView(this).apply {
@@ -210,6 +187,34 @@ class WidgetConfig : Activity() {
 
         title(box, "Sfondo")
         spin(box, "Trasparenza", listOf("Opaco", "Semitrasparente", "Trasparente"), k.bg) { k.bg = it }
+
+        title(box, if (digital) "Carattere di ora e data" else "Carattere della data")
+        spin(box, "Carattere", Wg.FONT_LBL, k.font, Wg.FONT_FAM.map { Typeface.create(it, Typeface.NORMAL) }) { k.font = it }
+
+        if (!digital) {
+            title(box, "Quadrante e lancette")
+            dialPrev = ImageView(this)
+            dialPrev.setPadding(dp(8), dp(8), dp(8), dp(8))
+            dialPrev.background = GradientDrawable().apply { setColor(0xFF1B222B.toInt()); cornerRadius = dp(16).toFloat() }
+            label(box, "Quadrante")
+            dialSpin = Spinner(this)
+            dialSpin.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(p: AdapterView<*>?, v: View?, pos: Int, i: Long) {
+                    if (pos in dialList.indices) { k.dial = dialList[pos].id; updPrev() }
+                }
+                override fun onNothingSelected(p: AdapterView<*>?) {}
+            }
+            box.addView(dialSpin)
+            fillDials()
+            spin(box, "Colore delle lancette", Wg.HAND_LBL, k.hand) { k.hand = it; updPrev() }
+            box.addView(dialPrev, LinearLayout.LayoutParams(dp(170), dp(170)).apply { topMargin = dp(12); gravity = android.view.Gravity.CENTER_HORIZONTAL })
+            val nb = Button(this)
+            nb.text = "Crea o modifica quadrante…"; nb.isAllCaps = false
+            nb.setOnClickListener {
+                startActivityForResult(Intent(this, DialBuilder::class.java).putExtra("dial", k.dial).putExtra("hand", k.hand), 5)
+            }
+            box.addView(nb)
+        }
 
         if (digital) {
             title(box, "Ora")

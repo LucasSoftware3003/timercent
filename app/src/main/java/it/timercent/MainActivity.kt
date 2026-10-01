@@ -112,7 +112,7 @@ class MainActivity : Activity() {
     fun optDlg() {
         val names = listOf("decimi", "centesimi", "millesimi")
         AlertDialog.Builder(this).setTitle("Opzioni")
-            .setItems(arrayOf("Suono timer", "Precisione: " + names[prec - 1], "Impostazioni sveglie")) { _, w -> if (w == 0) pickSound() else if (w == 1) precDlg() else alarmSettings() }
+            .setItems(arrayOf("Suono timer", "Precisione: " + names[prec - 1], "Impostazioni sveglie", "Quadranti analogici")) { _, w -> if (w == 0) pickSound() else if (w == 1) precDlg() else if (w == 2) alarmSettings() else dialMenu() }
             .show()
     }
     fun precDlg() {

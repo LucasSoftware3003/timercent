@@ -26,6 +26,7 @@
             <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE"/></intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_analog_info"/>
         </receiver>
+        <activity android:name=".DialBuilder" android:exported="false"/>
         <activity android:name=".RingActivity" android:exported="false" android:launchMode="singleInstance"
             android:excludeFromRecents="true" android:taskAffinity=""/>
         <receiver android:name=".WakeReceiver" android:exported="false"/>

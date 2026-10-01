@@ -21,7 +21,8 @@
             android:layout_height="wrap_content"
             android:visibility="gone"
             android:includeFontPadding="false"
-            android:maxLines="1"/>
+            android:maxLines="1"
+            android:fontFamily="sans-serif"/>
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -35,8 +36,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:dial="@drawable/clock_dial_empty"
-                android:hand_hour="@drawable/clock_hour_h0"
-                android:hand_minute="@drawable/clock_minute_h0"/>
+                android:hand_hour="@drawable/clock_hour_h11"
+                android:hand_minute="@drawable/clock_minute_h11"/>
         </FrameLayout>
         <TextClock
             android:id="@+id/date_bottom"
@@ -44,6 +45,7 @@
             android:layout_height="wrap_content"
             android:visibility="gone"
             android:includeFontPadding="false"
-            android:maxLines="1"/>
+            android:maxLines="1"
+            android:fontFamily="sans-serif"/>
     </LinearLayout>
 </FrameLayout>
