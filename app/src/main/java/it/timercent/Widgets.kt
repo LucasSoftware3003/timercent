@@ -111,7 +111,7 @@ object Wg {
             fmt(v, R.id.t_hour, "h", "HH"); txt(v, R.id.t_hour, k.tSize, k.tCol)
             fmt(v, R.id.t_min, "mm", "mm"); txt(v, R.id.t_min, k.tSize, k.tCol)
         }
-        v.setOnClickPendingIntent(R.id.root, Notif.open(c))
+        v.setOnClickPendingIntent(R.id.root, Notif.openTimer(c))
         AppWidgetManager.getInstance(c).updateAppWidget(id, v)
     }
 }

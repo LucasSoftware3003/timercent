@@ -87,6 +87,11 @@ class MainActivity : Activity() {
         root.addView(top)
         root.addView(ScrollView(this).apply { addView(body) }, LinearLayout.LayoutParams(-1, 0, 1f))
         setContentView(root)
+        if (intent?.hasExtra("tab") == true) tab = intent.getIntExtra("tab", 0)
+    }
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent); setIntent(intent)
+        if (intent.hasExtra("tab")) tab = intent.getIntExtra("tab", 0)   // poi onResume ridisegna
     }
     override fun onResume() {
         super.onResume()

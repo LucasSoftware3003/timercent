@@ -41,6 +41,10 @@ object Notif {
         c.getSharedPreferences("ct", 0).getString("snd", null)?.let { Uri.parse(it) }
             ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
     fun halt(c: Context) { c.stopService(Intent(c, AlarmService::class.java)) }
+    // Tocco sul widget: apre l'app sempre sulla scheda Timer (requestCode diverso, altrimenti gli extra verrebbero ignorati).
+    fun openTimer(c: Context): PendingIntent =
+        PendingIntent.getActivity(c, 7, Intent(c, MainActivity::class.java).putExtra("tab", 0),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
     fun open(c: Context): PendingIntent =
         PendingIntent.getActivity(c, 0, Intent(c, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
     private fun alarmPi(c: Context, t: T): PendingIntent =

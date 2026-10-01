@@ -7,6 +7,7 @@
     android:minResizeWidth="70dp"
     android:minResizeHeight="40dp"
     android:resizeMode="horizontal|vertical"
+    android:previewImage="@drawable/preview_digital"
     android:updatePeriodMillis="0"
     android:widgetCategory="home_screen"
     android:initialLayout="@layout/widget_digital"/>
