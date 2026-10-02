@@ -91,11 +91,17 @@ class MainActivity : Activity() {
         root.addView(top)
         root.addView(ScrollView(this).apply { addView(body) }, LinearLayout.LayoutParams(-1, 0, 1f))
         setContentView(root)
-        if (intent?.hasExtra("tab") == true) tab = intent.getIntExtra("tab", 0)
+        tabFor(intent)?.let { tab = it }
+    }
+    // Scheda da aprire: dal tocco sul widget o dalle richieste standard di Android ("mostra sveglie", "imposta timer"...)
+    private fun tabFor(i: android.content.Intent?): Int? = when (i?.action) {
+        "android.intent.action.SHOW_ALARMS", "android.intent.action.SET_ALARM" -> 3
+        "android.intent.action.SHOW_TIMERS", "android.intent.action.SET_TIMER" -> 0
+        else -> if (i?.hasExtra("tab") == true) i.getIntExtra("tab", 0) else null
     }
     override fun onNewIntent(intent: android.content.Intent) {
         super.onNewIntent(intent); setIntent(intent)
-        if (intent.hasExtra("tab")) tab = intent.getIntExtra("tab", 0)   // poi onResume ridisegna
+        tabFor(intent)?.let { tab = it }   // poi onResume ridisegna
     }
     override fun onResume() {
         super.onResume()

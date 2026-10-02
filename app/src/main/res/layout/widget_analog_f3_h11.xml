@@ -10,6 +10,7 @@
         android:scaleType="fitXY"
         android:src="@drawable/widget_bg"/>
     <LinearLayout
+        android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
@@ -33,6 +34,7 @@
                 android:layout_height="match_parent"
                 android:scaleType="fitCenter"/>
             <AnalogClock
+                android:id="@+id/analog"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:dial="@drawable/clock_dial_empty"

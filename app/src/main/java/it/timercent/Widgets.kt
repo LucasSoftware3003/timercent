@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
@@ -42,7 +43,11 @@ class WC(
     var dCol: Int = Color.parseColor("#8A93A0"),
     var font: Int = 0,          // indice in Wg.FONT_FAM
     var dial: String = "p0",     // quadrante (vedi Dials)
-    var hand: Int = 0           // schema colore lancette (Wg.HAND_LBL)
+    var hand: Int = 0,          // schema colore lancette (Wg.HAND_LBL)
+    var photo: String? = null,  // foto di sfondo (file in Dials.dir)
+    var dim: Int = 0,           // scurimento della foto
+    var zone: String = "",      // id del fuso (vuoto = ora locale)
+    var zlbl: Boolean = true    // nome della città accanto alla data
 )
 
 object Wg {
@@ -61,7 +66,7 @@ object Wg {
     // Un layout per carattere: nei widget il carattere si sceglie solo nell'XML. Il numero 0 è il layout originale.
     private val DIG = intArrayOf(R.layout.widget_digital, R.layout.widget_digital_f1, R.layout.widget_digital_f2, R.layout.widget_digital_f3,
         R.layout.widget_digital_f4, R.layout.widget_digital_f5, R.layout.widget_digital_f6, R.layout.widget_digital_f7)
-    private val KEYS = listOf("bg", "ts", "tc", "sp", "st", "do", "db", "df", "ds", "dc", "fn", "dl", "hc")
+    private val KEYS = listOf("bg", "ts", "tc", "sp", "st", "do", "db", "df", "ds", "dc", "fn", "dl", "hc", "ph", "pd", "zn", "zl")
 
     private fun p(c: Context) = c.getSharedPreferences("ct", 0)
 
@@ -80,7 +85,11 @@ object Wg {
             dCol = s.getInt("dc$id", d.dCol),
             font = s.getInt("fn$id", 0).coerceIn(0, FONT_FAM.size - 1),
             dial = s.getString("dl$id", "p0") ?: "p0",
-            hand = s.getInt("hc$id", 0).coerceIn(0, HAND_LBL.size - 1)
+            hand = s.getInt("hc$id", 0).coerceIn(0, HAND_LBL.size - 1),
+            photo = s.getString("ph$id", null),
+            dim = s.getInt("pd$id", 0).coerceIn(0, 3),
+            zone = s.getString("zn$id", "") ?: "",
+            zlbl = s.getBoolean("zl$id", true)
         )
     }
 
@@ -89,7 +98,7 @@ object Wg {
             .putInt("bg$id", k.bg).putInt("ts$id", k.tSize).putInt("tc$id", k.tCol)
             .putInt("sp$id", k.sep).putBoolean("st$id", k.stack).putBoolean("do$id", k.dOn)
             .putBoolean("db$id", k.dBottom).putInt("df$id", k.dFmt).putInt("ds$id", k.dSize)
-            .putInt("dc$id", k.dCol).putInt("fn$id", k.font).putString("dl$id", k.dial).putInt("hc$id", k.hand).apply()
+            .putInt("dc$id", k.dCol).putInt("fn$id", k.font).putString("dl$id", k.dial).putInt("hc$id", k.hand).putString("ph$id", k.photo).putInt("pd$id", k.dim).putString("zn$id", k.zone).putBoolean("zl$id", k.zlbl).apply()
     }
 
     fun forget(c: Context, ids: IntArray) {
@@ -108,16 +117,39 @@ object Wg {
         v.setCharSequence(id, "setFormat24Hour", f24)
     }
 
+    // Dimensioni attuali del widget in dp (secondo l'orientamento); 0 se non ancora note
+    fun sizeDp(c: Context, id: Int): Pair<Int, Int> {
+        val o = AppWidgetManager.getInstance(c).getAppWidgetOptions(id)
+        val land = c.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        return Pair(
+            o.getInt(if (land) AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH else AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0),
+            o.getInt(if (land) AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT else AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0))
+    }
+
+    // L'AnalogClock accetta il fuso nei widget solo se il metodo è esposto alle RemoteViews (Android 12+)
+    fun analogTzOk(): Boolean = try {
+        android.widget.AnalogClock::class.java.getMethod("setTimeZone", String::class.java)
+            .annotations.any { it.annotationType().simpleName == "RemotableViewMethod" }
+    } catch (e: Throwable) { false }
+
     fun refresh(c: Context, id: Int, digital: Boolean) {
         val k = load(c, id, digital)
         val v = RemoteViews(c.packageName, if (digital) DIG[k.font] else AnaRes.LAYOUTS[k.font * AnaRes.HANDS + k.hand])
         v.setInt(R.id.bg, "setImageAlpha", ALPHA[k.bg])
+        val ph = k.photo
+        if (ph != null) {
+            try { Dials.photoBg(c, id, ph, k.dim)?.let { v.setImageViewBitmap(R.id.bg, it) } } catch (e: Exception) { }
+        }
 
         // Data: sopra o sotto, formato, dimensione e colore.
         v.setViewVisibility(R.id.date_top, if (k.dOn && !k.dBottom) View.VISIBLE else View.GONE)
         v.setViewVisibility(R.id.date_bottom, if (k.dOn && k.dBottom) View.VISIBLE else View.GONE)
+        // Fuso orario scelto: sull'analogico solo se il sistema lo permette, altrimenti ora e data resterebbero discordi
+        val useTz = k.zone.isNotEmpty() && (digital || analogTzOk())
+        val lbl = if (useTz && k.zlbl) " '· " + zoneCity(k.zone).replace("'", "''") + "'" else ""
         for (d in intArrayOf(R.id.date_top, R.id.date_bottom)) {
-            fmt(v, d, DATE_FMT[k.dFmt], DATE_FMT[k.dFmt]); txt(v, d, k.dSize, k.dCol)
+            fmt(v, d, DATE_FMT[k.dFmt] + lbl, DATE_FMT[k.dFmt] + lbl); txt(v, d, k.dSize, k.dCol)
+            v.setString(d, "setTimeZone", if (useTz) k.zone else null)
         }
 
         if (digital) {
@@ -127,9 +159,21 @@ object Wg {
             fmt(v, R.id.t_inline, "h'$s'mm", "HH'$s'mm"); txt(v, R.id.t_inline, k.tSize, k.tCol)
             fmt(v, R.id.t_hour, "h", "HH"); txt(v, R.id.t_hour, k.tSize, k.tCol)
             fmt(v, R.id.t_min, "mm", "mm"); txt(v, R.id.t_min, k.tSize, k.tCol)
+            for (t in intArrayOf(R.id.t_inline, R.id.t_hour, R.id.t_min)) v.setString(t, "setTimeZone", if (useTz) k.zone else null)
         }
         else {
             try { v.setImageViewBitmap(R.id.dial_img, Dials.bitmap(c, k.dial)) } catch (e: Exception) { }
+            // Il quadrante è un quadrato centrato: si restringe l'area del contenuto alla sua misura,
+            // così la data resta attaccata al quadrante invece che al bordo del widget.
+            if (analogTzOk()) v.setString(R.id.analog, "setTimeZone", if (useTz) k.zone else java.util.TimeZone.getDefault().id)
+            val (wd, hd) = sizeDp(c, id)
+            if (wd > 0 && hd > 0) {
+                val den = c.resources.displayMetrics.density
+                val dh = if (k.dOn) k.dSize * 1.2f + 2f else 0f
+                val sq = minOf(wd - 8f, hd - 8f - dh).coerceAtLeast(10f)
+                val pv = maxOf(4f, (hd - sq - dh) / 2f)
+                v.setViewPadding(R.id.content, (4 * den).toInt(), (pv * den).toInt(), (4 * den).toInt(), (pv * den).toInt())
+            }
         }
         v.setOnClickPendingIntent(R.id.root, Notif.openTimer(c))
         AppWidgetManager.getInstance(c).updateAppWidget(id, v)
@@ -140,6 +184,11 @@ object Wg {
 open class ClockBase(private val digital: Boolean) : AppWidgetProvider() {
     override fun onUpdate(c: Context, m: AppWidgetManager, ids: IntArray) { ids.forEach { Wg.refresh(c, it, digital) } }
     override fun onDeleted(c: Context, ids: IntArray) { Wg.forget(c, ids) }
+    // Ridimensionando il widget la foto va ritagliata di nuovo
+    override fun onAppWidgetOptionsChanged(c: Context, m: AppWidgetManager, id: Int, o: Bundle?) {
+        super.onAppWidgetOptionsChanged(c, m, id, o)
+        Wg.refresh(c, id, digital)
+    }
 }
 
 class DigitalWidget : ClockBase(true)
@@ -151,6 +200,14 @@ class WidgetConfig : CfgBase() {
     private lateinit var dialSpin: Spinner
     private lateinit var dialPrev: ImageView
     private var dialList: List<DialSpec> = emptyList()
+    private lateinit var photoInfo: TextView
+    private lateinit var zoneInfo: TextView
+
+    private fun infoZ() {
+        zoneInfo.text = if (k.zone.isEmpty()) "Fuso: ora locale del telefono" else "Fuso: " + zoneCity(k.zone) + " (" + zoneGmt(k.zone) + ")"
+    }
+
+    private fun infoPh() { photoInfo.text = if (k.photo != null) "Foto di sfondo: impostata" else "Foto di sfondo: nessuna" }
 
     private fun updPrev() { dialPrev.setImageBitmap(Dials.preview(this, Dials.find(this, k.dial), k.hand)) }
 
@@ -164,6 +221,10 @@ class WidgetConfig : CfgBase() {
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(rq: Int, rs: Int, d: Intent?) {
         super.onActivityResult(rq, rs, d)
+        if (rq == 6 && rs == RESULT_OK && d?.data != null) {
+            val n = Dials.importPhoto(this, d.data!!)
+            if (n != null) { k.photo = n; infoPh() } else android.widget.Toast.makeText(this, "Immagine non valida", android.widget.Toast.LENGTH_LONG).show()
+        }
         if (rq == 5) {
             if (rs == RESULT_OK) d?.getStringExtra("dial")?.let { k.dial = it }
             fillDials()
@@ -187,6 +248,40 @@ class WidgetConfig : CfgBase() {
 
         title(box, "Sfondo")
         spin(box, "Trasparenza", listOf("Opaco", "Semitrasparente", "Trasparente"), k.bg) { k.bg = it }
+        photoInfo = TextView(this)
+        photoInfo.setTextColor(MUTE); photoInfo.textSize = 13f; photoInfo.setPadding(0, dp(12), 0, 0)
+        box.addView(photoInfo)
+        infoPh()
+        val pr = LinearLayout(this)
+        val pb1 = Button(this); pb1.text = "Scegli foto…"; pb1.isAllCaps = false
+        pb1.setOnClickListener {
+            startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("image/*"), 6)
+        }
+        val pb2 = Button(this); pb2.text = "Rimuovi foto"; pb2.isAllCaps = false
+        pb2.setOnClickListener { k.photo = null; infoPh() }
+        pr.addView(pb1, LinearLayout.LayoutParams(0, -2, 1f)); pr.addView(pb2, LinearLayout.LayoutParams(0, -2, 1f))
+        box.addView(pr)
+        spin(box, "Scurisci la foto (per leggere meglio)", Dials.DIM_LBL, k.dim) { k.dim = it }
+
+        title(box, "Città / fuso orario")
+        zoneInfo = TextView(this)
+        zoneInfo.setTextColor(FG); zoneInfo.textSize = 15f; zoneInfo.setPadding(0, dp(10), 0, 0)
+        box.addView(zoneInfo)
+        infoZ()
+        val zr = LinearLayout(this)
+        val zb1 = Button(this); zb1.text = "Scegli città…"; zb1.isAllCaps = false
+        zb1.setOnClickListener { pickZone(this) { id -> k.zone = id; infoZ() } }
+        val zb2 = Button(this); zb2.text = "Ora locale"; zb2.isAllCaps = false
+        zb2.setOnClickListener { k.zone = ""; infoZ() }
+        zr.addView(zb1, LinearLayout.LayoutParams(0, -2, 1f)); zr.addView(zb2, LinearLayout.LayoutParams(0, -2, 1f))
+        box.addView(zr)
+        spin(box, "Nome della città", listOf("Mostra accanto alla data", "Non mostrare"), if (k.zlbl) 0 else 1) { k.zlbl = it == 0 }
+        if (!digital && !Wg.analogTzOk()) {
+            val nt = TextView(this)
+            nt.text = "Su questo telefono l'orologio analogico non può usare un altro fuso: la scelta vale solo per il digitale."
+            nt.setTextColor(MUTE); nt.textSize = 13f; nt.setPadding(0, dp(8), 0, 0)
+            box.addView(nt)
+        }
 
         title(box, if (digital) "Carattere di ora e data" else "Carattere della data")
         spin(box, "Carattere", Wg.FONT_LBL, k.font, Wg.FONT_FAM.map { Typeface.create(it, Typeface.NORMAL) }) { k.font = it }

@@ -1,6 +1,7 @@
 package it.timercent
 
 import android.app.*
+import android.appwidget.AppWidgetManager
 import android.content.*
 import android.content.pm.ServiceInfo
 import android.graphics.Typeface
@@ -147,6 +148,9 @@ class WakeReceiver : BroadcastReceiver() {
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(c: Context, i: Intent) {
         try { Alarms.scheduleAll(c) } catch (e: Exception) { }
+        try {
+            AppWidgetManager.getInstance(c).getAppWidgetIds(ComponentName(c, AnalogWidget::class.java)).forEach { Wg.refresh(c, it, false) }
+        } catch (e: Exception) { }
         try {
             val now = System.currentTimeMillis()
             Store.load(c).filter { it.end > now }.forEach { Notif.start(c, it) }

@@ -3,10 +3,13 @@ package it.timercent
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Matrix
+import android.graphics.Rect
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PorterDuff
@@ -282,5 +285,74 @@ object Dials {
             Typeface.createFromFile(f)
             return name
         } catch (e: Exception) { f.delete(); return null }
+    }
+
+    val DIM_LBL = listOf("Nessuna", "Leggera", "Media", "Forte")
+    private val DIM = intArrayOf(0, 60, 120, 180)
+
+    // Foto scelta come sfondo del widget: si salva ridotta e si ruota secondo l'EXIF
+    fun importPhoto(c: Context, u: Uri): String? {
+        try {
+            val opt = BitmapFactory.Options()
+            opt.inJustDecodeBounds = true
+            c.contentResolver.openInputStream(u)?.use { BitmapFactory.decodeStream(it, null, opt) }
+            var ss = 1
+            while (maxOf(opt.outWidth, opt.outHeight) / ss > 1600) ss *= 2
+            val o2 = BitmapFactory.Options()
+            o2.inSampleSize = ss
+            var src = c.contentResolver.openInputStream(u)?.use { BitmapFactory.decodeStream(it, null, o2) } ?: return null
+            val rot = try {
+                c.contentResolver.openInputStream(u)?.use {
+                    android.media.ExifInterface(it).getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, 1)
+                } ?: 1
+            } catch (e: Exception) { 1 }
+            val deg = when (rot) { 6 -> 90f; 3 -> 180f; 8 -> 270f; else -> 0f }
+            if (deg != 0f) {
+                val m = Matrix()
+                m.postRotate(deg)
+                src = Bitmap.createBitmap(src, 0, 0, src.width, src.height, m, true)
+            }
+            val name = "bgp_" + System.currentTimeMillis() + ".jpg"
+            FileOutputStream(File(dir(c), name)).use { src.compress(Bitmap.CompressFormat.JPEG, 90, it) }
+            return name
+        } catch (e: Exception) { return null }
+    }
+
+    // Foto ritagliata al centro nelle proporzioni del widget, con angoli arrotondati e scurimento
+    fun photoBg(c: Context, id: Int, name: String, dim: Int): Bitmap? {
+        val src = BitmapFactory.decodeFile(File(dir(c), name).path) ?: return null
+        val o = AppWidgetManager.getInstance(c).getAppWidgetOptions(id)
+        val land = c.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        var wd = o.getInt(if (land) AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH else AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0)
+        var hd = o.getInt(if (land) AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT else AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0)
+        if (wd <= 0 || hd <= 0) { wd = 160; hd = 160 }
+        val k = 640f / maxOf(wd, hd)
+        val w = maxOf(16, (wd * k).toInt())
+        val h = maxOf(16, (hd * k).toInt())
+        val ar = w.toFloat() / h
+        val sw = src.width
+        val sh = src.height
+        val cw: Int
+        val ch: Int
+        if (sw.toFloat() / sh > ar) { ch = sh; cw = (sh * ar).toInt() } else { cw = sw; ch = (sw / ar).toInt() }
+        val crop = Rect((sw - cw) / 2, (sh - ch) / 2, (sw - cw) / 2 + cw, (sh - ch) / 2 + ch)
+        val out = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val cv = Canvas(out)
+        val rect = RectF(0f, 0f, w.toFloat(), h.toFloat())
+        val rad = 24f * w / wd
+        val layer = cv.saveLayer(0f, 0f, w.toFloat(), h.toFloat(), null)
+        cv.drawRoundRect(rect, rad, rad, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.BLACK })
+        val pp = Paint(Paint.FILTER_BITMAP_FLAG)
+        pp.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+        cv.drawBitmap(src, crop, rect, pp)
+        val da = DIM[dim.coerceIn(0, DIM.size - 1)]
+        if (da > 0) {
+            val pd = Paint()
+            pd.color = Color.BLACK; pd.alpha = da
+            pd.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP)
+            cv.drawRect(rect, pd)
+        }
+        cv.restoreToCount(layer)
+        return out
     }
 }
