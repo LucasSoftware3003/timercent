@@ -250,6 +250,27 @@ object Dials {
         return b
     }
 
+    // Raddrizza la bitmap secondo l'orientamento EXIF (tutti gli 8 valori, anche le specchiature)
+    private fun upright(c: Context, u: Uri, src: Bitmap): Bitmap {
+        val rot = try {
+            c.contentResolver.openInputStream(u)?.use {
+                android.media.ExifInterface(it).getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, 1)
+            } ?: 1
+        } catch (e: Exception) { 1 }
+        val m = Matrix()
+        when (rot) {
+            2 -> m.postScale(-1f, 1f)
+            3 -> m.postRotate(180f)
+            4 -> m.postScale(1f, -1f)
+            5 -> { m.postRotate(90f); m.postScale(-1f, 1f) }
+            6 -> m.postRotate(90f)
+            7 -> { m.postRotate(270f); m.postScale(-1f, 1f) }
+            8 -> m.postRotate(270f)
+            else -> return src
+        }
+        return try { Bitmap.createBitmap(src, 0, 0, src.width, src.height, m, true) } catch (e: Exception) { src }
+    }
+
     // Immagine scelta dall'utente: ritaglio quadrato centrale, ridotto a SIZE
     fun importImage(c: Context, u: Uri): String? {
         try {
@@ -260,7 +281,8 @@ object Dials {
             while (opt.outWidth / ss > SIZE * 2 && opt.outHeight / ss > SIZE * 2) ss *= 2
             val o2 = BitmapFactory.Options()
             o2.inSampleSize = ss
-            val src = c.contentResolver.openInputStream(u)?.use { BitmapFactory.decodeStream(it, null, o2) } ?: return null
+            val raw = c.contentResolver.openInputStream(u)?.use { BitmapFactory.decodeStream(it, null, o2) } ?: return null
+            val src = upright(c, u, raw)
             val m = minOf(src.width, src.height)
             val sq = Bitmap.createBitmap(src, (src.width - m) / 2, (src.height - m) / 2, m, m)
             val out = Bitmap.createScaledBitmap(sq, SIZE, SIZE, true)
@@ -301,17 +323,7 @@ object Dials {
             val o2 = BitmapFactory.Options()
             o2.inSampleSize = ss
             var src = c.contentResolver.openInputStream(u)?.use { BitmapFactory.decodeStream(it, null, o2) } ?: return null
-            val rot = try {
-                c.contentResolver.openInputStream(u)?.use {
-                    android.media.ExifInterface(it).getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, 1)
-                } ?: 1
-            } catch (e: Exception) { 1 }
-            val deg = when (rot) { 6 -> 90f; 3 -> 180f; 8 -> 270f; else -> 0f }
-            if (deg != 0f) {
-                val m = Matrix()
-                m.postRotate(deg)
-                src = Bitmap.createBitmap(src, 0, 0, src.width, src.height, m, true)
-            }
+            src = upright(c, u, src)
             val name = "bgp_" + System.currentTimeMillis() + ".jpg"
             FileOutputStream(File(dir(c), name)).use { src.compress(Bitmap.CompressFormat.JPEG, 90, it) }
             return name
