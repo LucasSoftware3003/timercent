@@ -32,6 +32,7 @@ object Notif {
     const val RING = "ring"
     const val WAKE = "wake"
     const val MISS = "miss"
+    const val UP = "up"
     fun channels(c: Context) {
         val m = c.getSystemService(NotificationManager::class.java)
         m.createNotificationChannel(NotificationChannel(RUN, "In corso", NotificationManager.IMPORTANCE_LOW))
@@ -42,6 +43,7 @@ object Notif {
         w.setSound(null, null); w.enableVibration(false)
         m.createNotificationChannel(w)
         m.createNotificationChannel(NotificationChannel(MISS, "Sveglie perse", NotificationManager.IMPORTANCE_DEFAULT))
+        m.createNotificationChannel(NotificationChannel(UP, "Prossima sveglia", NotificationManager.IMPORTANCE_LOW))
     }
     fun sound(c: Context): Uri =
         c.getSharedPreferences("ct", 0).getString("snd", null)?.let { Uri.parse(it) }

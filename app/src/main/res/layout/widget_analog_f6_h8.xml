@@ -9,6 +9,12 @@
         android:layout_height="match_parent"
         android:scaleType="fitXY"
         android:src="@drawable/widget_bg"/>
+    <ImageView
+        android:id="@+id/bg_crop"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:visibility="gone"/>
     <LinearLayout
         android:id="@+id/content"
         android:layout_width="match_parent"

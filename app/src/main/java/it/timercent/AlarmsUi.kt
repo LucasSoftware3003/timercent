@@ -11,6 +11,7 @@ import android.media.AudioManager
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
+import android.provider.AlarmClock
 import android.provider.Settings
 import android.text.TextUtils
 import android.view.Gravity
@@ -33,6 +34,17 @@ fun untilTxt(ms: Long): String {
 
 private fun minTxt(n: Int) = if (n == 1) "1 minuto" else "$n minuti"
 
+// Quanto prima della sveglia compare la notifica "prossima sveglia" con il tasto Salta
+private fun preTxt(n: Int) = when { n <= 0 -> "mai"; n < 60 -> minTxt(n); n == 60 -> "1 ora"; else -> "${n / 60} ore" }
+
+private fun durTxt(s: Int): String {
+    val p = ArrayList<String>()
+    if (s >= 3600) p.add("${s / 3600} h")
+    if (s / 60 % 60 > 0) p.add("${s / 60 % 60} min")
+    if (s % 60 > 0) p.add("${s % 60} s")
+    return p.joinToString(" ")
+}
+
 private fun MainActivity.is24() = android.text.format.DateFormat.is24HourFormat(this)
 
 private fun MainActivity.timeTxt(a: Al): String =
@@ -54,13 +66,13 @@ private fun MainActivity.daysTxt(a: Al): String {
 }
 
 private fun MainActivity.toastNext(a: Al) {
-    val ms = Alarms.next(a).toInstant().toEpochMilli() - System.currentTimeMillis()
+    val ms = Alarms.nextEff(a).toInstant().toEpochMilli() - System.currentTimeMillis()
     Toast.makeText(this, "Sveglia tra " + untilTxt(ms), Toast.LENGTH_LONG).show()
 }
 
 // Modifica che riguarda l'orario o i giorni: riattiva la sveglia e la ripianifica
 private fun MainActivity.edit(a: Al) {
-    a.on = true; Alarms.put(this, a); Alarms.schedule(this, a); toastNext(a); render()
+    a.on = true; a.skip = 0L; Alarms.put(this, a); Alarms.schedule(this, a); toastNext(a); render()
 }
 
 private fun MainActivity.sndName(s: String?): String {
@@ -112,10 +124,12 @@ private fun MainActivity.alarmCard(a: Al) {
     val time = tvw(timeTxt(a), 44f, if (a.on) FG else MUTE); light(time)
     if (open) time.setOnClickListener { pickTime(a) }
     left.addView(time)
-    left.addView(tvw(listOf(a.label, daysTxt(a)).filter { it.isNotEmpty() }.joinToString(" · "), 14f, if (a.on) ACC else MUTE))
+    val skipped = a.on && a.skip > System.currentTimeMillis()
+    left.addView(tvw(listOf(a.label, daysTxt(a), if (skipped) "prossima saltata" else "").filter { it.isNotEmpty() }.joinToString(" · "), 14f, if (a.on) ACC else MUTE))
     head.addView(left, lp(0, -2, 1f))
     head.addView(mkSwitch(a.on) { v ->
-        a.on = v; Alarms.put(this, a)
+        a.on = v; if (v) a.skip = 0L
+        Alarms.put(this, a)
         if (v) { Alarms.schedule(this, a); toastNext(a) } else Alarms.cancel(this, a)
         render()
     })
@@ -195,14 +209,16 @@ private fun MainActivity.pickAlSound(a: Al) {
 private fun MainActivity.choice(title: String, key: String, vals: List<Int>, cur: Int, lab: (Int) -> String) {
     AlertDialog.Builder(this).setTitle(title)
         .setSingleChoiceItems(vals.map(lab).toTypedArray(), vals.indexOf(cur)) { d, w ->
-            Alarms.p(this).edit().putInt(key, vals[w]).apply(); d.dismiss(); alarmSettings()
+            Alarms.p(this).edit().putInt(key, vals[w]).apply()
+            if (key == "a_pre") Alarms.scheduleAll(this)
+            d.dismiss(); alarmSettings()
         }.setNegativeButton("Indietro") { _, _ -> alarmSettings() }.show()
 }
 
 fun MainActivity.alarmSettings() {
     val p = Alarms.p(this)
     val sil = p.getInt("a_sil", 10); val snz = p.getInt("a_snz", 10); val gr = p.getInt("a_grad", 0)
-    val bt = p.getInt("a_btn", 0); val wk = Alarms.weekStart(this)
+    val bt = p.getInt("a_btn", 0); val wk = Alarms.weekStart(this); val pre = p.getInt("a_pre", 60)
     val btnN = { x: Int -> when (x) { 0 -> "Posticipa"; 1 -> "Ferma"; else -> "Nessuna azione" } }
     val wkn = { x: Int -> when (x) { 1 -> "Lunedì"; 6 -> "Sabato"; else -> "Domenica" } }
     val items = arrayOf(
@@ -211,6 +227,7 @@ fun MainActivity.alarmSettings() {
         "Volume crescente: " + (if (gr == 0) "no" else "$gr secondi"),
         "Tasti del volume: " + btnN(bt),
         "Inizio settimana: " + wkn(wk),
+        "Avviso prima della sveglia: " + preTxt(pre),
         "Volume delle sveglie")
     AlertDialog.Builder(this).setTitle("Impostazioni sveglie").setItems(items) { _, w ->
         when (w) {
@@ -219,6 +236,7 @@ fun MainActivity.alarmSettings() {
             2 -> choice("Volume crescente", "a_grad", listOf(0, 5, 10, 15, 20, 30, 60), gr) { if (it == 0) "Disattivato" else "$it secondi" }
             3 -> choice("Tasti del volume", "a_btn", listOf(0, 1, 2), bt, btnN)
             4 -> choice("Inizio settimana", "a_week", listOf(1, 6, 7), wk, wkn)
+            5 -> choice("Avviso prima della sveglia", "a_pre", listOf(0, 15, 30, 60, 120, 180), pre) { preTxt(it) }
             else -> volDlg()
         }
     }.setNegativeButton("Chiudi", null).show()
@@ -241,4 +259,43 @@ private fun MainActivity.volDlg() {
     c.addView(sb, lp(-1, -2).apply { topMargin = dp(16) })
     AlertDialog.Builder(this).setTitle("Volume delle sveglie").setView(c)
         .setPositiveButton("OK") { _, _ -> alarmSettings() }.show()
+}
+
+// ---------- Richieste standard di Android (assistente vocale, altre app) ----------
+// SET_ALARM con ora: crea la sveglia (o riusa una identica già presente). Senza ora si apre soltanto la scheda.
+fun MainActivity.alarmFromIntent(i: Intent): Boolean {
+    if (!i.hasExtra(AlarmClock.EXTRA_HOUR)) return false
+    val h = i.getIntExtra(AlarmClock.EXTRA_HOUR, -1)
+    val m = i.getIntExtra(AlarmClock.EXTRA_MINUTES, 0)
+    if (h !in 0..23 || m !in 0..59) return false
+    // Calendar: domenica = 1 ... sabato = 7; da noi bit 0 = lunedì ... bit 6 = domenica
+    var days = 0
+    i.getIntegerArrayListExtra(AlarmClock.EXTRA_DAYS)?.forEach { if (it in 1..7) days = days or (1 shl ((it + 5) % 7)) }
+    val label = i.getStringExtra(AlarmClock.EXTRA_MESSAGE)?.trim() ?: ""
+    val vib = i.getBooleanExtra(AlarmClock.EXTRA_VIBRATE, true)
+    val ring = i.getStringExtra(AlarmClock.EXTRA_RINGTONE)
+    val snd: String? = if (ring == null) null else if (ring == AlarmClock.VALUE_RINGTONE_SILENT) "" else ring
+    val a = Alarms.load(this).firstOrNull { it.h == h && it.m == m && it.days == days && it.label == label }
+        ?: Al(System.currentTimeMillis().toString(), h, m, days, label, true, vib, snd, false)
+    a.on = true; a.skip = 0L
+    Alarms.put(this, a); Alarms.schedule(this, a)
+    toastNext(a)
+    expAl = a.id
+    if (!i.getBooleanExtra(AlarmClock.EXTRA_SKIP_UI, false)) fsiCheck()
+    return true
+}
+
+// SET_TIMER con durata: crea il timer e lo avvia subito
+fun MainActivity.timerFromIntent(i: Intent): Boolean {
+    if (!i.hasExtra(AlarmClock.EXTRA_LENGTH)) return false
+    val s = i.getIntExtra(AlarmClock.EXTRA_LENGTH, 0)
+    if (s !in 1..86400) return false
+    val ms = s * 1000L
+    val t = T(System.currentTimeMillis().toString(), i.getStringExtra(AlarmClock.EXTRA_MESSAGE)?.trim() ?: "", ms, ms, 0)
+    t.end = System.currentTimeMillis() + ms
+    val l = Store.load(this)
+    l.add(t); Store.save(this, l)
+    Notif.start(this, t)
+    Toast.makeText(this, "Timer avviato: " + durTxt(s), Toast.LENGTH_LONG).show()
+    return true
 }

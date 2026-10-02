@@ -92,6 +92,19 @@ class MainActivity : Activity() {
         root.addView(ScrollView(this).apply { addView(body) }, LinearLayout.LayoutParams(-1, 0, 1f))
         setContentView(root)
         tabFor(intent)?.let { tab = it }
+        if (b == null) handleIntent(intent, true)
+    }
+    // SET_ALARM e SET_TIMER con dati: creano sveglia o timer. Con SKIP_UI (assistente vocale) l'app non resta in primo piano.
+    private fun handleIntent(i: android.content.Intent?, fresh: Boolean) {
+        if (i == null) return
+        val done = when (i.action) {
+            "android.intent.action.SET_ALARM" -> alarmFromIntent(i)
+            "android.intent.action.SET_TIMER" -> timerFromIntent(i)
+            else -> false
+        }
+        if (done && i.getBooleanExtra(android.provider.AlarmClock.EXTRA_SKIP_UI, false)) {
+            if (fresh) finish() else moveTaskToBack(true)
+        }
     }
     // Scheda da aprire: dal tocco sul widget o dalle richieste standard di Android ("mostra sveglie", "imposta timer"...)
     private fun tabFor(i: android.content.Intent?): Int? = when (i?.action) {
@@ -102,6 +115,7 @@ class MainActivity : Activity() {
     override fun onNewIntent(intent: android.content.Intent) {
         super.onNewIntent(intent); setIntent(intent)
         tabFor(intent)?.let { tab = it }   // poi onResume ridisegna
+        handleIntent(intent, false)
     }
     override fun onResume() {
         super.onResume()
@@ -118,7 +132,7 @@ class MainActivity : Activity() {
     fun optDlg() {
         val names = listOf("decimi", "centesimi", "millesimi")
         AlertDialog.Builder(this).setTitle("Opzioni")
-            .setItems(arrayOf("Suono timer", "Precisione: " + names[prec - 1], "Impostazioni sveglie", "Quadranti analogici")) { _, w -> if (w == 0) pickSound() else if (w == 1) precDlg() else if (w == 2) alarmSettings() else dialMenu() }
+            .setItems(arrayOf("Suono timer", "Precisione: " + names[prec - 1], "Impostazioni sveglie", "Quadranti analogici", "Informazioni e donazioni")) { _, w -> if (w == 0) pickSound() else if (w == 1) precDlg() else if (w == 2) alarmSettings() else if (w == 3) dialMenu() else aboutDlg() }
             .show()
     }
     fun precDlg() {

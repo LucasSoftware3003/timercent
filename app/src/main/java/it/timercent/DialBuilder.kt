@@ -93,6 +93,7 @@ class DialBuilder : CfgBase() {
         imgInfo.setTextColor(MUTE); imgInfo.textSize = 13f; imgInfo.setPadding(0, dp(12), 0, 0)
         box.addView(imgInfo)
         pair(box, mkBtn("Scegli immagine…") { pick("image/*", 11) }, mkBtn("Rimuovi immagine") { s.img = null; info(); upd() })
+        note(box, "Questa immagine resta dentro il quadrante e viene ritagliata a quadrato. Per una foto che copre tutto il widget usa «Scegli foto» nella configurazione del widget.")
         seek(box, "Spessore del bordo", 0, 12, s.bdW, "") { s.bdW = it; upd() }
         colors(box, "Colore del bordo", s.bdCol, Wg.DPAL) { s.bdCol = it; upd() }
 

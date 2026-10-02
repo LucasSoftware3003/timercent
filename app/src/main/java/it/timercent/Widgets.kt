@@ -47,7 +47,8 @@ class WC(
     var photo: String? = null,  // foto di sfondo (file in Dials.dir)
     var dim: Int = 0,           // scurimento della foto
     var zone: String = "",      // id del fuso (vuoto = ora locale)
-    var zlbl: Boolean = true    // nome della città accanto alla data
+    var zlbl: Boolean = true,   // nome della città accanto alla data
+    var crop: Boolean = false   // foto di sfondo: false ridimensiona (riempie), true centra e ritaglia
 )
 
 object Wg {
@@ -66,7 +67,7 @@ object Wg {
     // Un layout per carattere: nei widget il carattere si sceglie solo nell'XML. Il numero 0 è il layout originale.
     private val DIG = intArrayOf(R.layout.widget_digital, R.layout.widget_digital_f1, R.layout.widget_digital_f2, R.layout.widget_digital_f3,
         R.layout.widget_digital_f4, R.layout.widget_digital_f5, R.layout.widget_digital_f6, R.layout.widget_digital_f7)
-    private val KEYS = listOf("bg", "ts", "tc", "sp", "st", "do", "db", "df", "ds", "dc", "fn", "dl", "hc", "ph", "pd", "zn", "zl")
+    private val KEYS = listOf("bg", "ts", "tc", "sp", "st", "do", "db", "df", "ds", "dc", "fn", "dl", "hc", "ph", "pd", "zn", "zl", "cr")
 
     private fun p(c: Context) = c.getSharedPreferences("ct", 0)
 
@@ -89,7 +90,8 @@ object Wg {
             photo = s.getString("ph$id", null),
             dim = s.getInt("pd$id", 0).coerceIn(0, 3),
             zone = s.getString("zn$id", "") ?: "",
-            zlbl = s.getBoolean("zl$id", true)
+            zlbl = s.getBoolean("zl$id", true),
+            crop = s.getBoolean("cr$id", false)
         )
     }
 
@@ -98,7 +100,7 @@ object Wg {
             .putInt("bg$id", k.bg).putInt("ts$id", k.tSize).putInt("tc$id", k.tCol)
             .putInt("sp$id", k.sep).putBoolean("st$id", k.stack).putBoolean("do$id", k.dOn)
             .putBoolean("db$id", k.dBottom).putInt("df$id", k.dFmt).putInt("ds$id", k.dSize)
-            .putInt("dc$id", k.dCol).putInt("fn$id", k.font).putString("dl$id", k.dial).putInt("hc$id", k.hand).putString("ph$id", k.photo).putInt("pd$id", k.dim).putString("zn$id", k.zone).putBoolean("zl$id", k.zlbl).apply()
+            .putInt("dc$id", k.dCol).putInt("fn$id", k.font).putString("dl$id", k.dial).putInt("hc$id", k.hand).putString("ph$id", k.photo).putInt("pd$id", k.dim).putString("zn$id", k.zone).putBoolean("zl$id", k.zlbl).putBoolean("cr$id", k.crop).apply()
     }
 
     fun forget(c: Context, ids: IntArray) {
@@ -136,9 +138,21 @@ object Wg {
         val k = load(c, id, digital)
         val v = RemoteViews(c.packageName, if (digital) DIG[k.font] else AnaRes.LAYOUTS[k.font * AnaRes.HANDS + k.hand])
         v.setInt(R.id.bg, "setImageAlpha", ALPHA[k.bg])
+        v.setInt(R.id.bg_crop, "setImageAlpha", ALPHA[k.bg])
+        v.setViewVisibility(R.id.bg, View.VISIBLE)
+        v.setViewVisibility(R.id.bg_crop, View.GONE)
         val ph = k.photo
         if (ph != null) {
-            try { Dials.photoBg(c, id, ph, k.dim)?.let { v.setImageViewBitmap(R.id.bg, it) } } catch (e: Exception) { }
+            try {
+                Dials.photoBg(c, id, ph, k.dim)?.let {
+                    // Due immagini sovrapposte nel layout: una stira (fitXY), l'altra centra e ritaglia (centerCrop)
+                    if (k.crop) {
+                        v.setImageViewBitmap(R.id.bg_crop, it)
+                        v.setViewVisibility(R.id.bg_crop, View.VISIBLE)
+                        v.setViewVisibility(R.id.bg, View.GONE)
+                    } else v.setImageViewBitmap(R.id.bg, it)
+                }
+            } catch (e: Exception) { }
         }
 
         // Data: sopra o sotto, formato, dimensione e colore.
@@ -262,6 +276,11 @@ class WidgetConfig : CfgBase() {
         pr.addView(pb1, LinearLayout.LayoutParams(0, -2, 1f)); pr.addView(pb2, LinearLayout.LayoutParams(0, -2, 1f))
         box.addView(pr)
         spin(box, "Scurisci la foto (per leggere meglio)", Dials.DIM_LBL, k.dim) { k.dim = it }
+        spin(box, "Adattamento della foto", listOf("Ridimensiona (riempie il widget)", "Centra e ritaglia (non si deforma)"), if (k.crop) 1 else 0) { k.crop = it == 1 }
+        note(box, "Ridimensiona: la foto riempie sempre tutto il widget, ma può deformarsi se ridimensioni il widget. " +
+            "Centra e ritaglia: la foto mantiene le proporzioni e al massimo perde un po' dei bordi.")
+        note(box, if (digital) "Questa foto copre tutto il widget, dietro l'ora."
+            else "Questa foto copre tutto il widget, dietro il quadrante. La foto dentro il quadrante si sceglie invece in «Crea o modifica quadrante».")
 
         title(box, "Città / fuso orario")
         zoneInfo = TextView(this)

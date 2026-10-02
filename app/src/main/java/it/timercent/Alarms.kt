@@ -22,14 +22,17 @@ import java.util.Date
 
 // days: bitmask, bit 0 = lunedì ... bit 6 = domenica; 0 = una sola volta
 // snd: null = suono predefinito di sistema, "" = nessun suono, altrimenti URI
+// skip: istante (ms) della suoneria saltata con "Salta"; le suonerie fino a quell'istante vengono ignorate
 class Al(val id: String, var h: Int, var m: Int, var days: Int, var label: String, var on: Boolean,
-         var vib: Boolean, var snd: String?, var del: Boolean)
+         var vib: Boolean, var snd: String?, var del: Boolean, var skip: Long = 0L)
 
 object Alarms {
     const val SNZ = "it.timercent.SNOOZE"
     const val SNZ_OFF = "it.timercent.SNOOZE_OFF"
     const val REFRESH = "it.timercent.REFRESH"
     const val END = "it.timercent.RING_END"
+    const val PRE = "it.timercent.PRE"
+    const val SKIP = "it.timercent.SKIP"
 
     fun p(c: Context) = c.getSharedPreferences("ct", 0)
 
@@ -38,7 +41,7 @@ object Alarms {
         return MutableList(a.length()) {
             val o = a.getJSONObject(it)
             Al(o.getString("id"), o.getInt("h"), o.getInt("m"), o.getInt("d"), o.optString("l"), o.optBoolean("on"),
-                o.optBoolean("v", true), if (o.has("s")) o.getString("s") else null, o.optBoolean("x"))
+                o.optBoolean("v", true), if (o.has("s")) o.getString("s") else null, o.optBoolean("x"), o.optLong("k", 0L))
         }
     }
 
@@ -46,7 +49,7 @@ object Alarms {
         val a = JSONArray()
         l.forEach {
             val o = JSONObject().put("id", it.id).put("h", it.h).put("m", it.m).put("d", it.days).put("l", it.label)
-                .put("on", it.on).put("v", it.vib).put("x", it.del)
+                .put("on", it.on).put("v", it.vib).put("x", it.del).put("k", it.skip)
             if (it.snd != null) o.put("s", it.snd)
             a.put(o)
         }
@@ -65,6 +68,7 @@ object Alarms {
     fun remove(c: Context, id: String) { save(c, load(c).filter { it.id != id }) }
 
     fun nid(id: String) = id.hashCode() + 100
+    fun npre(id: String) = id.hashCode() + 300
 
     fun weekStart(c: Context): Int =
         p(c).getInt("a_week", java.time.temporal.WeekFields.of(java.util.Locale.getDefault()).firstDayOfWeek.value)
@@ -88,16 +92,53 @@ object Alarms {
         return from.plusDays(1)
     }
 
+    // Come next(), ma ignora l'eventuale suoneria saltata
+    fun nextEff(a: Al, from: ZonedDateTime = ZonedDateTime.now()): ZonedDateTime {
+        var t = next(a, from)
+        var n = 0
+        while (t.toInstant().toEpochMilli() <= a.skip && n++ < 10) t = next(a, t)
+        return t
+    }
+
     private fun pi(c: Context, a: Al, action: String? = null): PendingIntent {
         val i = Intent(c, WakeReceiver::class.java).putExtra("id", a.id)
         if (action != null) i.action = action
         return PendingIntent.getBroadcast(c, a.id.hashCode(), i, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
 
+    fun cancelPre(c: Context, a: Al) {
+        c.getSystemService(AlarmManager::class.java).cancel(pi(c, a, PRE))
+        c.getSystemService(NotificationManager::class.java).cancel(npre(a.id))
+    }
+
     fun schedule(c: Context, a: Al) {
         val am = c.getSystemService(AlarmManager::class.java)
+        cancelPre(c, a)
         if (!a.on) { am.cancel(pi(c, a)); return }
-        am.setAlarmClock(AlarmManager.AlarmClockInfo(next(a).toInstant().toEpochMilli(), openTab(c)), pi(c, a))
+        val t = nextEff(a).toInstant().toEpochMilli()
+        am.setAlarmClock(AlarmManager.AlarmClockInfo(t, openTab(c)), pi(c, a))
+        // Notifica "prossima sveglia" N minuti prima (impostazione a_pre, 0 = mai)
+        val pre = p(c).getInt("a_pre", 60)
+        if (pre > 0) {
+            val pt = t - pre * 60000L
+            if (pt > System.currentTimeMillis()) {
+                try { am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, pt, pi(c, a, PRE)) }
+                catch (e: SecurityException) { am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, pt, pi(c, a, PRE)) }
+            } else showUpcoming(c, a, t)
+        }
+    }
+
+    // Notifica con conto alla rovescia e tasto "Salta" (per una sveglia singola equivale a disattivarla)
+    fun showUpcoming(c: Context, a: Al, t: Long) {
+        val now = System.currentTimeMillis()
+        if (t <= now) return
+        Notif.channels(c)
+        val n = Notification.Builder(c, Notif.UP).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setContentTitle(a.label.ifEmpty { "Sveglia" } + " · " + hm(c, t)).setContentText("Prossima sveglia")
+            .setWhen(t).setUsesChronometer(true).setChronometerCountDown(true)
+            .setTimeoutAfter(t - now + 60000L)
+            .setContentIntent(openTab(c)).addAction(0, "Salta", pi(c, a, SKIP)).build()
+        c.getSystemService(NotificationManager::class.java).notify(npre(a.id), n)
     }
 
     fun cancelSnooze(c: Context, a: Al) {
@@ -107,6 +148,7 @@ object Alarms {
 
     fun cancel(c: Context, a: Al) {
         c.getSystemService(AlarmManager::class.java).cancel(pi(c, a))
+        cancelPre(c, a)
         cancelSnooze(c, a)
     }
 
@@ -125,6 +167,23 @@ class WakeReceiver : BroadcastReceiver() {
     override fun onReceive(c: Context, i: Intent) {
         val id = i.getStringExtra("id") ?: return
         val a = Alarms.find(c, id)
+        val nm = c.getSystemService(NotificationManager::class.java)
+        if (i.action == Alarms.PRE) {
+            if (a != null && a.on) Alarms.showUpcoming(c, a, Alarms.nextEff(a).toInstant().toEpochMilli())
+            return
+        }
+        if (i.action == Alarms.SKIP) {
+            nm.cancel(Alarms.npre(id))
+            if (a != null) {
+                if (a.days == 0) {
+                    a.on = false; Alarms.put(c, a); Alarms.cancel(c, a)
+                    if (a.del) Alarms.remove(c, id)
+                } else {
+                    a.skip = Alarms.nextEff(a).toInstant().toEpochMilli(); Alarms.put(c, a); Alarms.schedule(c, a)
+                }
+            }
+            Alarms.refresh(c); return
+        }
         if (i.action == Alarms.SNZ_OFF) {
             if (a != null) {
                 Alarms.cancelSnooze(c, a)
@@ -134,9 +193,10 @@ class WakeReceiver : BroadcastReceiver() {
         }
         if (a == null) return
         if (i.action == Alarms.SNZ) {
-            c.getSystemService(NotificationManager::class.java).cancel(Alarms.nid(id))
+            nm.cancel(Alarms.nid(id))
         } else {
             if (!a.on) return
+            nm.cancel(Alarms.npre(id))
             if (a.days == 0) { a.on = false; Alarms.put(c, a) } else Alarms.schedule(c, a)
         }
         c.startForegroundService(Intent(c, WakeService::class.java).putExtra("id", id))
