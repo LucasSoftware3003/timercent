@@ -331,7 +331,7 @@ object Dials {
     }
 
     // Foto ritagliata al centro nelle proporzioni del widget, con angoli arrotondati e scurimento
-    fun photoBg(c: Context, id: Int, name: String, dim: Int): Bitmap? {
+    fun photoBg(c: Context, id: Int, name: String, dim: Int, crop: Boolean = true): Bitmap? {
         val src = BitmapFactory.decodeFile(File(dir(c), name).path) ?: return null
         val o = AppWidgetManager.getInstance(c).getAppWidgetOptions(id)
         val land = c.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -347,7 +347,8 @@ object Dials {
         val cw: Int
         val ch: Int
         if (sw.toFloat() / sh > ar) { ch = sh; cw = (sh * ar).toInt() } else { cw = sw; ch = (sw / ar).toInt() }
-        val crop = Rect((sw - cw) / 2, (sh - ch) / 2, (sw - cw) / 2 + cw, (sh - ch) / 2 + ch)
+        // Ritaglia: si prende il pezzo centrale con le proporzioni del widget. Ridimensiona: si usa tutta la foto, stirata.
+        val srcRect: Rect? = if (crop) Rect((sw - cw) / 2, (sh - ch) / 2, (sw - cw) / 2 + cw, (sh - ch) / 2 + ch) else null
         val out = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val cv = Canvas(out)
         val rect = RectF(0f, 0f, w.toFloat(), h.toFloat())
@@ -356,7 +357,7 @@ object Dials {
         cv.drawRoundRect(rect, rad, rad, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.BLACK })
         val pp = Paint(Paint.FILTER_BITMAP_FLAG)
         pp.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
-        cv.drawBitmap(src, crop, rect, pp)
+        cv.drawBitmap(src, srcRect, rect, pp)
         val da = DIM[dim.coerceIn(0, DIM.size - 1)]
         if (da > 0) {
             val pd = Paint()

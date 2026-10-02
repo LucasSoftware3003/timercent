@@ -48,7 +48,7 @@ class WC(
     var dim: Int = 0,           // scurimento della foto
     var zone: String = "",      // id del fuso (vuoto = ora locale)
     var zlbl: Boolean = true,   // nome della città accanto alla data
-    var crop: Boolean = false   // foto di sfondo: false ridimensiona (riempie), true centra e ritaglia
+    var crop: Boolean = true    // foto di sfondo: true centra e ritaglia, false ridimensiona (stira tutta la foto)
 )
 
 object Wg {
@@ -91,7 +91,7 @@ object Wg {
             dim = s.getInt("pd$id", 0).coerceIn(0, 3),
             zone = s.getString("zn$id", "") ?: "",
             zlbl = s.getBoolean("zl$id", true),
-            crop = s.getBoolean("cr$id", false)
+            crop = s.getBoolean("cr$id", true)
         )
     }
 
@@ -144,7 +144,7 @@ object Wg {
         val ph = k.photo
         if (ph != null) {
             try {
-                Dials.photoBg(c, id, ph, k.dim)?.let {
+                Dials.photoBg(c, id, ph, k.dim, k.crop)?.let {
                     // Due immagini sovrapposte nel layout: una stira (fitXY), l'altra centra e ritaglia (centerCrop)
                     if (k.crop) {
                         v.setImageViewBitmap(R.id.bg_crop, it)
@@ -276,9 +276,9 @@ class WidgetConfig : CfgBase() {
         pr.addView(pb1, LinearLayout.LayoutParams(0, -2, 1f)); pr.addView(pb2, LinearLayout.LayoutParams(0, -2, 1f))
         box.addView(pr)
         spin(box, "Scurisci la foto (per leggere meglio)", Dials.DIM_LBL, k.dim) { k.dim = it }
-        spin(box, "Adattamento della foto", listOf("Ridimensiona (riempie il widget)", "Centra e ritaglia (non si deforma)"), if (k.crop) 1 else 0) { k.crop = it == 1 }
-        note(box, "Ridimensiona: la foto riempie sempre tutto il widget, ma può deformarsi se ridimensioni il widget. " +
-            "Centra e ritaglia: la foto mantiene le proporzioni e al massimo perde un po' dei bordi.")
+        spin(box, "Adattamento della foto", listOf("Ridimensiona (tutta la foto, stirata)", "Centra e ritaglia (non si deforma)"), if (k.crop) 1 else 0) { k.crop = it == 1 }
+        note(box, "Ridimensiona: si vede tutta la foto, stirata fino a riempire il widget; si deforma se le proporzioni sono diverse. " +
+            "Centra e ritaglia: la foto mantiene le proporzioni e si taglia ciò che esce dai bordi. In entrambi i casi la foto viene ridotta per stare nel widget.")
         note(box, if (digital) "Questa foto copre tutto il widget, dietro l'ora."
             else "Questa foto copre tutto il widget, dietro il quadrante. La foto dentro il quadrante si sceglie invece in «Crea o modifica quadrante».")
 
