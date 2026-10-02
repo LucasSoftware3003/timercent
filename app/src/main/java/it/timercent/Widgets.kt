@@ -129,7 +129,8 @@ object Wg {
     // L'AnalogClock accetta il fuso nei widget solo se il metodo è esposto alle RemoteViews (Android 12+)
     fun analogTzOk(): Boolean = try {
         android.widget.AnalogClock::class.java.getMethod("setTimeZone", String::class.java)
-            .annotations.any { it.annotationType().simpleName == "RemotableViewMethod" }
+    //        .annotations.any { it.annotationType().simpleName == "RemotableViewMethod" }
+            .annotations.any { it.annotationClass.java.simpleName == "RemotableViewMethod" }
     } catch (e: Throwable) { false }
 
     fun refresh(c: Context, id: Int, digital: Boolean) {
