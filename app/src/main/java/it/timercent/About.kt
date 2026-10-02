@@ -14,7 +14,7 @@ import android.widget.Toast
 object Info {
     const val AUTHOR = "Luca Serenelli aka Lucas3003"
     // Link PayPal.Me (es. https://paypal.me/tuonome): funziona anche con un conto personale. Vuoto = niente tasto «Dona».
-    const val PAYPAL_ME = ""
+    const val PAYPAL_ME = "https://paypal.me/LucasSoftware3003"
     // Indirizzo PayPal mostrato e copiabile: chi vuole può inviare dall'app PayPal. Vuoto = non mostrarlo.
     const val PAYPAL_MAIL = "LucasSoftware3003@gmail.com"
     const val SITE = "https://github.com/LucasSoftware3003/timercent"
