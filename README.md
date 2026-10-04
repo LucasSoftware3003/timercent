@@ -9,14 +9,50 @@ Senza pubblicità, senza account, senza connessione a internet.
 
 ---
 
+## Screenshot
+
+### Widget
+
+<p align="center">
+  <img src="docs/widget-analogico-foto.jpg" alt="Widget analogico con foto di sfondo" width="48%">
+  <img src="docs/widget-analogico-quadrante-foto.jpg" alt="Widget analogico con foto dentro il quadrante" width="48%">
+</p>
+<p align="center">
+  <img src="docs/widget-digitale-semitrasparente.jpg" alt="Widget digitale semitrasparente con foto" width="31%">
+  <img src="docs/widget-digitale-opaco.jpg" alt="Widget digitale opaco" width="31%">
+  <img src="docs/widget-digitale-trasparente.jpg" alt="Widget digitale trasparente con carattere corsivo" width="31%">
+</p>
+
+### App
+
+<p align="center">
+  <img src="docs/app-sveglie.png" alt="Sveglie" width="24%">
+  <img src="docs/app-timer.png" alt="Timer con centesimi di secondo" width="24%">
+  <img src="docs/app-cronometro.png" alt="Cronometro con giri" width="24%">
+  <img src="docs/app-orologio.png" alt="Orologio internazionale" width="24%">
+</p>
+
+### Personalizzazione
+
+<p align="center">
+  <img src="docs/config-widget-analogico.png" alt="Impostazioni del widget analogico" width="40%">
+  <img src="docs/config-quadrante.png" alt="Costruttore di quadranti" width="40%">
+</p>
+
 ## Funzioni
 
 ### Timer e cronometro
 
 - **Timer multipli** in parallelo, ognuno con la propria etichetta, e suono del timer a scelta.
 - **Precisione a scelta**: decimi, centesimi o millesimi di secondo.
-- **Cronometro** con la stessa precisione.
+- **Cronometro** con la stessa precisione e con i **giri**: tempo di ogni giro e tempo totale, con il giro migliore in verde e il peggiore in rosso.
 - Notifiche e suoneria anche con lo schermo spento.
+
+### Interfaccia
+
+- Tema scuro fisso, uguale su tutti i telefoni.
+- Si passa da una scheda all'altra anche **scorrendo il dito** a destra e a sinistra.
+- Dal menu ⋮ → *Informazioni e donazioni*: versione e build, licenza e **Cerca aggiornamenti**.
 
 ### Orologio internazionale
 
@@ -35,9 +71,10 @@ Senza pubblicità, senza account, senza connessione a internet.
 Due widget, entrambi personalizzabili per ogni istanza:
 
 - **Digitale**: 8 caratteri tra cui scegliere.
-- **Analogico**: 7 quadranti predefiniti più un **costruttore di quadranti** (forma, sfondo, foto, numeri anche con font `.ttf` importato, tacche) e 13 colori per le lancette.
+- **Analogico**: 7 quadranti predefiniti più un **costruttore di quadranti** (forma, sfondo, foto, numeri anche con font `.ttf` importato, tacche) e lancette delle ore e dei minuti con il colore scelto separatamente tra 12.
 - Foto di sfondo del widget con scurimento e adattamento a scelta (*ridimensiona* oppure *centra e ritaglia*).
 - Data, e città o fuso orario diverso da quello del telefono.
+- **Al tocco** il widget apre la scheda che scegli: Sveglie, Timer, Cronometro o Orologio.
 - Colori di testo e quadrante con selettore a palette o codice esadecimale esatto.
 
 ### Integrazione con Android
@@ -62,11 +99,22 @@ Requisiti: **Android 8.0 (API 26) o superiore**.
 
 L'app non è distribuita su Google Play. Poiché si installa fuori dallo store, su alcuni dispositivi Android può mostrare avvisi o richiedere conferme aggiuntive.
 
+Per esempio **Google Play Protect** può bloccare l'installazione, perché non ha mai visto app di questo sviluppatore. Non significa che l'app sia pericolosa: il codice è pubblico in questo repository. Per procedere tocca *Altri dettagli* e poi **Installa comunque**.
+
+<p align="center">
+  <img src="docs/installazione-play-protect.png" alt="Avviso di Google Play Protect con «Installa comunque» evidenziato" width="40%">
+</p>
+
+### Aggiornamenti
+
+L'app non cerca aggiornamenti da sola, perché non ha accesso a internet. Per controllare se è uscita una nuova versione apri il menu ⋮ → *Informazioni e donazioni* → **Cerca aggiornamenti**: si apre nel browser la pagina delle Releases. Il numero di versione e di build dell'app si legge nella stessa schermata («Versione 1.23 · build N»).
+
 ## Privacy
 
 - L'app **non richiede il permesso di accesso a internet**: non può inviare né ricevere dati.
 - Timer, sveglie, impostazioni, foto e font dei quadranti restano **solo sul telefono**.
 - Nessuna pubblicità, nessun tracciamento, nessun account.
+- «Cerca aggiornamenti» apre solo una pagina web nel browser: la connessione la fa il browser, non l'app.
 
 Permessi richiesti, e perché:
 
@@ -93,7 +141,7 @@ L'APK di debug si trova in `app/build/outputs/apk/debug/`.
 
 ### Build automatica su GitHub Actions
 
-A ogni push sul ramo `main` il workflow [`apk.yml`](.github/workflows/apk.yml) compila un APK **release firmato** e lo pubblica nella sezione Releases con il numero di build come versione. Se fai un fork, imposta questi *secrets* nel repository per ottenere l'APK firmato:
+A ogni push sul ramo `main` il workflow [`apk.yml`](.github/workflows/apk.yml) compila un APK **release firmato** e lo pubblica nella sezione Releases, con titolo nel formato «Timercent 1.23 (build 20)»: la versione è `versionName` in `app/build.gradle.kts`, il numero di build è il contatore delle esecuzioni del workflow. Le modifiche che toccano solo `README.md`, `LICENSE` o la cartella `docs/` non avviano la compilazione. Se fai un fork, imposta questi *secrets* nel repository per ottenere l'APK firmato:
 
 `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`
 
@@ -101,13 +149,14 @@ A ogni push sul ramo `main` il workflow [`apk.yml`](.github/workflows/apk.yml) c
 
 | File                                      | Contenuto                                                                   |
 | ----------------------------------------- | --------------------------------------------------------------------------- |
-| `MainActivity.kt`                         | schede Timer, Cronometro, Orologio e gestione degli intent                  |
+| `MainActivity.kt`                         | schede Timer, Cronometro (con giri), Orologio, scorrimento e intent        |
 | `Alarms.kt`, `AlarmsUi.kt`                | sveglie: pianificazione, suoneria, notifica «prossima sveglia», interfaccia |
 | `Notif.kt`                                | canali e notifiche                                                          |
 | `Widgets.kt`, `CfgBase.kt`                | widget digitale e analogico, schermate di configurazione                    |
 | `Dials.kt`, `DialBuilder.kt`, `AnaRes.kt` | quadranti analogici e costruttore                                           |
 | `ZonePick.kt`                             | scelta di città e fusi orari                                                |
 | `About.kt`                                | schermata Informazioni e donazioni                                          |
+| `docs/`                                   | screenshot usati in questo README                                           |
 
 Package: `it.timercent`. Linguaggio: Kotlin, solo API di Android: nessuna libreria esterna.
 
