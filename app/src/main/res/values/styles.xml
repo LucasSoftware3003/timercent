@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Cfg" parent="@android:style/Theme.DeviceDefault.NoActionBar">
+    <!-- Tema scuro fisso: non dipende dal tema del telefono (su alcuni telefoni DeviceDefault è chiaro e le scritte bianche sparirebbero) -->
+    <style name="AppTheme" parent="@android:style/Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/cfg_bg</item>
+        <item name="android:colorAccent">@color/w_acc</item>
     </style>
+    <style name="Cfg" parent="AppTheme"/>
 </resources>
