@@ -93,7 +93,7 @@ L'APK di debug si trova in `app/build/outputs/apk/debug/`.
 
 ### Build automatica su GitHub Actions
 
-A ogni push sul ramo `main` il workflow [`apk.yml`](.github/workflows/apk.yml) compila un APK **release firmato**. Se fai un fork, imposta questi *secrets* nel repository per ottenere l'APK firmato:
+A ogni push sul ramo `main` il workflow [`apk.yml`](.github/workflows/apk.yml) compila un APK **release firmato** e lo pubblica nella sezione Releases con il numero di build come versione. Se fai un fork, imposta questi *secrets* nel repository per ottenere l'APK firmato:
 
 `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`
 
