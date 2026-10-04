@@ -34,7 +34,7 @@ fun MainActivity.aboutDlg() {
     val ver = try {
         val pi = packageManager.getPackageInfo(packageName, 0)
         val code = if (Build.VERSION.SDK_INT >= 28) pi.longVersionCode else pi.versionCode.toLong()
-        "Versione " + pi.versionName + " (build " + code + ")"
+        "Versione " + pi.versionName + " · build " + code
     } catch (e: Exception) { "" }
 
     // Apre il link nel browser predefinito (non nell'app PayPal o in altre app che lo intercettano)
@@ -57,6 +57,7 @@ fun MainActivity.aboutDlg() {
     c.addView(tvw("Timer, cronometro con decimi e centesimi, orologio internazionale, sveglie e widget personalizzabili. " +
         "Nessuna pubblicità, nessun account: i dati restano sul telefono.", 15f, FG).apply { setPadding(0, dp(14), 0, 0) })
     c.addView(tvw("Creata da " + Info.AUTHOR, 15f, FG).apply { setPadding(0, dp(14), 0, 0) })
+    c.addView(tvw("Software libero con licenza GPLv3: puoi usarlo, studiarlo e modificarlo, ma ogni versione derivata deve restare libera e con il codice aperto.", 13f, MUTE).apply { setPadding(0, dp(8), 0, 0) })
 
     val pay = Info.payUrl()
     val mail = Info.PAYPAL_MAIL.trim()
@@ -70,7 +71,8 @@ fun MainActivity.aboutDlg() {
             Toast.makeText(this, "Copiato: $mail", Toast.LENGTH_SHORT).show()
         }, lp(-1, -2, 0f, 0).apply { topMargin = dp(8) })
     }
-    c.addView(btn("Codice sorgente e aggiornamenti", CARD, FG) { open(Info.SITE) }, lp(-1, -2, 0f, 0).apply { topMargin = dp(8); bottomMargin = dp(8) })
+    c.addView(btn("Codice sorgente e aggiornamenti", CARD, FG) { open(Info.SITE) }, lp(-1, -2, 0f, 0).apply { topMargin = dp(8) })
+    c.addView(btn("Licenza GPLv3", CARD, FG) { open(Info.SITE + "/blob/main/LICENSE") }, lp(-1, -2, 0f, 0).apply { topMargin = dp(8); bottomMargin = dp(8) })
 
     AlertDialog.Builder(this).setTitle("Informazioni").setView(ScrollView(this).apply { addView(c) })
         .setNegativeButton("Chiudi", null).show()

@@ -129,6 +129,49 @@ class MainActivity : Activity() {
         super.onPause(); h.removeCallbacks(ticker)
         try { unregisterReceiver(refresh) } catch (e: Exception) { }
     }
+    // Scorrimento orizzontale tra le schede, nell'ordine dei pulsanti in alto: Sveglie, Timer, Cronometro, Orologio.
+    // Non parte se il dito inizia su un cursore, un interruttore o un campo di testo (si muoverebbero con lo stesso gesto).
+    private val tabOrder = intArrayOf(3, 0, 1, 2)
+    private var swipeOk = false
+    private var downX = 0f
+    private var downY = 0f
+
+    private fun noSwipeAt(v: View, x: Int, y: Int): Boolean {
+        if (v.visibility != View.VISIBLE) return false
+        val r = android.graphics.Rect()
+        if (!v.getGlobalVisibleRect(r) || !r.contains(x, y)) return false
+        if (v is SeekBar || v is Switch || v is EditText || v is HorizontalScrollView) return true
+        if (v is android.view.ViewGroup) for (i in 0 until v.childCount) if (noSwipeAt(v.getChildAt(i), x, y)) return true
+        return false
+    }
+
+    override fun dispatchTouchEvent(ev: android.view.MotionEvent): Boolean {
+        when (ev.actionMasked) {
+            android.view.MotionEvent.ACTION_DOWN -> {
+                downX = ev.rawX; downY = ev.rawY
+                swipeOk = !noSwipeAt(window.decorView, ev.rawX.toInt(), ev.rawY.toInt())
+            }
+            android.view.MotionEvent.ACTION_POINTER_DOWN, android.view.MotionEvent.ACTION_CANCEL -> swipeOk = false
+            android.view.MotionEvent.ACTION_UP -> {
+                val dx = ev.rawX - downX
+                val dy = ev.rawY - downY
+                val next = tabOrder.indexOf(tab) + (if (dx < 0) 1 else -1)
+                val fast = ev.eventTime - ev.downTime < 700
+                if (swipeOk && fast && Math.abs(dx) > dp(90) && Math.abs(dx) > 2 * Math.abs(dy) && next in tabOrder.indices) {
+                    swipeOk = false
+                    // Il gesto non deve premere il pulsante sotto il dito: ai contenuti arriva un annullamento
+                    val c = android.view.MotionEvent.obtain(ev)
+                    c.action = android.view.MotionEvent.ACTION_CANCEL
+                    super.dispatchTouchEvent(c); c.recycle()
+                    tab = tabOrder[next]; render()
+                    return true
+                }
+                swipeOk = false
+            }
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
     fun optDlg() {
         val names = listOf("decimi", "centesimi", "millesimi")
         AlertDialog.Builder(this).setTitle("Opzioni")

@@ -43,7 +43,9 @@ class WC(
     var dCol: Int = Color.parseColor("#8A93A0"),
     var font: Int = 0,          // indice in Wg.FONT_FAM
     var dial: String = "p0",     // quadrante (vedi Dials)
-    var hand: Int = 0,          // schema colore lancette (Wg.HAND_LBL)
+    var hh: Int = 0,            // colore lancetta delle ore (indice in Wg.HAND_LBL): bianco
+    var hm: Int = 3,            // colore lancetta dei minuti: ambra
+    var tab: Int = 0,           // schermata aperta al tocco: 0 timer, 1 cronometro, 2 orologio, 3 sveglie
     var photo: String? = null,  // foto di sfondo (file in Dials.dir)
     var dim: Int = 0,           // scurimento della foto
     var zone: String = "",      // id del fuso (vuoto = ora locale)
@@ -58,7 +60,10 @@ object Wg {
     val DATE_FMT = arrayOf("EEEE d MMMM", "EEE d MMM", "d MMMM yyyy", "dd/MM/yyyy", "dd/MM/yy", "EEE dd/MM", "d MMM", "yyyy-MM-dd", "EEE d MMM yyyy", "EEEE d MMMM yyyy", "EEE dd/MM/yy")
     val PAL: IntArray = listOf("#EEF0F3", "#000000", "#8A93A0", "#FFB020", "#FF7043", "#F44336",
         "#EC407A", "#AB47BC", "#42A5F5", "#26C6DA", "#66BB6A", "#D4E157").map { Color.parseColor(it) }.toIntArray()
-    val HAND_LBL = listOf("Classico (bianca e ambra)", "Bianco", "Nero", "Grigio", "Ambra", "Arancio", "Rosso", "Rosa", "Viola", "Azzurro", "Turchese", "Verde", "Lime")
+    val HAND_LBL = listOf("Bianco", "Nero", "Grigio", "Ambra", "Arancio", "Rosso", "Rosa", "Viola", "Azzurro", "Turchese", "Verde", "Lime")
+    // Schermate che il tocco sul widget può aprire, nell'ordine dei pulsanti dell'app (valori letti da MainActivity)
+    val TAB_LBL = listOf("Sveglie", "Timer", "Cronometro", "Orologio")
+    val TAB_VAL = intArrayOf(3, 0, 1, 2)
     // Colori per sfondo, bordo, numeri e tacche del quadrante
     val DPAL: IntArray = listOf("#000000", "#14181F", "#1B2430", "#2B3A55", "#37474F", "#4E342E", "#1B5E20", "#880E4F",
         "#F5F1E6", "#EEF0F3", "#FFFFFF", "#FFB020", "#FF7043", "#42A5F5", "#26C6DA", "#66BB6A").map { Color.parseColor(it) }.toIntArray()
@@ -67,12 +72,16 @@ object Wg {
     // Un layout per carattere: nei widget il carattere si sceglie solo nell'XML. Il numero 0 è il layout originale.
     private val DIG = intArrayOf(R.layout.widget_digital, R.layout.widget_digital_f1, R.layout.widget_digital_f2, R.layout.widget_digital_f3,
         R.layout.widget_digital_f4, R.layout.widget_digital_f5, R.layout.widget_digital_f6, R.layout.widget_digital_f7)
-    private val KEYS = listOf("bg", "ts", "tc", "sp", "st", "do", "db", "df", "ds", "dc", "fn", "dl", "hc", "ph", "pd", "zn", "zl", "cr")
+    private val KEYS = listOf("bg", "ts", "tc", "sp", "st", "do", "db", "df", "ds", "dc", "fn", "dl", "hc", "hh", "hm", "tb", "ph", "pd", "zn", "zl", "cr")
 
     private fun p(c: Context) = c.getSharedPreferences("ct", 0)
 
     fun load(c: Context, id: Int, digital: Boolean): WC {
         val s = p(c); val d = WC()
+        // Widget creati con la versione precedente: un solo colore per entrambe le lancette (0 = bianca e ambra)
+        val old = s.getInt("hc$id", 0)
+        val defH = if (old == 0) d.hh else old - 1
+        val defM = if (old == 0) d.hm else old - 1
         return WC(
             bg = s.getInt("bg$id", 0).coerceIn(0, 2),
             tSize = s.getInt("ts$id", d.tSize),
@@ -86,7 +95,9 @@ object Wg {
             dCol = s.getInt("dc$id", d.dCol),
             font = s.getInt("fn$id", 0).coerceIn(0, FONT_FAM.size - 1),
             dial = s.getString("dl$id", "p0") ?: "p0",
-            hand = s.getInt("hc$id", 0).coerceIn(0, HAND_LBL.size - 1),
+            hh = s.getInt("hh$id", defH).coerceIn(0, HAND_LBL.size - 1),
+            hm = s.getInt("hm$id", defM).coerceIn(0, HAND_LBL.size - 1),
+            tab = s.getInt("tb$id", 0).let { if (it in TAB_VAL) it else 0 },
             photo = s.getString("ph$id", null),
             dim = s.getInt("pd$id", 0).coerceIn(0, 3),
             zone = s.getString("zn$id", "") ?: "",
@@ -100,7 +111,7 @@ object Wg {
             .putInt("bg$id", k.bg).putInt("ts$id", k.tSize).putInt("tc$id", k.tCol)
             .putInt("sp$id", k.sep).putBoolean("st$id", k.stack).putBoolean("do$id", k.dOn)
             .putBoolean("db$id", k.dBottom).putInt("df$id", k.dFmt).putInt("ds$id", k.dSize)
-            .putInt("dc$id", k.dCol).putInt("fn$id", k.font).putString("dl$id", k.dial).putInt("hc$id", k.hand).putString("ph$id", k.photo).putInt("pd$id", k.dim).putString("zn$id", k.zone).putBoolean("zl$id", k.zlbl).putBoolean("cr$id", k.crop).apply()
+            .putInt("dc$id", k.dCol).putInt("fn$id", k.font).putString("dl$id", k.dial).putInt("hh$id", k.hh).putInt("hm$id", k.hm).putInt("tb$id", k.tab).putString("ph$id", k.photo).putInt("pd$id", k.dim).putString("zn$id", k.zone).putBoolean("zl$id", k.zlbl).putBoolean("cr$id", k.crop).apply()
     }
 
     fun forget(c: Context, ids: IntArray) {
@@ -136,7 +147,7 @@ object Wg {
 
     fun refresh(c: Context, id: Int, digital: Boolean) {
         val k = load(c, id, digital)
-        val v = RemoteViews(c.packageName, if (digital) DIG[k.font] else AnaRes.LAYOUTS[k.font * AnaRes.HANDS + k.hand])
+        val v = RemoteViews(c.packageName, if (digital) DIG[k.font] else AnaRes.LAYOUTS[k.font])
         v.setInt(R.id.bg, "setImageAlpha", ALPHA[k.bg])
         v.setInt(R.id.bg_crop, "setImageAlpha", ALPHA[k.bg])
         v.setViewVisibility(R.id.bg, View.VISIBLE)
@@ -179,7 +190,18 @@ object Wg {
             try { v.setImageViewBitmap(R.id.dial_img, Dials.bitmap(c, k.dial)) } catch (e: Exception) { }
             // Il quadrante è un quadrato centrato: si restringe l'area del contenuto alla sua misura,
             // così la data resta attaccata al quadrante invece che al bordo del widget.
-            if (analogTzOk()) v.setString(R.id.analog, "setTimeZone", if (useTz) k.zone else java.util.TimeZone.getDefault().id)
+            // Mostra solo la lancetta delle ore e quella dei minuti nei colori scelti, nascondi le altre
+            for (i in 0 until AnaRes.COLORS) {
+                v.setViewVisibility(AnaRes.HOUR_ID[i], if (i == k.hh) View.VISIBLE else View.GONE)
+                v.setViewVisibility(AnaRes.MIN_ID[i], if (i == k.hm) View.VISIBLE else View.GONE)
+            }
+            if (analogTzOk()) {
+                val tz = if (useTz) k.zone else java.util.TimeZone.getDefault().id
+                for (i in 0 until AnaRes.COLORS) {
+                    v.setString(AnaRes.HOUR_ID[i], "setTimeZone", tz)
+                    v.setString(AnaRes.MIN_ID[i], "setTimeZone", tz)
+                }
+            }
             val (wd, hd) = sizeDp(c, id)
             if (wd > 0 && hd > 0) {
                 val den = c.resources.displayMetrics.density
@@ -189,7 +211,7 @@ object Wg {
                 v.setViewPadding(R.id.content, (4 * den).toInt(), (pv * den).toInt(), (4 * den).toInt(), (pv * den).toInt())
             }
         }
-        v.setOnClickPendingIntent(R.id.root, Notif.openTimer(c))
+        v.setOnClickPendingIntent(R.id.root, Notif.openTab(c, id, k.tab))
         AppWidgetManager.getInstance(c).updateAppWidget(id, v)
     }
 }
@@ -223,7 +245,7 @@ class WidgetConfig : CfgBase() {
 
     private fun infoPh() { photoInfo.text = if (k.photo != null) "Foto di sfondo: impostata" else "Foto di sfondo: nessuna" }
 
-    private fun updPrev() { dialPrev.setImageBitmap(Dials.preview(this, Dials.find(this, k.dial), k.hand)) }
+    private fun updPrev() { dialPrev.setImageBitmap(Dials.preview(this, Dials.find(this, k.dial), k.hh, k.hm)) }
 
     private fun fillDials() {
         dialList = Dials.all(this)
@@ -320,12 +342,13 @@ class WidgetConfig : CfgBase() {
             }
             box.addView(dialSpin)
             fillDials()
-            spin(box, "Colore delle lancette", Wg.HAND_LBL, k.hand) { k.hand = it; updPrev() }
+            spin(box, "Colore della lancetta delle ore", Wg.HAND_LBL, k.hh) { k.hh = it; updPrev() }
+            spin(box, "Colore della lancetta dei minuti", Wg.HAND_LBL, k.hm) { k.hm = it; updPrev() }
             box.addView(dialPrev, LinearLayout.LayoutParams(dp(170), dp(170)).apply { topMargin = dp(12); gravity = android.view.Gravity.CENTER_HORIZONTAL })
             val nb = Button(this)
             nb.text = "Crea o modifica quadrante…"; nb.isAllCaps = false
             nb.setOnClickListener {
-                startActivityForResult(Intent(this, DialBuilder::class.java).putExtra("dial", k.dial).putExtra("hand", k.hand), 5)
+                startActivityForResult(Intent(this, DialBuilder::class.java).putExtra("dial", k.dial).putExtra("hh", k.hh).putExtra("hm", k.hm), 5)
             }
             box.addView(nb)
         }
@@ -340,6 +363,9 @@ class WidgetConfig : CfgBase() {
             }
             sepSpin.isEnabled = !k.stack; sepSpin.alpha = if (k.stack) 0.4f else 1f
         }
+
+        title(box, "Al tocco del widget")
+        spin(box, "Schermata che si apre", Wg.TAB_LBL, Wg.TAB_VAL.indexOf(k.tab).coerceAtLeast(0)) { k.tab = Wg.TAB_VAL[it] }
 
         title(box, "Data")
         val dBox = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }

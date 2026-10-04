@@ -21,9 +21,10 @@ class DialBuilder : CfgBase() {
     private lateinit var nameEt: EditText
     private lateinit var imgInfo: TextView
     private lateinit var fontInfo: TextView
-    private var hand = 0
+    private var hh = 0
+    private var hm = 3
 
-    private fun upd() { prev.setImageBitmap(Dials.preview(this, s, hand)) }
+    private fun upd() { prev.setImageBitmap(Dials.preview(this, s, hh, hm)) }
 
     private fun info() {
         imgInfo.text = if (s.img != null) "Immagine di sfondo: impostata" else "Immagine di sfondo: nessuna"
@@ -67,7 +68,8 @@ class DialBuilder : CfgBase() {
         orig = Dials.find(this, intent.getStringExtra("dial") ?: "p0")
         s = orig.copy()
         if (orig.id.startsWith("p")) s.name = if (has) orig.name + " (mio)" else "Mio quadrante"
-        hand = intent.getIntExtra("hand", 0).coerceIn(0, Wg.HAND_LBL.size - 1)
+        hh = intent.getIntExtra("hh", 0).coerceIn(0, Wg.HAND_LBL.size - 1)
+        hm = intent.getIntExtra("hm", 3).coerceIn(0, Wg.HAND_LBL.size - 1)
 
         val root = LinearLayout(this)
         root.orientation = LinearLayout.VERTICAL
@@ -117,7 +119,8 @@ class DialBuilder : CfgBase() {
         colors(box, "Colore delle tacche", s.tickCol, Wg.DPAL) { s.tickCol = it; upd() }
 
         title(box, "Anteprima")
-        spin(box, "Colore delle lancette (solo per vedere l'effetto)", Wg.HAND_LBL, hand) { hand = it; upd() }
+        spin(box, "Lancetta delle ore (solo per vedere l'effetto)", Wg.HAND_LBL, hh) { hh = it; upd() }
+        spin(box, "Lancetta dei minuti (solo per vedere l'effetto)", Wg.HAND_LBL, hm) { hm = it; upd() }
 
         title(box, "Salvataggio")
         box.addView(mkBtn("Salva") { save(false) })

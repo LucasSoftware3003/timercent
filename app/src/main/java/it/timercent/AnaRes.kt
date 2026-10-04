@@ -1,18 +1,16 @@
 package it.timercent
 
-// File generato: lancette colorate e layout dell'analogico (carattere x colore lancette)
+// Risorse dell'analogico: 12 colori per lancetta, un layout per carattere.
+// Ogni layout contiene le lancette di tutti i colori (12 per le ore, 12 per i minuti):
+// il codice mostra solo la coppia scelta e nasconde le altre.
 object AnaRes {
-    const val HANDS = 13
-    val HOUR = intArrayOf(R.drawable.clock_hour_h0, R.drawable.clock_hour_h1, R.drawable.clock_hour_h2, R.drawable.clock_hour_h3, R.drawable.clock_hour_h4, R.drawable.clock_hour_h5, R.drawable.clock_hour_h6, R.drawable.clock_hour_h7, R.drawable.clock_hour_h8, R.drawable.clock_hour_h9, R.drawable.clock_hour_h10, R.drawable.clock_hour_h11, R.drawable.clock_hour_h12)
-    val MIN = intArrayOf(R.drawable.clock_minute_h0, R.drawable.clock_minute_h1, R.drawable.clock_minute_h2, R.drawable.clock_minute_h3, R.drawable.clock_minute_h4, R.drawable.clock_minute_h5, R.drawable.clock_minute_h6, R.drawable.clock_minute_h7, R.drawable.clock_minute_h8, R.drawable.clock_minute_h9, R.drawable.clock_minute_h10, R.drawable.clock_minute_h11, R.drawable.clock_minute_h12)
+    const val COLORS = 12
+    val HOUR = intArrayOf(R.drawable.clock_hour_h1, R.drawable.clock_hour_h2, R.drawable.clock_hour_h3, R.drawable.clock_hour_h4, R.drawable.clock_hour_h5, R.drawable.clock_hour_h6, R.drawable.clock_hour_h7, R.drawable.clock_hour_h8, R.drawable.clock_hour_h9, R.drawable.clock_hour_h10, R.drawable.clock_hour_h11, R.drawable.clock_hour_h12)
+    val MIN = intArrayOf(R.drawable.clock_minute_h1, R.drawable.clock_minute_h2, R.drawable.clock_minute_h3, R.drawable.clock_minute_h4, R.drawable.clock_minute_h5, R.drawable.clock_minute_h6, R.drawable.clock_minute_h7, R.drawable.clock_minute_h8, R.drawable.clock_minute_h9, R.drawable.clock_minute_h10, R.drawable.clock_minute_h11, R.drawable.clock_minute_h12)
+    val HOUR_ID = intArrayOf(R.id.ah1, R.id.ah2, R.id.ah3, R.id.ah4, R.id.ah5, R.id.ah6, R.id.ah7, R.id.ah8, R.id.ah9, R.id.ah10, R.id.ah11, R.id.ah12)
+    val MIN_ID = intArrayOf(R.id.am1, R.id.am2, R.id.am3, R.id.am4, R.id.am5, R.id.am6, R.id.am7, R.id.am8, R.id.am9, R.id.am10, R.id.am11, R.id.am12)
     val LAYOUTS = intArrayOf(
-        R.layout.widget_analog_f0_h0, R.layout.widget_analog_f0_h1, R.layout.widget_analog_f0_h2, R.layout.widget_analog_f0_h3, R.layout.widget_analog_f0_h4, R.layout.widget_analog_f0_h5, R.layout.widget_analog_f0_h6, R.layout.widget_analog_f0_h7, R.layout.widget_analog_f0_h8, R.layout.widget_analog_f0_h9, R.layout.widget_analog_f0_h10, R.layout.widget_analog_f0_h11, R.layout.widget_analog_f0_h12,
-        R.layout.widget_analog_f1_h0, R.layout.widget_analog_f1_h1, R.layout.widget_analog_f1_h2, R.layout.widget_analog_f1_h3, R.layout.widget_analog_f1_h4, R.layout.widget_analog_f1_h5, R.layout.widget_analog_f1_h6, R.layout.widget_analog_f1_h7, R.layout.widget_analog_f1_h8, R.layout.widget_analog_f1_h9, R.layout.widget_analog_f1_h10, R.layout.widget_analog_f1_h11, R.layout.widget_analog_f1_h12,
-        R.layout.widget_analog_f2_h0, R.layout.widget_analog_f2_h1, R.layout.widget_analog_f2_h2, R.layout.widget_analog_f2_h3, R.layout.widget_analog_f2_h4, R.layout.widget_analog_f2_h5, R.layout.widget_analog_f2_h6, R.layout.widget_analog_f2_h7, R.layout.widget_analog_f2_h8, R.layout.widget_analog_f2_h9, R.layout.widget_analog_f2_h10, R.layout.widget_analog_f2_h11, R.layout.widget_analog_f2_h12,
-        R.layout.widget_analog_f3_h0, R.layout.widget_analog_f3_h1, R.layout.widget_analog_f3_h2, R.layout.widget_analog_f3_h3, R.layout.widget_analog_f3_h4, R.layout.widget_analog_f3_h5, R.layout.widget_analog_f3_h6, R.layout.widget_analog_f3_h7, R.layout.widget_analog_f3_h8, R.layout.widget_analog_f3_h9, R.layout.widget_analog_f3_h10, R.layout.widget_analog_f3_h11, R.layout.widget_analog_f3_h12,
-        R.layout.widget_analog_f4_h0, R.layout.widget_analog_f4_h1, R.layout.widget_analog_f4_h2, R.layout.widget_analog_f4_h3, R.layout.widget_analog_f4_h4, R.layout.widget_analog_f4_h5, R.layout.widget_analog_f4_h6, R.layout.widget_analog_f4_h7, R.layout.widget_analog_f4_h8, R.layout.widget_analog_f4_h9, R.layout.widget_analog_f4_h10, R.layout.widget_analog_f4_h11, R.layout.widget_analog_f4_h12,
-        R.layout.widget_analog_f5_h0, R.layout.widget_analog_f5_h1, R.layout.widget_analog_f5_h2, R.layout.widget_analog_f5_h3, R.layout.widget_analog_f5_h4, R.layout.widget_analog_f5_h5, R.layout.widget_analog_f5_h6, R.layout.widget_analog_f5_h7, R.layout.widget_analog_f5_h8, R.layout.widget_analog_f5_h9, R.layout.widget_analog_f5_h10, R.layout.widget_analog_f5_h11, R.layout.widget_analog_f5_h12,
-        R.layout.widget_analog_f6_h0, R.layout.widget_analog_f6_h1, R.layout.widget_analog_f6_h2, R.layout.widget_analog_f6_h3, R.layout.widget_analog_f6_h4, R.layout.widget_analog_f6_h5, R.layout.widget_analog_f6_h6, R.layout.widget_analog_f6_h7, R.layout.widget_analog_f6_h8, R.layout.widget_analog_f6_h9, R.layout.widget_analog_f6_h10, R.layout.widget_analog_f6_h11, R.layout.widget_analog_f6_h12,
-        R.layout.widget_analog_f7_h0, R.layout.widget_analog_f7_h1, R.layout.widget_analog_f7_h2, R.layout.widget_analog_f7_h3, R.layout.widget_analog_f7_h4, R.layout.widget_analog_f7_h5, R.layout.widget_analog_f7_h6, R.layout.widget_analog_f7_h7, R.layout.widget_analog_f7_h8, R.layout.widget_analog_f7_h9, R.layout.widget_analog_f7_h10, R.layout.widget_analog_f7_h11, R.layout.widget_analog_f7_h12
+        R.layout.widget_analog_f0, R.layout.widget_analog_f1, R.layout.widget_analog_f2, R.layout.widget_analog_f3,
+        R.layout.widget_analog_f4, R.layout.widget_analog_f5, R.layout.widget_analog_f6, R.layout.widget_analog_f7
     )
 }

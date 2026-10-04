@@ -4,6 +4,11 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    # Solo documentazione: nessuna compilazione e nessuna nuova release
+    paths-ignore:
+      - "README.md"
+      - "LICENSE"
+      - "docs/**"
 
 jobs:
   build:
@@ -48,4 +53,9 @@ jobs:
       - name: Publish release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create "v${{ github.run_number }}" app/build/outputs/apk/release/*.apk --title "Timercent v${{ github.run_number }}" --notes "Build automatica"
+        run: |
+          # Numero di versione leggibile: scritto a mano in app/build.gradle.kts (versionName)
+          VER=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)
+          gh release create "v${{ github.run_number }}" app/build/outputs/apk/release/*.apk \
+            --title "Timercent $VER (build ${{ github.run_number }})" \
+            --notes "Versione $VER, build ${{ github.run_number }}. Build automatica"

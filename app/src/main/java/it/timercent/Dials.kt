@@ -233,12 +233,11 @@ object Dials {
     }
 
     // Anteprima: quadrante + lancette (le stesse risorse del widget) alle 10:10
-    fun preview(c: Context, s: DialSpec, hand: Int): Bitmap {
+    fun preview(c: Context, s: DialSpec, hourCol: Int, minCol: Int): Bitmap {
         val b = render(c, s)
         val cv = Canvas(b)
         val sz = cv.width
-        val h = hand.coerceIn(0, AnaRes.HANDS - 1)
-        val list = listOf(Pair(AnaRes.HOUR[h], 305f), Pair(AnaRes.MIN[h], 60f))
+        val list = listOf(Pair(AnaRes.HOUR[hourCol.coerceIn(0, AnaRes.COLORS - 1)], 305f), Pair(AnaRes.MIN[minCol.coerceIn(0, AnaRes.COLORS - 1)], 60f))
         for (p in list) {
             val d = c.getDrawable(p.first) ?: continue
             cv.save()
