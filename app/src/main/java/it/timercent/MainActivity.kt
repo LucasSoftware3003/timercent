@@ -47,6 +47,8 @@ class MainActivity : Activity() {
     var swT0 = 0L
     var swRun = false
     var swTv: TextView? = null
+    var swLapTv: TextView? = null            // tempo del giro in corso (aggiornato dal ticker)
+    val laps = ArrayList<Long>()             // tempo totale del cronometro a ogni pressione di «Giro»
     val ticker = object : Runnable { override fun run() { upd(); h.postDelayed(this, 30) } }
 
     fun dp(x: Int) = (x * resources.displayMetrics.density).toInt()
@@ -186,7 +188,7 @@ class MainActivity : Activity() {
     }
 
     fun render() {
-        body.removeAllViews(); tv.clear(); fin.clear(); swTv = null; wRows.clear()
+        body.removeAllViews(); tv.clear(); fin.clear(); swTv = null; swLapTv = null; wRows.clear()
         (b0.background as GradientDrawable).setColor(if (tab == 0) CARD else BG)
         (b1.background as GradientDrawable).setColor(if (tab == 1) CARD else BG)
         (b2.background as GradientDrawable).setColor(if (tab == 2) CARD else BG)
@@ -283,12 +285,43 @@ class MainActivity : Activity() {
         swTv = d
         body.addView(d, lp(-1, -2).apply { topMargin = dp(40); bottomMargin = dp(32) })
         val r = LinearLayout(this)
-        r.addView(btn("Azzera", CARD, FG) { swAcc = 0; swRun = false; render() }, lp(0, -2, 1f, 4))
+        // In corsa il pulsante di sinistra segna un giro; in pausa azzera cronometro e giri
+        if (swRun) r.addView(btn("Giro", CARD, FG) { laps.add(swNow()); render() }, lp(0, -2, 1f, 4))
+        else r.addView(btn("Azzera", CARD, FG) { swAcc = 0; swRun = false; laps.clear(); render() }, lp(0, -2, 1f, 4))
         r.addView(btn(if (swRun) "Pausa" else "Avvia", if (swRun) ACC else GO, DARK) {
             if (swRun) { swAcc = swNow(); swRun = false } else { swT0 = SystemClock.elapsedRealtime(); swRun = true }
             render()
         }, lp(0, -2, 1f, 4))
         body.addView(r)
+        if (laps.isNotEmpty()) lapList()
+    }
+
+    // Elenco dei giri, dal più recente: tempo del giro e tempo totale. Il migliore è verde, il peggiore rosso (da 2 giri in su).
+    private fun lapList() {
+        val n = laps.size
+        val times = LongArray(n) { laps[it] - (if (it == 0) 0L else laps[it - 1]) }
+        val best = if (n >= 2) times.withIndex().minByOrNull { it.value }?.index else null
+        val worst = if (n >= 2) times.withIndex().maxByOrNull { it.value }?.index else null
+        val box = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(8), dp(16), dp(8))
+            background = GradientDrawable().apply { setColor(CARD); cornerRadius = dp(20).toFloat() }
+        }
+        fun row(label: String, lap: String, total: String, col: Int): TextView {
+            val line = LinearLayout(this).apply { setPadding(0, dp(8), 0, dp(8)) }
+            val lapTv = tvw(lap, 18f, col).apply { gravity = Gravity.END; fontFeatureSettings = "tnum" }
+            line.addView(tvw(label, 15f, MUTE), lp(0, -2, 0.8f))
+            line.addView(lapTv, lp(0, -2, 1.4f))
+            line.addView(tvw(total, 13f, MUTE).apply { gravity = Gravity.END; fontFeatureSettings = "tnum" }, lp(0, -2, 1.4f))
+            box.addView(line)
+            return lapTv
+        }
+        // Giro in corso (solo mentre il cronometro corre)
+        if (swRun) swLapTv = row("Giro " + (n + 1), fmt(swNow() - laps[n - 1]), "", FG)
+        for (i in n - 1 downTo 0) {
+            val col = if (i == best) GO else if (i == worst) 0xFFF87171.toInt() else FG
+            row("Giro " + (i + 1), fmt(times[i]), fmt(laps[i]), col)
+        }
+        body.addView(box, lp(-1, -2).apply { topMargin = dp(20) })
     }
 
     fun upd() {
@@ -298,7 +331,10 @@ class MainActivity : Activity() {
                 tv[t.id]?.text = fmt(rem(t))
                 if (t.end in 1..now && t.id !in fin) { Notif.fire(this, t); render(); return }
             }
-        } else if (tab == 1) swTv?.text = fmt(swNow())
+        } else if (tab == 1) {
+            swTv?.text = fmt(swNow())
+            swLapTv?.text = fmt(swNow() - (laps.lastOrNull() ?: 0L))
+        }
         else if (tab == 2) { val sec = System.currentTimeMillis() / 1000; if (sec != wLast) { wLast = sec; updWorld() } }
     }
 

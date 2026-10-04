@@ -18,6 +18,7 @@ object Info {
     // Indirizzo PayPal mostrato e copiabile: chi vuole può inviare dall'app PayPal. Vuoto = non mostrarlo.
     const val PAYPAL_MAIL = "LucasSoftware3003@gmail.com"
     const val SITE = "https://github.com/LucasSoftware3003/timercent"
+    const val RELEASES = SITE + "/releases"   // pagina con tutte le versioni scaricabili
 
     fun payUrl(): String {
         val p = PAYPAL_ME.trim()
@@ -71,7 +72,8 @@ fun MainActivity.aboutDlg() {
             Toast.makeText(this, "Copiato: $mail", Toast.LENGTH_SHORT).show()
         }, lp(-1, -2, 0f, 0).apply { topMargin = dp(8) })
     }
-    c.addView(btn("Codice sorgente e aggiornamenti", CARD, FG) { open(Info.SITE) }, lp(-1, -2, 0f, 0).apply { topMargin = dp(8) })
+    c.addView(btn("Cerca aggiornamenti", CARD, FG) { open(Info.RELEASES) }, lp(-1, -2, 0f, 0).apply { topMargin = dp(8) })
+    c.addView(btn("Codice sorgente", CARD, FG) { open(Info.SITE) }, lp(-1, -2, 0f, 0).apply { topMargin = dp(8) })
     c.addView(btn("Licenza GPLv3", CARD, FG) { open(Info.SITE + "/blob/main/LICENSE") }, lp(-1, -2, 0f, 0).apply { topMargin = dp(8); bottomMargin = dp(8) })
 
     AlertDialog.Builder(this).setTitle("Informazioni").setView(ScrollView(this).apply { addView(c) })
