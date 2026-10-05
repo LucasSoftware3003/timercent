@@ -260,9 +260,11 @@ class WakeService : Service() {
                 "Posticipa ($snz min)", snzAct).build())
         val n = Notification.Builder(this, Notif.WAKE).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle(label.ifEmpty { "Sveglia" }).setContentText(Alarms.hm(this, System.currentTimeMillis()))
-            .setCategory(Notification.CATEGORY_ALARM).setOngoing(true).setOnlyAlertOnce(true)
+            .setCategory(Notification.CATEGORY_ALARM).setOngoing(false).setOnlyAlertOnce(true)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setFullScreenIntent(ringPi(label), true).setContentIntent(ringPi(label))
+            // Orologi senza azioni (es. Amazfit/Zepp): "Elimina" sull'orologio cancella la notifica, quindi ferma la sveglia
+            .setDeleteIntent(stopAct)
             .addAction(0, "Posticipa ($snz min)", snzAct)
             .addAction(0, "Ferma", stopAct)
             .extend(wear).build()
