@@ -237,6 +237,29 @@ class WakeService : Service() {
     private fun act(a: String, rc: Int): PendingIntent = PendingIntent.getService(this, rc,
         Intent(this, WakeService::class.java).setAction(a), PendingIntent.FLAG_IMMUTABLE)
 
+    // Sessione multimediale: l'orologio (es. Amazfit/Zepp) mostra i controlli musica del telefono;
+    // "pausa"/"stop" fermano la sveglia, "traccia successiva" la posticipa
+    private var ms: android.media.session.MediaSession? = null
+    private fun session(label: String): android.media.session.MediaSession {
+        ms?.let { return it }
+        val s = android.media.session.MediaSession(this, "Timercent sveglia")
+        s.setCallback(object : android.media.session.MediaSession.Callback() {
+            override fun onPause() { end(false) }
+            override fun onStop() { end(false) }
+            override fun onSkipToNext() { end(true) }
+        }, h)
+        s.setPlaybackState(android.media.session.PlaybackState.Builder()
+            .setActions(android.media.session.PlaybackState.ACTION_PAUSE or android.media.session.PlaybackState.ACTION_PLAY_PAUSE
+                or android.media.session.PlaybackState.ACTION_STOP or android.media.session.PlaybackState.ACTION_SKIP_TO_NEXT)
+            .setState(android.media.session.PlaybackState.STATE_PLAYING, 0L, 1f).build())
+        s.setMetadata(android.media.MediaMetadata.Builder()
+            .putString(android.media.MediaMetadata.METADATA_KEY_TITLE, label.ifEmpty { "Sveglia" })
+            .putString(android.media.MediaMetadata.METADATA_KEY_ARTIST, "Timercent").build())
+        s.isActive = true
+        ms = s
+        return s
+    }
+
     override fun onStartCommand(i: Intent?, f: Int, sid: Int): Int {
         when (i?.action) {
             "STOP" -> { end(false); return START_NOT_STICKY }
@@ -247,26 +270,23 @@ class WakeService : Service() {
         val a = i?.getStringExtra("id")?.let { Alarms.find(this, it) }
         val label = a?.label ?: ""
         val snz = Alarms.p(this).getInt("a_snz", 10)
-        val snzAct = act("SNOOZE", 2)
-        val stopAct = act("STOP", 3)
-        // Stesse due azioni anche per lo smartwatch: gli orologi mostrano quelle dichiarate come "wearable"
-        // (con le sole azioni normali alcuni mostrano soltanto "Elimina", che non ferma la sveglia)
-        val wear = Notification.WearableExtender()
-            .addAction(Notification.Action.Builder(
-                android.graphics.drawable.Icon.createWithResource(this, android.R.drawable.ic_menu_close_clear_cancel),
-                "Ferma", stopAct).build())
-            .addAction(Notification.Action.Builder(
-                android.graphics.drawable.Icon.createWithResource(this, android.R.drawable.ic_lock_idle_alarm),
-                "Posticipa ($snz min)", snzAct).build())
+        val snzA = Notification.Action.Builder(
+            android.graphics.drawable.Icon.createWithResource(this, android.R.drawable.ic_lock_idle_alarm),
+            "Posticipa ($snz min)", act("SNOOZE", 2)).build()
+        val stopA = Notification.Action.Builder(
+            android.graphics.drawable.Icon.createWithResource(this, android.R.drawable.ic_menu_close_clear_cancel),
+            "Ferma", act("STOP", 3)).build()
+        // Stesse due azioni anche per gli orologi Wear OS (quelli con app propria, come Zepp, le ignorano)
+        val wear = Notification.WearableExtender().addAction(stopA).addAction(snzA)
         val n = Notification.Builder(this, Notif.WAKE).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle(label.ifEmpty { "Sveglia" }).setContentText(Alarms.hm(this, System.currentTimeMillis()))
-            .setCategory(Notification.CATEGORY_ALARM).setOngoing(false).setOnlyAlertOnce(true)
+            .setCategory(Notification.CATEGORY_ALARM).setOngoing(true).setOnlyAlertOnce(true)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setFullScreenIntent(ringPi(label), true).setContentIntent(ringPi(label))
-            // Orologi senza azioni (es. Amazfit/Zepp): "Elimina" sull'orologio cancella la notifica, quindi ferma la sveglia
-            .setDeleteIntent(stopAct)
-            .addAction(0, "Posticipa ($snz min)", snzAct)
-            .addAction(0, "Ferma", stopAct)
+            .addAction(snzA)
+            .addAction(stopA)
+            // Notifica "multimediale" legata alla sessione: i controlli musica dell'orologio agiscono sulla sveglia
+            .setStyle(Notification.MediaStyle().setMediaSession(session(label).sessionToken).setShowActionsInCompactView(0, 1))
             .extend(wear).build()
         if (Build.VERSION.SDK_INT >= 29) startForeground(78, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
         else startForeground(78, n)
@@ -342,6 +362,7 @@ class WakeService : Service() {
     override fun onDestroy() {
         running = false
         mp?.release(); mp = null
+        ms?.let { try { it.isActive = false; it.release() } catch (e: Exception) { } }; ms = null
         try { getSystemService(Vibrator::class.java).cancel() } catch (e: Exception) { }
         h.removeCallbacksAndMessages(null)
         super.onDestroy()
