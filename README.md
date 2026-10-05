@@ -7,6 +7,12 @@
 Timer, cronometro, orologio internazionale e sveglie per Android, con decimi e centesimi di secondo e widget completamente personalizzabili.
 Senza pubblicità, senza account, senza connessione a internet.
 
+<p align="center">
+  <strong><a href="https://github.com/LucasSoftware3003/timercent/releases/latest/download/timercent-release.apk">⬇ Scarica l'APK</a></strong>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/LucasSoftware3003/timercent/releases/latest">Ultima versione e note</a>
+</p>
+
 ---
 
 ## Screenshot
