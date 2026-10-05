@@ -247,13 +247,25 @@ class WakeService : Service() {
         val a = i?.getStringExtra("id")?.let { Alarms.find(this, it) }
         val label = a?.label ?: ""
         val snz = Alarms.p(this).getInt("a_snz", 10)
+        val snzAct = act("SNOOZE", 2)
+        val stopAct = act("STOP", 3)
+        // Stesse due azioni anche per lo smartwatch: gli orologi mostrano quelle dichiarate come "wearable"
+        // (con le sole azioni normali alcuni mostrano soltanto "Elimina", che non ferma la sveglia)
+        val wear = Notification.WearableExtender()
+            .addAction(Notification.Action.Builder(
+                android.graphics.drawable.Icon.createWithResource(this, android.R.drawable.ic_menu_close_clear_cancel),
+                "Ferma", stopAct).build())
+            .addAction(Notification.Action.Builder(
+                android.graphics.drawable.Icon.createWithResource(this, android.R.drawable.ic_lock_idle_alarm),
+                "Posticipa ($snz min)", snzAct).build())
         val n = Notification.Builder(this, Notif.WAKE).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle(label.ifEmpty { "Sveglia" }).setContentText(Alarms.hm(this, System.currentTimeMillis()))
             .setCategory(Notification.CATEGORY_ALARM).setOngoing(true).setOnlyAlertOnce(true)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setFullScreenIntent(ringPi(label), true).setContentIntent(ringPi(label))
-            .addAction(0, "Posticipa ($snz min)", act("SNOOZE", 2))
-            .addAction(0, "Ferma", act("STOP", 3)).build()
+            .addAction(0, "Posticipa ($snz min)", snzAct)
+            .addAction(0, "Ferma", stopAct)
+            .extend(wear).build()
         if (Build.VERSION.SDK_INT >= 29) startForeground(78, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
         else startForeground(78, n)
         if (a == null) { stopSelf(); return START_NOT_STICKY }
