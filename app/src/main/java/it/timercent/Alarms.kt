@@ -350,9 +350,26 @@ class WakeService : Service() {
         }
     }
 
+    // Chiude la sessione multimediale dicendo prima all'orologio che la riproduzione è finita (STATE_STOPPED):
+    // se la sessione sparisce mentre risulta ancora "in riproduzione", Zepp resta bloccato sulla schermata musica
+    private fun closeSession() {
+        val s = ms ?: return
+        ms = null
+        try {
+            s.setPlaybackState(android.media.session.PlaybackState.Builder().setActions(0L)
+                .setState(android.media.session.PlaybackState.STATE_STOPPED, 0L, 0f).build())
+            s.setMetadata(null)
+        } catch (e: Exception) { }
+        // piccola attesa perché l'aggiornamento arrivi all'orologio prima di rilasciare la sessione
+        Handler(Looper.getMainLooper()).postDelayed({
+            try { s.isActive = false; s.release() } catch (e: Exception) { }
+        }, 1500)
+    }
+
     private fun end(snooze: Boolean, missed: Boolean = false) {
         cur?.let { done(it, snooze, missed) }
         cur = null
+        closeSession()
         stopForeground(Service.STOP_FOREGROUND_REMOVE)
         sendBroadcast(Intent(Alarms.END).setPackage(packageName))
         Alarms.refresh(this)
@@ -362,7 +379,7 @@ class WakeService : Service() {
     override fun onDestroy() {
         running = false
         mp?.release(); mp = null
-        ms?.let { try { it.isActive = false; it.release() } catch (e: Exception) { } }; ms = null
+        closeSession()
         try { getSystemService(Vibrator::class.java).cancel() } catch (e: Exception) { }
         h.removeCallbacksAndMessages(null)
         super.onDestroy()
