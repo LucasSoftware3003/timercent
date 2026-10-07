@@ -37,6 +37,17 @@ private fun minTxt(n: Int) = if (n == 1) "1 minuto" else "$n minuti"
 // Quanto prima della sveglia compare la notifica "prossima sveglia" con il tasto Salta
 private fun preTxt(n: Int) = when { n <= 0 -> "mai"; n < 60 -> minTxt(n); n == 60 -> "1 ora"; else -> "${n / 60} ore" }
 
+private fun silTxt(n: Int) = if (n == 0) "Mai" else minTxt(n)
+
+private fun gradTxt(n: Int) = if (n == 0) "No" else "$n secondi"
+
+// Scelta singola per un'impostazione della sveglia (a differenza di choice(), che scrive nelle impostazioni generali)
+private fun MainActivity.alChoice(title: String, vals: List<Int>, cur: Int, lab: (Int) -> String, set: (Int) -> Unit) {
+    AlertDialog.Builder(this).setTitle(title)
+        .setSingleChoiceItems(vals.map(lab).toTypedArray(), vals.indexOf(cur)) { d, w -> d.dismiss(); set(vals[w]) }
+        .setNegativeButton("Annulla", null).show()
+}
+
 private fun durTxt(s: Int): String {
     val p = ArrayList<String>()
     if (s >= 3600) p.add("${s / 3600} h")
@@ -107,6 +118,8 @@ private fun MainActivity.swRow(title: String, on: Boolean, f: (Boolean) -> Unit)
 }
 
 fun MainActivity.alarmsTab() {
+    alSwitcher()
+    if (alGroups) { groupsTab(); return }
     val l = Alarms.load(this).sortedBy { it.h * 60 + it.m }
     if (l.isEmpty()) body.addView(tvw("Nessuna sveglia. Aggiungine una.", 15f, MUTE).apply { setPadding(dp(8), dp(24), dp(8), dp(24)) })
     l.forEach { alarmCard(it) }
@@ -125,7 +138,8 @@ private fun MainActivity.alarmCard(a: Al) {
     if (open) time.setOnClickListener { pickTime(a) }
     left.addView(time)
     val skipped = a.on && a.skip > System.currentTimeMillis()
-    left.addView(tvw(listOf(a.label, daysTxt(a), if (skipped) "prossima saltata" else "").filter { it.isNotEmpty() }.joinToString(" · "), 14f, if (a.on) ACC else MUTE))
+    val grName = Groups.of(this, a.id)?.name ?: ""
+    left.addView(tvw(listOf(a.label, daysTxt(a), if (skipped) "prossima saltata" else "", if (a.always) "sempre attiva" else grName).filter { it.isNotEmpty() }.joinToString(" · "), 14f, if (a.on) ACC else MUTE))
     head.addView(left, lp(0, -2, 1f))
     head.addView(mkSwitch(a.on) { v ->
         a.on = v; if (v) a.skip = 0L
@@ -153,6 +167,21 @@ private fun MainActivity.alarmCard(a: Al) {
         c.addView(row("Etichetta", a.label.ifEmpty { "Nessuna" }) { labelDlg(a) })
         c.addView(row("Suono", sndName(a.snd)) { pickAl = a.id; pickAlSound(a) })
         c.addView(swRow("Vibrazione", a.vib) { v -> a.vib = v; Alarms.put(this, a) })
+        c.addView(row("Silenzia dopo", silTxt(a.sil)) {
+            alChoice("Silenzia dopo", listOf(1, 5, 10, 15, 20, 25, 30, 0), a.sil, { silTxt(it) }) { a.sil = it; Alarms.put(this, a); render() }
+        })
+        c.addView(row("Durata posticipo", minTxt(a.snz)) {
+            alChoice("Durata posticipo", listOf(1, 5, 10, 15, 20, 25, 30), a.snz, { minTxt(it) }) { a.snz = it; Alarms.put(this, a); render() }
+        })
+        c.addView(row("Volume crescente", gradTxt(a.grad)) {
+            alChoice("Volume crescente", listOf(0, 5, 10, 15, 20, 30, 60), a.grad, { gradTxt(it) }) { a.grad = it; Alarms.put(this, a); render() }
+        })
+        c.addView(row("Avviso prima della sveglia", preTxt(a.pre)) {
+            alChoice("Avviso prima della sveglia", listOf(0, 15, 30, 60, 120, 180), a.pre, { preTxt(it) }) {
+                a.pre = it; Alarms.put(this, a); if (a.on) Alarms.schedule(this, a); render()
+            }
+        })
+        c.addView(swRow("Sempre attiva", a.always) { v -> setAlways(a, v) })
         if (a.days == 0) c.addView(swRow("Elimina dopo la suoneria", a.del) { v -> a.del = v; Alarms.put(this, a) })
         c.addView(tvw("Elimina sveglia", 15f, MUTE).apply {
             setPadding(0, dp(12), 0, dp(4))
@@ -160,6 +189,21 @@ private fun MainActivity.alarmCard(a: Al) {
         })
     }
     body.addView(c, lp(-1, -2).apply { bottomMargin = dp(12) })
+}
+
+// "Sempre attiva": i comandi dei gruppi non la toccano, quindi non può stare in un gruppo
+private fun MainActivity.setAlways(a: Al, v: Boolean) {
+    if (!v) { a.always = false; Alarms.put(this, a); return }
+    val g = Groups.of(this, a.id)
+    if (g == null) { a.always = true; Alarms.put(this, a); render(); return }
+    AlertDialog.Builder(this).setTitle("Sempre attiva")
+        .setMessage("Una sveglia sempre attiva non può stare in un gruppo. La sveglia verrà tolta da «" + g.name + "». Procedo?")
+        .setPositiveButton("Procedo") { _, _ ->
+            g.ids.remove(a.id); Groups.put(this, g)
+            a.always = true; Alarms.put(this, a); render()
+        }
+        .setNegativeButton("Annulla") { _, _ -> render() }
+        .setOnCancelListener { render() }.show()
 }
 
 private fun MainActivity.labelDlg(a: Al) {
@@ -210,36 +254,27 @@ private fun MainActivity.choice(title: String, key: String, vals: List<Int>, cur
     AlertDialog.Builder(this).setTitle(title)
         .setSingleChoiceItems(vals.map(lab).toTypedArray(), vals.indexOf(cur)) { d, w ->
             Alarms.p(this).edit().putInt(key, vals[w]).apply()
-            if (key == "a_pre") Alarms.scheduleAll(this)
             d.dismiss(); alarmSettings()
         }.setNegativeButton("Indietro") { _, _ -> alarmSettings() }.show()
 }
 
+// Qui restano solo le impostazioni che valgono per tutte le sveglie; le altre sono nella scheda di ogni sveglia
 fun MainActivity.alarmSettings() {
     val p = Alarms.p(this)
-    val sil = p.getInt("a_sil", 10); val snz = p.getInt("a_snz", 10); val gr = p.getInt("a_grad", 0)
-    val bt = p.getInt("a_btn", 0); val wk = Alarms.weekStart(this); val pre = p.getInt("a_pre", 60)
+    val bt = p.getInt("a_btn", 0); val wk = Alarms.weekStart(this)
     val wt = p.getInt("a_watch", 0)
     val btnN = { x: Int -> when (x) { 0 -> "Posticipa"; 1 -> "Ferma"; else -> "Nessuna azione" } }
     val wkn = { x: Int -> when (x) { 1 -> "Lunedì"; 6 -> "Sabato"; else -> "Domenica" } }
     val items = arrayOf(
-        "Silenzia dopo: " + (if (sil == 0) "mai" else minTxt(sil)),
-        "Durata posticipo: " + minTxt(snz),
-        "Volume crescente: " + (if (gr == 0) "no" else "$gr secondi"),
         "Tasti del volume: " + btnN(bt),
         "Inizio settimana: " + wkn(wk),
-        "Avviso prima della sveglia: " + preTxt(pre),
         "Volume delle sveglie",
         "Controllo sveglia dallo smartwatch: " + (if (wt == 1) "attivi" else "disattivati"))
     AlertDialog.Builder(this).setTitle("Impostazioni sveglie").setItems(items) { _, w ->
         when (w) {
-            0 -> choice("Silenzia dopo", "a_sil", listOf(1, 5, 10, 15, 20, 25, 30, 0), sil) { if (it == 0) "Mai" else minTxt(it) }
-            1 -> choice("Durata posticipo", "a_snz", listOf(1, 5, 10, 15, 20, 25, 30), snz) { minTxt(it) }
-            2 -> choice("Volume crescente", "a_grad", listOf(0, 5, 10, 15, 20, 30, 60), gr) { if (it == 0) "Disattivato" else "$it secondi" }
-            3 -> choice("Tasti del volume", "a_btn", listOf(0, 1, 2), bt, btnN)
-            4 -> choice("Inizio settimana", "a_week", listOf(1, 6, 7), wk, wkn)
-            5 -> choice("Avviso prima della sveglia", "a_pre", listOf(0, 15, 30, 60, 120, 180), pre) { preTxt(it) }
-            6 -> volDlg()
+            0 -> choice("Tasti del volume", "a_btn", listOf(0, 1, 2), bt, btnN)
+            1 -> choice("Inizio settimana", "a_week", listOf(1, 6, 7), wk, wkn)
+            2 -> volDlg()
             else -> choice("Controllo sveglia dallo smartwatch (pausa = ferma, avanti = posticipa)", "a_watch", listOf(0, 1), wt) { if (it == 1) "Attivi" else "Disattivati" }
         }
     }.setNegativeButton("Chiudi", null).show()
@@ -301,4 +336,245 @@ fun MainActivity.timerFromIntent(i: Intent): Boolean {
     Notif.start(this, t)
     Toast.makeText(this, "Timer avviato: " + durTxt(s), Toast.LENGTH_LONG).show()
     return true
+}
+
+// ---------- Gruppi ----------
+// La scheda Sveglie ha due pagine: l'elenco di tutte le sveglie e quella dei gruppi, che raccoglie i comandi comuni
+private var alGroups = false
+private var expGr: String? = null
+
+private fun MainActivity.alSwitcher() {
+    val r = LinearLayout(this)
+    r.addView(btn("Sveglie", if (!alGroups) CARD else BG, FG) { alGroups = false; render() }, lp(0, -2, 1f, 2))
+    r.addView(btn("Gruppi", if (alGroups) CARD else BG, FG) { alGroups = true; render() }, lp(0, -2, 1f, 2))
+    body.addView(r, lp(-1, -2).apply { bottomMargin = dp(8) })
+}
+
+private fun MainActivity.groupsTab() {
+    val gl = Groups.load(this)
+    if (gl.isEmpty()) body.addView(tvw("Nessun gruppo. Un gruppo raccoglie più sveglie: puoi accenderle, spegnerle e saltarle insieme.", 15f, MUTE).apply { setPadding(dp(8), dp(24), dp(8), dp(24)) })
+    gl.forEach { groupCard(it) }
+    body.addView(btn("Nuovo gruppo", CARD, FG) { newGroup() })
+}
+
+// Accende o spegne una sveglia come fa il suo interruttore nell'elenco
+private fun MainActivity.setAlarmOn(a: Al, v: Boolean) {
+    a.on = v; if (v) a.skip = 0L
+    Alarms.put(this, a)
+    if (v) Alarms.schedule(this, a) else Alarms.cancel(this, a)
+}
+
+// Interruttore del gruppo: stesso stato a tutte le sveglie
+private fun MainActivity.grSwitch(g: Gr, v: Boolean) {
+    g.on = v; Groups.put(this, g)
+    g.ids.forEach { id -> Alarms.find(this, id)?.let { setAlarmOn(it, v) } }
+    render()
+}
+
+// "Salta la prossima giornata": come il tasto Salta della notifica, per ogni sveglia attiva del gruppo
+private fun MainActivity.grSkip(g: Gr) {
+    var n = 0
+    g.ids.forEach { id ->
+        val a = Alarms.find(this, id)
+        if (a != null && a.on) {
+            n++
+            if (a.days == 0) {
+                a.on = false; Alarms.put(this, a); Alarms.cancel(this, a)
+                if (a.del) Alarms.remove(this, a.id)
+            } else {
+                a.skip = Alarms.nextEff(a).toInstant().toEpochMilli(); Alarms.put(this, a); Alarms.schedule(this, a)
+            }
+        }
+    }
+    Toast.makeText(this, if (n == 0) "Nessuna sveglia attiva nel gruppo" else "Saltata la prossima suoneria di $n sveglie", Toast.LENGTH_LONG).show()
+    render()
+}
+
+private fun MainActivity.groupCard(g: Gr) {
+    val open = expGr == g.id
+    val all = Alarms.load(this)
+    val als = g.ids.mapNotNull { id -> all.firstOrNull { it.id == id } }.sortedBy { it.h * 60 + it.m }
+    val c = LinearLayout(this)
+    c.orientation = LinearLayout.VERTICAL; c.setPadding(dp(16), dp(12), dp(16), dp(12))
+    c.background = GradientDrawable().apply { setColor(CARD); cornerRadius = dp(20).toFloat() }
+
+    val head = LinearLayout(this); head.gravity = Gravity.CENTER_VERTICAL
+    val left = LinearLayout(this); left.orientation = LinearLayout.VERTICAL
+    left.addView(tvw(g.name.ifEmpty { "Gruppo" }, 22f, if (g.on) FG else MUTE).apply { typeface = Typeface.DEFAULT_BOLD })
+    val n = als.size; val act = als.count { it.on }
+    left.addView(tvw((if (n == 1) "1 sveglia" else "$n sveglie") + " · " + (if (act == 1) "1 attiva" else "$act attive"), 14f, if (g.on) ACC else MUTE))
+    head.addView(left, lp(0, -2, 1f))
+    head.addView(mkSwitch(g.on) { v -> grSwitch(g, v) })
+    c.addView(head)
+    c.setOnClickListener { expGr = if (open) null else g.id; render() }
+
+    if (open) {
+        if (als.isEmpty()) c.addView(tvw("Nessuna sveglia nel gruppo.", 14f, MUTE).apply { setPadding(0, dp(12), 0, dp(4)) })
+        als.forEach { a ->
+            val r = LinearLayout(this); r.gravity = Gravity.CENTER_VERTICAL; r.setPadding(0, dp(6), 0, dp(6))
+            val t = LinearLayout(this); t.orientation = LinearLayout.VERTICAL
+            t.addView(tvw(timeTxt(a), 20f, if (a.on) FG else MUTE).apply { typeface = Typeface.DEFAULT_BOLD })
+            t.addView(tvw(listOf(a.label, daysTxt(a)).filter { it.isNotEmpty() }.joinToString(" · "), 13f, MUTE))
+            r.addView(t, lp(0, -2, 1f))
+            r.addView(tvw("✕", 18f, MUTE).apply {
+                setPadding(dp(10), 0, dp(10), 0)
+                setOnClickListener { g.ids.remove(a.id); Groups.put(this@groupCard, g); render() }
+            })
+            r.addView(mkSwitch(a.on) { v -> setAlarmOn(a, v); if (v) toastNext(a); render() })
+            c.addView(r)
+        }
+        c.addView(row("Salta la prossima giornata", "") { grSkip(g) })
+        c.addView(row("Modifica gruppo", "") { grEdit(g) })
+        c.addView(row("Aggiungi sveglie", "") { pickAlarms(g) })
+        c.addView(row("Nome", g.name) { renameGroup(g) })
+        c.addView(tvw("Elimina gruppo", 15f, MUTE).apply {
+            setPadding(0, dp(12), 0, dp(4))
+            setOnClickListener { deleteGroup(g) }
+        })
+    }
+    body.addView(c, lp(-1, -2).apply { bottomMargin = dp(12) })
+}
+
+private fun MainActivity.nameBox(cur: String): Pair<FrameLayout, EditText> {
+    val et = EditText(this)
+    et.setText(cur); et.hint = "Nome del gruppo"; et.setSingleLine(); et.setSelection(et.text.length)
+    val box = FrameLayout(this); box.setPadding(dp(20), dp(8), dp(20), 0); box.addView(et)
+    return Pair(box, et)
+}
+
+private fun MainActivity.newGroup() {
+    val (box, et) = nameBox("")
+    AlertDialog.Builder(this).setTitle("Nuovo gruppo").setView(box)
+        .setPositiveButton("Avanti") { _, _ ->
+            val g = Gr(System.currentTimeMillis().toString(), et.text.toString().trim().ifEmpty { "Gruppo" }, true, ArrayList())
+            Groups.put(this, g); expGr = g.id
+            pickAlarms(g)
+        }.setNegativeButton("Annulla", null).show()
+}
+
+private fun MainActivity.renameGroup(g: Gr) {
+    val (box, et) = nameBox(g.name)
+    AlertDialog.Builder(this).setTitle("Nome del gruppo").setView(box)
+        .setPositiveButton("OK") { _, _ -> g.name = et.text.toString().trim().ifEmpty { "Gruppo" }; Groups.put(this, g); render() }
+        .setNegativeButton("Annulla", null).show()
+}
+
+// Elenco delle sveglie che non sono ancora in nessun gruppo
+private fun MainActivity.pickAlarms(g: Gr) {
+    val used = Groups.load(this).flatMap { it.ids }.toSet()
+    val free = Alarms.load(this).filter { it.id !in used && !it.always }.sortedBy { it.h * 60 + it.m }
+    if (free.isEmpty()) {
+        Toast.makeText(this, "Nessuna sveglia libera: sono tutte in un gruppo o sempre attive", Toast.LENGTH_LONG).show()
+        render(); return
+    }
+    val names = free.map { timeTxt(it) + (if (it.label.isEmpty()) "" else " · " + it.label) + " · " + daysTxt(it) }.toTypedArray()
+    val chk = BooleanArray(free.size)
+    AlertDialog.Builder(this).setTitle("Scegli le sveglie")
+        .setMultiChoiceItems(names, chk) { _, i, v -> chk[i] = v }
+        .setPositiveButton("OK") { _, _ ->
+            val add = free.filterIndexed { i, _ -> chk[i] }
+            if (g.ids.isEmpty() && add.isNotEmpty()) g.on = add.any { it.on }
+            add.forEach { g.ids.add(it.id) }
+            Groups.put(this, g); render()
+        }
+        .setNegativeButton("Annulla") { _, _ -> render() }
+        .setOnCancelListener { render() }.show()
+}
+
+private fun MainActivity.deleteGroup(g: Gr) {
+    val n = g.ids.size
+    val b = AlertDialog.Builder(this).setTitle("Elimina «" + g.name + "»")
+    if (n == 0) {
+        b.setMessage("Eliminare il gruppo?")
+            .setPositiveButton("Elimina") { _, _ -> Groups.remove(this, g.id); expGr = null; render() }
+    } else {
+        b.setMessage(if (n == 1) "Il gruppo contiene 1 sveglia. Cosa vuoi fare?" else "Il gruppo contiene $n sveglie. Cosa vuoi fare?")
+            .setPositiveButton("Solo il gruppo") { _, _ -> Groups.remove(this, g.id); expGr = null; render() }
+            .setNeutralButton("Anche le sveglie") { _, _ ->
+                g.ids.forEach { id -> Alarms.find(this, id)?.let { Alarms.cancel(this, it); Alarms.remove(this, id) } }
+                Groups.remove(this, g.id); expGr = null; render()
+            }
+    }
+    b.setNegativeButton("Annulla", null).show()
+}
+
+// ---------- Modifica gruppo: «Applica a tutte» ----------
+// Ogni opzione ha la sua azione e cambia solo quella caratteristica: le altre restano com'erano su ogni sveglia.
+// Non sono trasferibili ora, etichetta ed «Elimina dopo la suoneria».
+private var pickGrId: String? = null
+
+private fun grCount(g: Gr) = if (g.ids.size == 1) "1 sveglia" else "${g.ids.size} sveglie"
+
+// Applica f a ogni sveglia del gruppo; quelle accese vengono ripianificate
+private fun MainActivity.grApply(g: Gr, f: (Al) -> Unit) {
+    var n = 0
+    g.ids.forEach { id ->
+        Alarms.find(this, id)?.let { a ->
+            f(a); Alarms.put(this, a); if (a.on) Alarms.schedule(this, a); n++
+        }
+    }
+    Toast.makeText(this, "Applicato a " + (if (n == 1) "1 sveglia" else "$n sveglie"), Toast.LENGTH_LONG).show()
+    render()
+}
+
+private fun MainActivity.grEdit(g: Gr) {
+    if (g.ids.isEmpty()) { Toast.makeText(this, "Il gruppo non ha sveglie", Toast.LENGTH_LONG).show(); return }
+    val names = arrayOf("Giorni", "Suono", "Vibrazione", "Silenzia dopo", "Durata posticipo", "Volume crescente", "Avviso prima della sveglia")
+    AlertDialog.Builder(this).setTitle("Applica a tutte (" + grCount(g) + ")").setItems(names) { _, w ->
+        when (w) {
+            0 -> grDays(g)
+            1 -> grSound(g)
+            2 -> grPick(g, "Vibrazione", listOf("Attiva", "Disattivata")) { a, i -> a.vib = (i == 0) }
+            3 -> { val v = listOf(1, 5, 10, 15, 20, 25, 30, 0); grPick(g, "Silenzia dopo", v.map { silTxt(it) }) { a, i -> a.sil = v[i] } }
+            4 -> { val v = listOf(1, 5, 10, 15, 20, 25, 30); grPick(g, "Durata posticipo", v.map { minTxt(it) }) { a, i -> a.snz = v[i] } }
+            5 -> { val v = listOf(0, 5, 10, 15, 20, 30, 60); grPick(g, "Volume crescente", v.map { gradTxt(it) }) { a, i -> a.grad = v[i] } }
+            else -> { val v = listOf(0, 15, 30, 60, 120, 180); grPick(g, "Avviso prima della sveglia", v.map { preTxt(it) }) { a, i -> a.pre = v[i] } }
+        }
+    }.setNegativeButton("Chiudi", null).show()
+}
+
+// Scelta singola: il valore parte vuoto e si applica solo premendo «Applica a tutte»
+private fun MainActivity.grPick(g: Gr, title: String, labels: List<String>, set: (Al, Int) -> Unit) {
+    var sel = -1
+    AlertDialog.Builder(this).setTitle(title + " · " + grCount(g))
+        .setSingleChoiceItems(labels.toTypedArray(), -1) { _, w -> sel = w }
+        .setPositiveButton("Applica a tutte") { _, _ ->
+            if (sel < 0) Toast.makeText(this, "Scegli un valore", Toast.LENGTH_LONG).show()
+            else { val i = sel; grApply(g) { a -> set(a, i) } }
+        }
+        .setNegativeButton("Annulla", null).show()
+}
+
+// I giorni scelti sostituiscono quelli di ogni sveglia
+private fun MainActivity.grDays(g: Gr) {
+    val ord = order()
+    val chk = BooleanArray(7)
+    AlertDialog.Builder(this).setTitle("Giorni · " + grCount(g))
+        .setMultiChoiceItems(ord.map { DAYN[it] }.toTypedArray(), chk) { _, i, v -> chk[i] = v }
+        .setPositiveButton("Applica a tutte") { _, _ ->
+            var d = 0
+            ord.forEachIndexed { i, day -> if (chk[i]) d = d or (1 shl day) }
+            if (d == 0) Toast.makeText(this, "Seleziona almeno un giorno", Toast.LENGTH_LONG).show()
+            else grApply(g) { a -> a.days = d; a.skip = 0L }
+        }
+        .setNegativeButton("Annulla", null).show()
+}
+
+private fun MainActivity.grSound(g: Gr) {
+    pickGrId = g.id
+    val def = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+    startActivityForResult(Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
+        .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)
+        .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
+        .putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, def)
+        .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true), 4)
+}
+
+// Chiamata da MainActivity quando il selettore di suoni del gruppo restituisce la scelta (u = "" per nessun suono)
+fun MainActivity.groupSoundPicked(u: String) {
+    val g = Groups.load(this).firstOrNull { it.id == pickGrId } ?: return
+    AlertDialog.Builder(this).setTitle("Suono · " + grCount(g))
+        .setMessage("«" + sndName(u) + "» sostituisce il suono di ogni sveglia del gruppo.")
+        .setPositiveButton("Applica a tutte") { _, _ -> grApply(g) { a -> a.snd = u } }
+        .setNegativeButton("Annulla", null).show()
 }

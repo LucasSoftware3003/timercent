@@ -23,8 +23,12 @@ import java.util.Date
 // days: bitmask, bit 0 = lunedì ... bit 6 = domenica; 0 = una sola volta
 // snd: null = suono predefinito di sistema, "" = nessun suono, altrimenti URI
 // skip: istante (ms) della suoneria saltata con "Salta"; le suonerie fino a quell'istante vengono ignorate
+// sil: minuti dopo cui la sveglia si silenzia da sola (0 = mai); snz: durata del posticipo in minuti
+// grad: secondi di volume crescente (0 = no); pre: minuti di anticipo della notifica "prossima sveglia" (0 = mai)
+// always: "sempre attiva", una sveglia così non può stare in un gruppo
 class Al(val id: String, var h: Int, var m: Int, var days: Int, var label: String, var on: Boolean,
-         var vib: Boolean, var snd: String?, var del: Boolean, var skip: Long = 0L)
+         var vib: Boolean, var snd: String?, var del: Boolean, var skip: Long = 0L,
+         var sil: Int = 10, var snz: Int = 10, var grad: Int = 0, var pre: Int = 60, var always: Boolean = false)
 
 object Alarms {
     const val SNZ = "it.timercent.SNOOZE"
@@ -41,7 +45,10 @@ object Alarms {
         return MutableList(a.length()) {
             val o = a.getJSONObject(it)
             Al(o.getString("id"), o.getInt("h"), o.getInt("m"), o.getInt("d"), o.optString("l"), o.optBoolean("on"),
-                o.optBoolean("v", true), if (o.has("s")) o.getString("s") else null, o.optBoolean("x"), o.optLong("k", 0L))
+                o.optBoolean("v", true), if (o.has("s")) o.getString("s") else null, o.optBoolean("x"), o.optLong("k", 0L),
+                // sveglie salvate prima dell'impostazione per sveglia: ereditano il vecchio valore generale
+                o.optInt("sl", p(c).getInt("a_sil", 10)), o.optInt("sz", p(c).getInt("a_snz", 10)),
+                o.optInt("gr", p(c).getInt("a_grad", 0)), o.optInt("pr", p(c).getInt("a_pre", 60)), o.optBoolean("aa", false))
         }
     }
 
@@ -50,6 +57,7 @@ object Alarms {
         l.forEach {
             val o = JSONObject().put("id", it.id).put("h", it.h).put("m", it.m).put("d", it.days).put("l", it.label)
                 .put("on", it.on).put("v", it.vib).put("x", it.del).put("k", it.skip)
+                .put("sl", it.sil).put("sz", it.snz).put("gr", it.grad).put("pr", it.pre).put("aa", it.always)
             if (it.snd != null) o.put("s", it.snd)
             a.put(o)
         }
@@ -117,8 +125,8 @@ object Alarms {
         if (!a.on) { am.cancel(pi(c, a)); return }
         val t = nextEff(a).toInstant().toEpochMilli()
         am.setAlarmClock(AlarmManager.AlarmClockInfo(t, openTab(c)), pi(c, a))
-        // Notifica "prossima sveglia" N minuti prima (impostazione a_pre, 0 = mai)
-        val pre = p(c).getInt("a_pre", 60)
+        // Notifica "prossima sveglia" N minuti prima (impostazione della sveglia, 0 = mai)
+        val pre = a.pre
         if (pre > 0) {
             val pt = t - pre * 60000L
             if (pt > System.currentTimeMillis()) {
@@ -153,7 +161,7 @@ object Alarms {
     }
 
     fun snooze(c: Context, a: Al): Long {
-        val t = System.currentTimeMillis() + p(c).getInt("a_snz", 10) * 60000L
+        val t = System.currentTimeMillis() + a.snz * 60000L
         c.getSystemService(AlarmManager::class.java).setAlarmClock(AlarmManager.AlarmClockInfo(t, openTab(c)), pi(c, a, SNZ))
         return t
     }
@@ -229,8 +237,8 @@ class WakeService : Service() {
 
     override fun onBind(i: Intent?): IBinder? = null
 
-    private fun ringPi(label: String): PendingIntent = PendingIntent.getActivity(this, 20,
-        Intent(this, RingActivity::class.java).putExtra("label", label)
+    private fun ringPi(label: String, snz: Int): PendingIntent = PendingIntent.getActivity(this, 20,
+        Intent(this, RingActivity::class.java).putExtra("label", label).putExtra("snz", snz)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_USER_ACTION),
         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 
@@ -269,7 +277,7 @@ class WakeService : Service() {
         Notif.channels(this)
         val a = i?.getStringExtra("id")?.let { Alarms.find(this, it) }
         val label = a?.label ?: ""
-        val snz = Alarms.p(this).getInt("a_snz", 10)
+        val snz = a?.snz ?: 10
         val snzA = Notification.Action.Builder(
             android.graphics.drawable.Icon.createWithResource(this, android.R.drawable.ic_lock_idle_alarm),
             "Posticipa ($snz min)", act("SNOOZE", 2)).build()
@@ -282,7 +290,7 @@ class WakeService : Service() {
             .setContentTitle(label.ifEmpty { "Sveglia" }).setContentText(Alarms.hm(this, System.currentTimeMillis()))
             .setCategory(Notification.CATEGORY_ALARM).setOngoing(true).setOnlyAlertOnce(true)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
-            .setFullScreenIntent(ringPi(label), true).setContentIntent(ringPi(label))
+            .setFullScreenIntent(ringPi(label, snz), true).setContentIntent(ringPi(label, snz))
             .addAction(snzA)
             .addAction(stopA)
         // Impostazione "Controlli smartwatch" (a_watch, spenta di default): notifica "multimediale" legata a una
@@ -309,8 +317,7 @@ class WakeService : Service() {
     private fun ring(a: Al) {
         h.removeCallbacksAndMessages(null)
         mp?.release(); mp = null
-        val p = Alarms.p(this)
-        val g = p.getInt("a_grad", 0)
+        val g = a.grad
         val v0 = if (g > 0) 0f else 1f
         if (a.snd != "") {
             val def = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
@@ -331,7 +338,7 @@ class WakeService : Service() {
         if (a.vib) {
             try { getSystemService(Vibrator::class.java).vibrate(VibrationEffect.createWaveform(longArrayOf(0, 600, 400), 0), attr) } catch (e: Exception) { }
         }
-        val s = p.getInt("a_sil", 10)
+        val s = a.sil
         if (s > 0) h.postDelayed({ end(false, true) }, s * 60000L)
     }
 
@@ -425,7 +432,7 @@ class RingActivity : Activity() {
             text = intent.getStringExtra("label")?.ifEmpty { null } ?: "Sveglia"
             textSize = 24f; setTextColor(ACC); gravity = Gravity.CENTER
         }
-        val snz = Alarms.p(this).getInt("a_snz", 10)
+        val snz = intent.getIntExtra("snz", 10)
         root.addView(clock); root.addView(label)
         root.addView(Space(this), LinearLayout.LayoutParams(0, 0, 1f))
         root.addView(btn("Posticipa di $snz min", CARD, FG) { act("SNOOZE") },
