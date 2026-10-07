@@ -118,6 +118,8 @@ private fun MainActivity.swRow(title: String, on: Boolean, f: (Boolean) -> Unit)
 }
 
 fun MainActivity.alarmsTab() {
+    alSwitcher()
+    if (alGroups) { groupsTab(); return }
     val l = Alarms.load(this).sortedBy { it.h * 60 + it.m }
     if (l.isEmpty()) body.addView(tvw("Nessuna sveglia. Aggiungine una.", 15f, MUTE).apply { setPadding(dp(8), dp(24), dp(8), dp(24)) })
     l.forEach { alarmCard(it) }
@@ -136,7 +138,8 @@ private fun MainActivity.alarmCard(a: Al) {
     if (open) time.setOnClickListener { pickTime(a) }
     left.addView(time)
     val skipped = a.on && a.skip > System.currentTimeMillis()
-    left.addView(tvw(listOf(a.label, daysTxt(a), if (skipped) "prossima saltata" else "").filter { it.isNotEmpty() }.joinToString(" · "), 14f, if (a.on) ACC else MUTE))
+    val grName = Groups.of(this, a.id)?.name ?: ""
+    left.addView(tvw(listOf(a.label, daysTxt(a), if (skipped) "prossima saltata" else "", grName).filter { it.isNotEmpty() }.joinToString(" · "), 14f, if (a.on) ACC else MUTE))
     head.addView(left, lp(0, -2, 1f))
     head.addView(mkSwitch(a.on) { v ->
         a.on = v; if (v) a.skip = 0L
@@ -317,4 +320,163 @@ fun MainActivity.timerFromIntent(i: Intent): Boolean {
     Notif.start(this, t)
     Toast.makeText(this, "Timer avviato: " + durTxt(s), Toast.LENGTH_LONG).show()
     return true
+}
+
+// ---------- Gruppi ----------
+// La scheda Sveglie ha due pagine: l'elenco di tutte le sveglie e quella dei gruppi, che raccoglie i comandi comuni
+private var alGroups = false
+private var expGr: String? = null
+
+private fun MainActivity.alSwitcher() {
+    val r = LinearLayout(this)
+    r.addView(btn("Sveglie", if (!alGroups) CARD else BG, FG) { alGroups = false; render() }, lp(0, -2, 1f, 2))
+    r.addView(btn("Gruppi", if (alGroups) CARD else BG, FG) { alGroups = true; render() }, lp(0, -2, 1f, 2))
+    body.addView(r, lp(-1, -2).apply { bottomMargin = dp(8) })
+}
+
+private fun MainActivity.groupsTab() {
+    val gl = Groups.load(this)
+    if (gl.isEmpty()) body.addView(tvw("Nessun gruppo. Un gruppo raccoglie più sveglie: puoi accenderle, spegnerle e saltarle insieme.", 15f, MUTE).apply { setPadding(dp(8), dp(24), dp(8), dp(24)) })
+    gl.forEach { groupCard(it) }
+    body.addView(btn("Nuovo gruppo", CARD, FG) { newGroup() })
+}
+
+// Accende o spegne una sveglia come fa il suo interruttore nell'elenco
+private fun MainActivity.setAlarmOn(a: Al, v: Boolean) {
+    a.on = v; if (v) a.skip = 0L
+    Alarms.put(this, a)
+    if (v) Alarms.schedule(this, a) else Alarms.cancel(this, a)
+}
+
+// Interruttore del gruppo: stesso stato a tutte le sveglie
+private fun MainActivity.grSwitch(g: Gr, v: Boolean) {
+    g.on = v; Groups.put(this, g)
+    g.ids.forEach { id -> Alarms.find(this, id)?.let { setAlarmOn(it, v) } }
+    render()
+}
+
+// "Salta la prossima giornata": come il tasto Salta della notifica, per ogni sveglia attiva del gruppo
+private fun MainActivity.grSkip(g: Gr) {
+    var n = 0
+    g.ids.forEach { id ->
+        val a = Alarms.find(this, id)
+        if (a != null && a.on) {
+            n++
+            if (a.days == 0) {
+                a.on = false; Alarms.put(this, a); Alarms.cancel(this, a)
+                if (a.del) Alarms.remove(this, a.id)
+            } else {
+                a.skip = Alarms.nextEff(a).toInstant().toEpochMilli(); Alarms.put(this, a); Alarms.schedule(this, a)
+            }
+        }
+    }
+    Toast.makeText(this, if (n == 0) "Nessuna sveglia attiva nel gruppo" else "Saltata la prossima suoneria di $n sveglie", Toast.LENGTH_LONG).show()
+    render()
+}
+
+private fun MainActivity.groupCard(g: Gr) {
+    val open = expGr == g.id
+    val all = Alarms.load(this)
+    val als = g.ids.mapNotNull { id -> all.firstOrNull { it.id == id } }.sortedBy { it.h * 60 + it.m }
+    val c = LinearLayout(this)
+    c.orientation = LinearLayout.VERTICAL; c.setPadding(dp(16), dp(12), dp(16), dp(12))
+    c.background = GradientDrawable().apply { setColor(CARD); cornerRadius = dp(20).toFloat() }
+
+    val head = LinearLayout(this); head.gravity = Gravity.CENTER_VERTICAL
+    val left = LinearLayout(this); left.orientation = LinearLayout.VERTICAL
+    left.addView(tvw(g.name.ifEmpty { "Gruppo" }, 22f, if (g.on) FG else MUTE).apply { typeface = Typeface.DEFAULT_BOLD })
+    val n = als.size; val act = als.count { it.on }
+    left.addView(tvw((if (n == 1) "1 sveglia" else "$n sveglie") + " · " + (if (act == 1) "1 attiva" else "$act attive"), 14f, if (g.on) ACC else MUTE))
+    head.addView(left, lp(0, -2, 1f))
+    head.addView(mkSwitch(g.on) { v -> grSwitch(g, v) })
+    c.addView(head)
+    c.setOnClickListener { expGr = if (open) null else g.id; render() }
+
+    if (open) {
+        if (als.isEmpty()) c.addView(tvw("Nessuna sveglia nel gruppo.", 14f, MUTE).apply { setPadding(0, dp(12), 0, dp(4)) })
+        als.forEach { a ->
+            val r = LinearLayout(this); r.gravity = Gravity.CENTER_VERTICAL; r.setPadding(0, dp(6), 0, dp(6))
+            val t = LinearLayout(this); t.orientation = LinearLayout.VERTICAL
+            t.addView(tvw(timeTxt(a), 20f, if (a.on) FG else MUTE).apply { typeface = Typeface.DEFAULT_BOLD })
+            t.addView(tvw(listOf(a.label, daysTxt(a)).filter { it.isNotEmpty() }.joinToString(" · "), 13f, MUTE))
+            r.addView(t, lp(0, -2, 1f))
+            r.addView(tvw("✕", 18f, MUTE).apply {
+                setPadding(dp(10), 0, dp(10), 0)
+                setOnClickListener { g.ids.remove(a.id); Groups.put(this@groupCard, g); render() }
+            })
+            r.addView(mkSwitch(a.on) { v -> setAlarmOn(a, v); if (v) toastNext(a); render() })
+            c.addView(r)
+        }
+        c.addView(row("Salta la prossima giornata", "") { grSkip(g) })
+        c.addView(row("Aggiungi sveglie", "") { pickAlarms(g) })
+        c.addView(row("Nome", g.name) { renameGroup(g) })
+        c.addView(tvw("Elimina gruppo", 15f, MUTE).apply {
+            setPadding(0, dp(12), 0, dp(4))
+            setOnClickListener { deleteGroup(g) }
+        })
+    }
+    body.addView(c, lp(-1, -2).apply { bottomMargin = dp(12) })
+}
+
+private fun MainActivity.nameBox(cur: String): Pair<FrameLayout, EditText> {
+    val et = EditText(this)
+    et.setText(cur); et.hint = "Nome del gruppo"; et.setSingleLine(); et.setSelection(et.text.length)
+    val box = FrameLayout(this); box.setPadding(dp(20), dp(8), dp(20), 0); box.addView(et)
+    return Pair(box, et)
+}
+
+private fun MainActivity.newGroup() {
+    val (box, et) = nameBox("")
+    AlertDialog.Builder(this).setTitle("Nuovo gruppo").setView(box)
+        .setPositiveButton("Avanti") { _, _ ->
+            val g = Gr(System.currentTimeMillis().toString(), et.text.toString().trim().ifEmpty { "Gruppo" }, true, ArrayList())
+            Groups.put(this, g); expGr = g.id
+            pickAlarms(g)
+        }.setNegativeButton("Annulla", null).show()
+}
+
+private fun MainActivity.renameGroup(g: Gr) {
+    val (box, et) = nameBox(g.name)
+    AlertDialog.Builder(this).setTitle("Nome del gruppo").setView(box)
+        .setPositiveButton("OK") { _, _ -> g.name = et.text.toString().trim().ifEmpty { "Gruppo" }; Groups.put(this, g); render() }
+        .setNegativeButton("Annulla", null).show()
+}
+
+// Elenco delle sveglie che non sono ancora in nessun gruppo
+private fun MainActivity.pickAlarms(g: Gr) {
+    val used = Groups.load(this).flatMap { it.ids }.toSet()
+    val free = Alarms.load(this).filter { it.id !in used }.sortedBy { it.h * 60 + it.m }
+    if (free.isEmpty()) {
+        Toast.makeText(this, "Nessuna sveglia libera: sono tutte già in un gruppo", Toast.LENGTH_LONG).show()
+        render(); return
+    }
+    val names = free.map { timeTxt(it) + (if (it.label.isEmpty()) "" else " · " + it.label) + " · " + daysTxt(it) }.toTypedArray()
+    val chk = BooleanArray(free.size)
+    AlertDialog.Builder(this).setTitle("Scegli le sveglie")
+        .setMultiChoiceItems(names, chk) { _, i, v -> chk[i] = v }
+        .setPositiveButton("OK") { _, _ ->
+            val add = free.filterIndexed { i, _ -> chk[i] }
+            if (g.ids.isEmpty() && add.isNotEmpty()) g.on = add.any { it.on }
+            add.forEach { g.ids.add(it.id) }
+            Groups.put(this, g); render()
+        }
+        .setNegativeButton("Annulla") { _, _ -> render() }
+        .setOnCancelListener { render() }.show()
+}
+
+private fun MainActivity.deleteGroup(g: Gr) {
+    val n = g.ids.size
+    val b = AlertDialog.Builder(this).setTitle("Elimina «" + g.name + "»")
+    if (n == 0) {
+        b.setMessage("Eliminare il gruppo?")
+            .setPositiveButton("Elimina") { _, _ -> Groups.remove(this, g.id); expGr = null; render() }
+    } else {
+        b.setMessage(if (n == 1) "Il gruppo contiene 1 sveglia. Cosa vuoi fare?" else "Il gruppo contiene $n sveglie. Cosa vuoi fare?")
+            .setPositiveButton("Solo il gruppo") { _, _ -> Groups.remove(this, g.id); expGr = null; render() }
+            .setNeutralButton("Anche le sveglie") { _, _ ->
+                g.ids.forEach { id -> Alarms.find(this, id)?.let { Alarms.cancel(this, it); Alarms.remove(this, id) } }
+                Groups.remove(this, g.id); expGr = null; render()
+            }
+    }
+    b.setNegativeButton("Annulla", null).show()
 }
