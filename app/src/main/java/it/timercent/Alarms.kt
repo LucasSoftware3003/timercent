@@ -278,16 +278,18 @@ class WakeService : Service() {
             "Ferma", act("STOP", 3)).build()
         // Stesse due azioni anche per gli orologi Wear OS (quelli con app propria, come Zepp, le ignorano)
         val wear = Notification.WearableExtender().addAction(stopA).addAction(snzA)
-        val n = Notification.Builder(this, Notif.WAKE).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+        val nb = Notification.Builder(this, Notif.WAKE).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle(label.ifEmpty { "Sveglia" }).setContentText(Alarms.hm(this, System.currentTimeMillis()))
             .setCategory(Notification.CATEGORY_ALARM).setOngoing(true).setOnlyAlertOnce(true)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setFullScreenIntent(ringPi(label), true).setContentIntent(ringPi(label))
             .addAction(snzA)
             .addAction(stopA)
-            // Notifica "multimediale" legata alla sessione: i controlli musica dell'orologio agiscono sulla sveglia
-            .setStyle(Notification.MediaStyle().setMediaSession(session(label).sessionToken).setShowActionsInCompactView(0, 1))
-            .extend(wear).build()
+        // Impostazione "Controlli smartwatch" (a_watch, spenta di default): notifica "multimediale" legata a una
+        // sessione, così i controlli musica dell'orologio (es. Amazfit/Zepp) agiscono sulla sveglia
+        if (Alarms.p(this).getInt("a_watch", 0) == 1)
+            nb.setStyle(Notification.MediaStyle().setMediaSession(session(label).sessionToken).setShowActionsInCompactView(0, 1))
+        val n = nb.extend(wear).build()
         if (Build.VERSION.SDK_INT >= 29) startForeground(78, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
         else startForeground(78, n)
         if (a == null) { stopSelf(); return START_NOT_STICKY }

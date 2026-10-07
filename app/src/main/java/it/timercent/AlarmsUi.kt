@@ -219,6 +219,7 @@ fun MainActivity.alarmSettings() {
     val p = Alarms.p(this)
     val sil = p.getInt("a_sil", 10); val snz = p.getInt("a_snz", 10); val gr = p.getInt("a_grad", 0)
     val bt = p.getInt("a_btn", 0); val wk = Alarms.weekStart(this); val pre = p.getInt("a_pre", 60)
+    val wt = p.getInt("a_watch", 0)
     val btnN = { x: Int -> when (x) { 0 -> "Posticipa"; 1 -> "Ferma"; else -> "Nessuna azione" } }
     val wkn = { x: Int -> when (x) { 1 -> "Lunedì"; 6 -> "Sabato"; else -> "Domenica" } }
     val items = arrayOf(
@@ -228,7 +229,8 @@ fun MainActivity.alarmSettings() {
         "Tasti del volume: " + btnN(bt),
         "Inizio settimana: " + wkn(wk),
         "Avviso prima della sveglia: " + preTxt(pre),
-        "Volume delle sveglie")
+        "Volume delle sveglie",
+        "Controlli musica dello smartwatch: " + (if (wt == 1) "attivi" else "disattivati"))
     AlertDialog.Builder(this).setTitle("Impostazioni sveglie").setItems(items) { _, w ->
         when (w) {
             0 -> choice("Silenzia dopo", "a_sil", listOf(1, 5, 10, 15, 20, 25, 30, 0), sil) { if (it == 0) "Mai" else minTxt(it) }
@@ -237,7 +239,8 @@ fun MainActivity.alarmSettings() {
             3 -> choice("Tasti del volume", "a_btn", listOf(0, 1, 2), bt, btnN)
             4 -> choice("Inizio settimana", "a_week", listOf(1, 6, 7), wk, wkn)
             5 -> choice("Avviso prima della sveglia", "a_pre", listOf(0, 15, 30, 60, 120, 180), pre) { preTxt(it) }
-            else -> volDlg()
+            6 -> volDlg()
+            else -> choice("Controlli musica dello smartwatch (pausa = ferma, avanti = posticipa)", "a_watch", listOf(0, 1), wt) { if (it == 1) "Attivi" else "Disattivati" }
         }
     }.setNegativeButton("Chiudi", null).show()
 }
