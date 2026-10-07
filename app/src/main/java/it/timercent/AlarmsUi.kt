@@ -37,6 +37,17 @@ private fun minTxt(n: Int) = if (n == 1) "1 minuto" else "$n minuti"
 // Quanto prima della sveglia compare la notifica "prossima sveglia" con il tasto Salta
 private fun preTxt(n: Int) = when { n <= 0 -> "mai"; n < 60 -> minTxt(n); n == 60 -> "1 ora"; else -> "${n / 60} ore" }
 
+private fun silTxt(n: Int) = if (n == 0) "Mai" else minTxt(n)
+
+private fun gradTxt(n: Int) = if (n == 0) "No" else "$n secondi"
+
+// Scelta singola per un'impostazione della sveglia (a differenza di choice(), che scrive nelle impostazioni generali)
+private fun MainActivity.alChoice(title: String, vals: List<Int>, cur: Int, lab: (Int) -> String, set: (Int) -> Unit) {
+    AlertDialog.Builder(this).setTitle(title)
+        .setSingleChoiceItems(vals.map(lab).toTypedArray(), vals.indexOf(cur)) { d, w -> d.dismiss(); set(vals[w]) }
+        .setNegativeButton("Annulla", null).show()
+}
+
 private fun durTxt(s: Int): String {
     val p = ArrayList<String>()
     if (s >= 3600) p.add("${s / 3600} h")
@@ -153,6 +164,20 @@ private fun MainActivity.alarmCard(a: Al) {
         c.addView(row("Etichetta", a.label.ifEmpty { "Nessuna" }) { labelDlg(a) })
         c.addView(row("Suono", sndName(a.snd)) { pickAl = a.id; pickAlSound(a) })
         c.addView(swRow("Vibrazione", a.vib) { v -> a.vib = v; Alarms.put(this, a) })
+        c.addView(row("Silenzia dopo", silTxt(a.sil)) {
+            alChoice("Silenzia dopo", listOf(1, 5, 10, 15, 20, 25, 30, 0), a.sil, { silTxt(it) }) { a.sil = it; Alarms.put(this, a); render() }
+        })
+        c.addView(row("Durata posticipo", minTxt(a.snz)) {
+            alChoice("Durata posticipo", listOf(1, 5, 10, 15, 20, 25, 30), a.snz, { minTxt(it) }) { a.snz = it; Alarms.put(this, a); render() }
+        })
+        c.addView(row("Volume crescente", gradTxt(a.grad)) {
+            alChoice("Volume crescente", listOf(0, 5, 10, 15, 20, 30, 60), a.grad, { gradTxt(it) }) { a.grad = it; Alarms.put(this, a); render() }
+        })
+        c.addView(row("Avviso prima della sveglia", preTxt(a.pre)) {
+            alChoice("Avviso prima della sveglia", listOf(0, 15, 30, 60, 120, 180), a.pre, { preTxt(it) }) {
+                a.pre = it; Alarms.put(this, a); if (a.on) Alarms.schedule(this, a); render()
+            }
+        })
         if (a.days == 0) c.addView(swRow("Elimina dopo la suoneria", a.del) { v -> a.del = v; Alarms.put(this, a) })
         c.addView(tvw("Elimina sveglia", 15f, MUTE).apply {
             setPadding(0, dp(12), 0, dp(4))
@@ -210,36 +235,27 @@ private fun MainActivity.choice(title: String, key: String, vals: List<Int>, cur
     AlertDialog.Builder(this).setTitle(title)
         .setSingleChoiceItems(vals.map(lab).toTypedArray(), vals.indexOf(cur)) { d, w ->
             Alarms.p(this).edit().putInt(key, vals[w]).apply()
-            if (key == "a_pre") Alarms.scheduleAll(this)
             d.dismiss(); alarmSettings()
         }.setNegativeButton("Indietro") { _, _ -> alarmSettings() }.show()
 }
 
+// Qui restano solo le impostazioni che valgono per tutte le sveglie; le altre sono nella scheda di ogni sveglia
 fun MainActivity.alarmSettings() {
     val p = Alarms.p(this)
-    val sil = p.getInt("a_sil", 10); val snz = p.getInt("a_snz", 10); val gr = p.getInt("a_grad", 0)
-    val bt = p.getInt("a_btn", 0); val wk = Alarms.weekStart(this); val pre = p.getInt("a_pre", 60)
+    val bt = p.getInt("a_btn", 0); val wk = Alarms.weekStart(this)
     val wt = p.getInt("a_watch", 0)
     val btnN = { x: Int -> when (x) { 0 -> "Posticipa"; 1 -> "Ferma"; else -> "Nessuna azione" } }
     val wkn = { x: Int -> when (x) { 1 -> "Lunedì"; 6 -> "Sabato"; else -> "Domenica" } }
     val items = arrayOf(
-        "Silenzia dopo: " + (if (sil == 0) "mai" else minTxt(sil)),
-        "Durata posticipo: " + minTxt(snz),
-        "Volume crescente: " + (if (gr == 0) "no" else "$gr secondi"),
         "Tasti del volume: " + btnN(bt),
         "Inizio settimana: " + wkn(wk),
-        "Avviso prima della sveglia: " + preTxt(pre),
         "Volume delle sveglie",
         "Controllo sveglia dallo smartwatch: " + (if (wt == 1) "attivi" else "disattivati"))
     AlertDialog.Builder(this).setTitle("Impostazioni sveglie").setItems(items) { _, w ->
         when (w) {
-            0 -> choice("Silenzia dopo", "a_sil", listOf(1, 5, 10, 15, 20, 25, 30, 0), sil) { if (it == 0) "Mai" else minTxt(it) }
-            1 -> choice("Durata posticipo", "a_snz", listOf(1, 5, 10, 15, 20, 25, 30), snz) { minTxt(it) }
-            2 -> choice("Volume crescente", "a_grad", listOf(0, 5, 10, 15, 20, 30, 60), gr) { if (it == 0) "Disattivato" else "$it secondi" }
-            3 -> choice("Tasti del volume", "a_btn", listOf(0, 1, 2), bt, btnN)
-            4 -> choice("Inizio settimana", "a_week", listOf(1, 6, 7), wk, wkn)
-            5 -> choice("Avviso prima della sveglia", "a_pre", listOf(0, 15, 30, 60, 120, 180), pre) { preTxt(it) }
-            6 -> volDlg()
+            0 -> choice("Tasti del volume", "a_btn", listOf(0, 1, 2), bt, btnN)
+            1 -> choice("Inizio settimana", "a_week", listOf(1, 6, 7), wk, wkn)
+            2 -> volDlg()
             else -> choice("Controllo sveglia dallo smartwatch (pausa = ferma, avanti = posticipa)", "a_watch", listOf(0, 1), wt) { if (it == 1) "Attivi" else "Disattivati" }
         }
     }.setNegativeButton("Chiudi", null).show()
