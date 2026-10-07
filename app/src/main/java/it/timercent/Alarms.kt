@@ -237,6 +237,29 @@ class WakeService : Service() {
     private fun act(a: String, rc: Int): PendingIntent = PendingIntent.getService(this, rc,
         Intent(this, WakeService::class.java).setAction(a), PendingIntent.FLAG_IMMUTABLE)
 
+    // Sessione multimediale: l'orologio (es. Amazfit/Zepp) mostra i controlli musica del telefono;
+    // "pausa"/"stop" fermano la sveglia, "traccia successiva" la posticipa
+    private var ms: android.media.session.MediaSession? = null
+    private fun session(label: String): android.media.session.MediaSession {
+        ms?.let { return it }
+        val s = android.media.session.MediaSession(this, "Timercent sveglia")
+        s.setCallback(object : android.media.session.MediaSession.Callback() {
+            override fun onPause() { end(false) }
+            override fun onStop() { end(false) }
+            override fun onSkipToNext() { end(true) }
+        }, h)
+        s.setPlaybackState(android.media.session.PlaybackState.Builder()
+            .setActions(android.media.session.PlaybackState.ACTION_PAUSE or android.media.session.PlaybackState.ACTION_PLAY_PAUSE
+                or android.media.session.PlaybackState.ACTION_STOP or android.media.session.PlaybackState.ACTION_SKIP_TO_NEXT)
+            .setState(android.media.session.PlaybackState.STATE_PLAYING, 0L, 1f).build())
+        s.setMetadata(android.media.MediaMetadata.Builder()
+            .putString(android.media.MediaMetadata.METADATA_KEY_TITLE, label.ifEmpty { "Sveglia" })
+            .putString(android.media.MediaMetadata.METADATA_KEY_ARTIST, "Timercent").build())
+        s.isActive = true
+        ms = s
+        return s
+    }
+
     override fun onStartCommand(i: Intent?, f: Int, sid: Int): Int {
         when (i?.action) {
             "STOP" -> { end(false); return START_NOT_STICKY }
@@ -247,13 +270,26 @@ class WakeService : Service() {
         val a = i?.getStringExtra("id")?.let { Alarms.find(this, it) }
         val label = a?.label ?: ""
         val snz = Alarms.p(this).getInt("a_snz", 10)
-        val n = Notification.Builder(this, Notif.WAKE).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+        val snzA = Notification.Action.Builder(
+            android.graphics.drawable.Icon.createWithResource(this, android.R.drawable.ic_lock_idle_alarm),
+            "Posticipa ($snz min)", act("SNOOZE", 2)).build()
+        val stopA = Notification.Action.Builder(
+            android.graphics.drawable.Icon.createWithResource(this, android.R.drawable.ic_menu_close_clear_cancel),
+            "Ferma", act("STOP", 3)).build()
+        // Stesse due azioni anche per gli orologi Wear OS (quelli con app propria, come Zepp, le ignorano)
+        val wear = Notification.WearableExtender().addAction(stopA).addAction(snzA)
+        val nb = Notification.Builder(this, Notif.WAKE).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle(label.ifEmpty { "Sveglia" }).setContentText(Alarms.hm(this, System.currentTimeMillis()))
             .setCategory(Notification.CATEGORY_ALARM).setOngoing(true).setOnlyAlertOnce(true)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setFullScreenIntent(ringPi(label), true).setContentIntent(ringPi(label))
-            .addAction(0, "Posticipa ($snz min)", act("SNOOZE", 2))
-            .addAction(0, "Ferma", act("STOP", 3)).build()
+            .addAction(snzA)
+            .addAction(stopA)
+        // Impostazione "Controlli smartwatch" (a_watch, spenta di default): notifica "multimediale" legata a una
+        // sessione, così i controlli musica dell'orologio (es. Amazfit/Zepp) agiscono sulla sveglia
+        if (Alarms.p(this).getInt("a_watch", 0) == 1)
+            nb.setStyle(Notification.MediaStyle().setMediaSession(session(label).sessionToken).setShowActionsInCompactView(0, 1))
+        val n = nb.extend(wear).build()
         if (Build.VERSION.SDK_INT >= 29) startForeground(78, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
         else startForeground(78, n)
         if (a == null) { stopSelf(); return START_NOT_STICKY }
@@ -316,9 +352,26 @@ class WakeService : Service() {
         }
     }
 
+    // Chiude la sessione multimediale dicendo prima all'orologio che la riproduzione è finita (STATE_STOPPED):
+    // se la sessione sparisce mentre risulta ancora "in riproduzione", Zepp resta bloccato sulla schermata musica
+    private fun closeSession() {
+        val s = ms ?: return
+        ms = null
+        try {
+            s.setPlaybackState(android.media.session.PlaybackState.Builder().setActions(0L)
+                .setState(android.media.session.PlaybackState.STATE_STOPPED, 0L, 0f).build())
+            s.setMetadata(null)
+        } catch (e: Exception) { }
+        // piccola attesa perché l'aggiornamento arrivi all'orologio prima di rilasciare la sessione
+        Handler(Looper.getMainLooper()).postDelayed({
+            try { s.isActive = false; s.release() } catch (e: Exception) { }
+        }, 1500)
+    }
+
     private fun end(snooze: Boolean, missed: Boolean = false) {
         cur?.let { done(it, snooze, missed) }
         cur = null
+        closeSession()
         stopForeground(Service.STOP_FOREGROUND_REMOVE)
         sendBroadcast(Intent(Alarms.END).setPackage(packageName))
         Alarms.refresh(this)
@@ -328,6 +381,7 @@ class WakeService : Service() {
     override fun onDestroy() {
         running = false
         mp?.release(); mp = null
+        closeSession()
         try { getSystemService(Vibrator::class.java).cancel() } catch (e: Exception) { }
         h.removeCallbacksAndMessages(null)
         super.onDestroy()
