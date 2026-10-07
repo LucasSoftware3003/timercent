@@ -25,9 +25,10 @@ import java.util.Date
 // skip: istante (ms) della suoneria saltata con "Salta"; le suonerie fino a quell'istante vengono ignorate
 // sil: minuti dopo cui la sveglia si silenzia da sola (0 = mai); snz: durata del posticipo in minuti
 // grad: secondi di volume crescente (0 = no); pre: minuti di anticipo della notifica "prossima sveglia" (0 = mai)
+// always: "sempre attiva", una sveglia così non può stare in un gruppo
 class Al(val id: String, var h: Int, var m: Int, var days: Int, var label: String, var on: Boolean,
          var vib: Boolean, var snd: String?, var del: Boolean, var skip: Long = 0L,
-         var sil: Int = 10, var snz: Int = 10, var grad: Int = 0, var pre: Int = 60)
+         var sil: Int = 10, var snz: Int = 10, var grad: Int = 0, var pre: Int = 60, var always: Boolean = false)
 
 object Alarms {
     const val SNZ = "it.timercent.SNOOZE"
@@ -47,7 +48,7 @@ object Alarms {
                 o.optBoolean("v", true), if (o.has("s")) o.getString("s") else null, o.optBoolean("x"), o.optLong("k", 0L),
                 // sveglie salvate prima dell'impostazione per sveglia: ereditano il vecchio valore generale
                 o.optInt("sl", p(c).getInt("a_sil", 10)), o.optInt("sz", p(c).getInt("a_snz", 10)),
-                o.optInt("gr", p(c).getInt("a_grad", 0)), o.optInt("pr", p(c).getInt("a_pre", 60)))
+                o.optInt("gr", p(c).getInt("a_grad", 0)), o.optInt("pr", p(c).getInt("a_pre", 60)), o.optBoolean("aa", false))
         }
     }
 
@@ -56,7 +57,7 @@ object Alarms {
         l.forEach {
             val o = JSONObject().put("id", it.id).put("h", it.h).put("m", it.m).put("d", it.days).put("l", it.label)
                 .put("on", it.on).put("v", it.vib).put("x", it.del).put("k", it.skip)
-                .put("sl", it.sil).put("sz", it.snz).put("gr", it.grad).put("pr", it.pre)
+                .put("sl", it.sil).put("sz", it.snz).put("gr", it.grad).put("pr", it.pre).put("aa", it.always)
             if (it.snd != null) o.put("s", it.snd)
             a.put(o)
         }

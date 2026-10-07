@@ -139,7 +139,7 @@ private fun MainActivity.alarmCard(a: Al) {
     left.addView(time)
     val skipped = a.on && a.skip > System.currentTimeMillis()
     val grName = Groups.of(this, a.id)?.name ?: ""
-    left.addView(tvw(listOf(a.label, daysTxt(a), if (skipped) "prossima saltata" else "", grName).filter { it.isNotEmpty() }.joinToString(" · "), 14f, if (a.on) ACC else MUTE))
+    left.addView(tvw(listOf(a.label, daysTxt(a), if (skipped) "prossima saltata" else "", if (a.always) "sempre attiva" else grName).filter { it.isNotEmpty() }.joinToString(" · "), 14f, if (a.on) ACC else MUTE))
     head.addView(left, lp(0, -2, 1f))
     head.addView(mkSwitch(a.on) { v ->
         a.on = v; if (v) a.skip = 0L
@@ -181,6 +181,7 @@ private fun MainActivity.alarmCard(a: Al) {
                 a.pre = it; Alarms.put(this, a); if (a.on) Alarms.schedule(this, a); render()
             }
         })
+        c.addView(swRow("Sempre attiva", a.always) { v -> setAlways(a, v) })
         if (a.days == 0) c.addView(swRow("Elimina dopo la suoneria", a.del) { v -> a.del = v; Alarms.put(this, a) })
         c.addView(tvw("Elimina sveglia", 15f, MUTE).apply {
             setPadding(0, dp(12), 0, dp(4))
@@ -188,6 +189,21 @@ private fun MainActivity.alarmCard(a: Al) {
         })
     }
     body.addView(c, lp(-1, -2).apply { bottomMargin = dp(12) })
+}
+
+// "Sempre attiva": i comandi dei gruppi non la toccano, quindi non può stare in un gruppo
+private fun MainActivity.setAlways(a: Al, v: Boolean) {
+    if (!v) { a.always = false; Alarms.put(this, a); return }
+    val g = Groups.of(this, a.id)
+    if (g == null) { a.always = true; Alarms.put(this, a); render(); return }
+    AlertDialog.Builder(this).setTitle("Sempre attiva")
+        .setMessage("Una sveglia sempre attiva non può stare in un gruppo. La sveglia verrà tolta da «" + g.name + "». Procedo?")
+        .setPositiveButton("Procedo") { _, _ ->
+            g.ids.remove(a.id); Groups.put(this, g)
+            a.always = true; Alarms.put(this, a); render()
+        }
+        .setNegativeButton("Annulla") { _, _ -> render() }
+        .setOnCancelListener { render() }.show()
 }
 
 private fun MainActivity.labelDlg(a: Al) {
@@ -446,9 +462,9 @@ private fun MainActivity.renameGroup(g: Gr) {
 // Elenco delle sveglie che non sono ancora in nessun gruppo
 private fun MainActivity.pickAlarms(g: Gr) {
     val used = Groups.load(this).flatMap { it.ids }.toSet()
-    val free = Alarms.load(this).filter { it.id !in used }.sortedBy { it.h * 60 + it.m }
+    val free = Alarms.load(this).filter { it.id !in used && !it.always }.sortedBy { it.h * 60 + it.m }
     if (free.isEmpty()) {
-        Toast.makeText(this, "Nessuna sveglia libera: sono tutte già in un gruppo", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "Nessuna sveglia libera: sono tutte in un gruppo o sempre attive", Toast.LENGTH_LONG).show()
         render(); return
     }
     val names = free.map { timeTxt(it) + (if (it.label.isEmpty()) "" else " · " + it.label) + " · " + daysTxt(it) }.toTypedArray()
