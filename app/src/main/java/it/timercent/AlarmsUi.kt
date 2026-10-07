@@ -230,7 +230,7 @@ fun MainActivity.alarmSettings() {
         "Inizio settimana: " + wkn(wk),
         "Avviso prima della sveglia: " + preTxt(pre),
         "Volume delle sveglie",
-        "Controlli musica dello smartwatch: " + (if (wt == 1) "attivi" else "disattivati"))
+        "Controllo sveglia dallo smartwatch: " + (if (wt == 1) "attivi" else "disattivati"))
     AlertDialog.Builder(this).setTitle("Impostazioni sveglie").setItems(items) { _, w ->
         when (w) {
             0 -> choice("Silenzia dopo", "a_sil", listOf(1, 5, 10, 15, 20, 25, 30, 0), sil) { if (it == 0) "Mai" else minTxt(it) }
@@ -240,7 +240,7 @@ fun MainActivity.alarmSettings() {
             4 -> choice("Inizio settimana", "a_week", listOf(1, 6, 7), wk, wkn)
             5 -> choice("Avviso prima della sveglia", "a_pre", listOf(0, 15, 30, 60, 120, 180), pre) { preTxt(it) }
             6 -> volDlg()
-            else -> choice("Controlli musica dello smartwatch (pausa = ferma, avanti = posticipa)", "a_watch", listOf(0, 1), wt) { if (it == 1) "Attivi" else "Disattivati" }
+            else -> choice("Controllo sveglia dallo smartwatch (pausa = ferma, avanti = posticipa)", "a_watch", listOf(0, 1), wt) { if (it == 1) "Attivi" else "Disattivati" }
         }
     }.setNegativeButton("Chiudi", null).show()
 }
