@@ -408,6 +408,7 @@ private fun MainActivity.groupCard(g: Gr) {
             c.addView(r)
         }
         c.addView(row("Salta la prossima giornata", "") { grSkip(g) })
+        c.addView(row("Modifica gruppo", "") { grEdit(g) })
         c.addView(row("Aggiungi sveglie", "") { pickAlarms(g) })
         c.addView(row("Nome", g.name) { renameGroup(g) })
         c.addView(tvw("Elimina gruppo", 15f, MUTE).apply {
@@ -479,4 +480,85 @@ private fun MainActivity.deleteGroup(g: Gr) {
             }
     }
     b.setNegativeButton("Annulla", null).show()
+}
+
+// ---------- Modifica gruppo: «Applica a tutte» ----------
+// Ogni opzione ha la sua azione e cambia solo quella caratteristica: le altre restano com'erano su ogni sveglia.
+// Non sono trasferibili ora, etichetta ed «Elimina dopo la suoneria».
+private var pickGrId: String? = null
+
+private fun grCount(g: Gr) = if (g.ids.size == 1) "1 sveglia" else "${g.ids.size} sveglie"
+
+// Applica f a ogni sveglia del gruppo; quelle accese vengono ripianificate
+private fun MainActivity.grApply(g: Gr, f: (Al) -> Unit) {
+    var n = 0
+    g.ids.forEach { id ->
+        Alarms.find(this, id)?.let { a ->
+            f(a); Alarms.put(this, a); if (a.on) Alarms.schedule(this, a); n++
+        }
+    }
+    Toast.makeText(this, "Applicato a " + (if (n == 1) "1 sveglia" else "$n sveglie"), Toast.LENGTH_LONG).show()
+    render()
+}
+
+private fun MainActivity.grEdit(g: Gr) {
+    if (g.ids.isEmpty()) { Toast.makeText(this, "Il gruppo non ha sveglie", Toast.LENGTH_LONG).show(); return }
+    val names = arrayOf("Giorni", "Suono", "Vibrazione", "Silenzia dopo", "Durata posticipo", "Volume crescente", "Avviso prima della sveglia")
+    AlertDialog.Builder(this).setTitle("Applica a tutte (" + grCount(g) + ")").setItems(names) { _, w ->
+        when (w) {
+            0 -> grDays(g)
+            1 -> grSound(g)
+            2 -> grPick(g, "Vibrazione", listOf("Attiva", "Disattivata")) { a, i -> a.vib = (i == 0) }
+            3 -> { val v = listOf(1, 5, 10, 15, 20, 25, 30, 0); grPick(g, "Silenzia dopo", v.map { silTxt(it) }) { a, i -> a.sil = v[i] } }
+            4 -> { val v = listOf(1, 5, 10, 15, 20, 25, 30); grPick(g, "Durata posticipo", v.map { minTxt(it) }) { a, i -> a.snz = v[i] } }
+            5 -> { val v = listOf(0, 5, 10, 15, 20, 30, 60); grPick(g, "Volume crescente", v.map { gradTxt(it) }) { a, i -> a.grad = v[i] } }
+            else -> { val v = listOf(0, 15, 30, 60, 120, 180); grPick(g, "Avviso prima della sveglia", v.map { preTxt(it) }) { a, i -> a.pre = v[i] } }
+        }
+    }.setNegativeButton("Chiudi", null).show()
+}
+
+// Scelta singola: il valore parte vuoto e si applica solo premendo «Applica a tutte»
+private fun MainActivity.grPick(g: Gr, title: String, labels: List<String>, set: (Al, Int) -> Unit) {
+    var sel = -1
+    AlertDialog.Builder(this).setTitle(title + " · " + grCount(g))
+        .setSingleChoiceItems(labels.toTypedArray(), -1) { _, w -> sel = w }
+        .setPositiveButton("Applica a tutte") { _, _ ->
+            if (sel < 0) Toast.makeText(this, "Scegli un valore", Toast.LENGTH_LONG).show()
+            else { val i = sel; grApply(g) { a -> set(a, i) } }
+        }
+        .setNegativeButton("Annulla", null).show()
+}
+
+// I giorni scelti sostituiscono quelli di ogni sveglia
+private fun MainActivity.grDays(g: Gr) {
+    val ord = order()
+    val chk = BooleanArray(7)
+    AlertDialog.Builder(this).setTitle("Giorni · " + grCount(g))
+        .setMultiChoiceItems(ord.map { DAYN[it] }.toTypedArray(), chk) { _, i, v -> chk[i] = v }
+        .setPositiveButton("Applica a tutte") { _, _ ->
+            var d = 0
+            ord.forEachIndexed { i, day -> if (chk[i]) d = d or (1 shl day) }
+            if (d == 0) Toast.makeText(this, "Seleziona almeno un giorno", Toast.LENGTH_LONG).show()
+            else grApply(g) { a -> a.days = d; a.skip = 0L }
+        }
+        .setNegativeButton("Annulla", null).show()
+}
+
+private fun MainActivity.grSound(g: Gr) {
+    pickGrId = g.id
+    val def = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+    startActivityForResult(Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
+        .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)
+        .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
+        .putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, def)
+        .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true), 4)
+}
+
+// Chiamata da MainActivity quando il selettore di suoni del gruppo restituisce la scelta (u = "" per nessun suono)
+fun MainActivity.groupSoundPicked(u: String) {
+    val g = Groups.load(this).firstOrNull { it.id == pickGrId } ?: return
+    AlertDialog.Builder(this).setTitle("Suono · " + grCount(g))
+        .setMessage("«" + sndName(u) + "» sostituisce il suono di ogni sveglia del gruppo.")
+        .setPositiveButton("Applica a tutte") { _, _ -> grApply(g) { a -> a.snd = u } }
+        .setNegativeButton("Annulla", null).show()
 }

@@ -246,6 +246,10 @@ class MainActivity : Activity() {
             val u = d.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
             getSharedPreferences("ct", 0).edit().putString("snd", u?.toString() ?: "").apply()
         }
+        if (rq == 4 && rs == RESULT_OK && d != null) {
+            val u = d.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+            groupSoundPicked(u?.toString() ?: "")
+        }
         if (rq == 3 && rs == RESULT_OK && d != null) {
             val u = d.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
             pickAl?.let { id -> Alarms.find(this, id)?.let { it.snd = u?.toString() ?: ""; Alarms.put(this, it) } }
