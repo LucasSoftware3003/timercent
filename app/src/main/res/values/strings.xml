@@ -8,4 +8,11 @@
     <string name="default_timer_label">Timer</string>
     <string name="timer_time_up">Time is up</string>
     <string name="action_stop">Stop</string>
+    <string name="alarm_default_label">Alarm</string>
+    <string name="alarm_next">Next alarm</string>
+    <string name="alarm_skip">Skip</string>
+    <string name="alarm_snooze_action">Snooze (%d min)</string>
+    <string name="alarm_snooze_for">Snooze for %d min</string>
+    <string name="alarm_snoozed_until">Snoozed until %s</string>
+    <string name="alarm_missed_title">Missed alarm</string>
 </resources>

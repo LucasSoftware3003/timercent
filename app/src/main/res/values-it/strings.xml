@@ -8,4 +8,11 @@
     <string name="default_timer_label">Timer</string>
     <string name="timer_time_up">Tempo scaduto</string>
     <string name="action_stop">Ferma</string>
+    <string name="alarm_default_label">Sveglia</string>
+    <string name="alarm_next">Prossima sveglia</string>
+    <string name="alarm_skip">Salta</string>
+    <string name="alarm_snooze_action">Posticipa (%d min)</string>
+    <string name="alarm_snooze_for">Posticipa di %d min</string>
+    <string name="alarm_snoozed_until">Posticipata fino alle %s</string>
+    <string name="alarm_missed_title">Sveglia mancata</string>
 </resources>
