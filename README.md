@@ -38,6 +38,14 @@ Senza pubblicità, senza account, senza connessione a internet.
   <img src="docs/app-orologio.png" alt="Orologio internazionale" width="24%">
 </p>
 
+### Gruppi e smartwatch
+
+<p align="center">
+  <img src="docs/app-gruppi.png" alt="Pagina Gruppi con un gruppo aperto" width="31%">
+  <img src="docs/app-gruppo-applica.png" alt="Applica a tutte le sveglie del gruppo" width="31%">
+  <img src="docs/app-impostazioni-sveglie.png" alt="Impostazioni sveglie con il controllo da smartwatch" width="31%">
+</p>
+
 ### Personalizzazione
 
 <p align="center">
@@ -71,6 +79,25 @@ Senza pubblicità, senza account, senza connessione a internet.
 - Inizio settimana e volume delle sveglie regolabili.
 - Schermata a tutto schermo alla suoneria e ripianificazione automatica dopo il riavvio del telefono, per sveglie e timer.
 - **Notifica «prossima sveglia»** con conto alla rovescia e tasto **Salta** (compare da 15 minuti a 3 ore prima, a scelta, o mai).
+- **Sempre attiva**: una sveglia con questa opzione non viene toccata dai comandi dei gruppi (vedi sotto).
+
+### Gruppi di sveglie
+
+Nella scheda Sveglie, accanto all'elenco, c'è la pagina **Gruppi**: raccoglie più sveglie (per esempio «Lavoro» o «Weekend») e dà comandi comuni.
+
+- **Interruttore del gruppo**: accende o spegne tutte le sveglie del gruppo in un colpo solo. Dopo, ogni sveglia resta libera di accendersi e spegnersi da sola.
+- **Salta la prossima giornata**: salta la prossima suoneria di tutte le sveglie attive del gruppo, come il tasto *Salta* della notifica.
+- **Applica a tutte**: cambia in blocco una caratteristica alla volta (giorni, suono, vibrazione, silenzia dopo, durata del posticipo, volume crescente, avviso prima della sveglia) lasciando invariato il resto.
+- Una sveglia sta al massimo in **un solo gruppo**; le sveglie «sempre attive» non possono farne parte.
+- Eliminando un gruppo scegli se tenere le sveglie o eliminarle insieme a lui.
+
+### Controllo da smartwatch
+
+Con l'opzione **Controllo sveglia dallo smartwatch** (menu ⋮ → *Impostazioni sveglie*, spenta di default) la sveglia che suona può essere gestita dal polso:
+
+- **Pausa** o **stop** fermano la sveglia, **traccia successiva** la posticipa.
+- Funziona con gli orologi che mostrano i controlli musica del telefono (per esempio Amazfit/Zepp).
+- Sugli orologi Wear OS compaiono i tasti **Ferma** e **Posticipa** della notifica.
 
 ### Widget
 
@@ -156,7 +183,8 @@ A ogni push sul ramo `main` il workflow [`apk.yml`](.github/workflows/apk.yml) c
 | File                                      | Contenuto                                                                   |
 | ----------------------------------------- | --------------------------------------------------------------------------- |
 | `MainActivity.kt`                         | schede Timer, Cronometro (con giri), Orologio, scorrimento e intent        |
-| `Alarms.kt`, `AlarmsUi.kt`                | sveglie: pianificazione, suoneria, notifica «prossima sveglia», interfaccia |
+| `Alarms.kt`, `AlarmsUi.kt`                | sveglie: pianificazione, suoneria, controllo da smartwatch, notifica «prossima sveglia», interfaccia |
+| `Groups.kt`                               | gruppi di sveglie (dati); la pagina Gruppi è in `AlarmsUi.kt`               |
 | `Notif.kt`                                | canali e notifiche                                                          |
 | `Widgets.kt`, `CfgBase.kt`                | widget digitale e analogico, schermate di configurazione                    |
 | `Dials.kt`, `DialBuilder.kt`, `AnaRes.kt` | quadranti analogici e costruttore                                           |
