@@ -15,4 +15,108 @@
     <string name="alarm_snooze_for">Snooze for %d min</string>
     <string name="alarm_snoozed_until">Snoozed until %s</string>
     <string name="alarm_missed_title">Missed alarm</string>
+
+    <string name="cancel">Cancel</string>
+    <string name="no_alarms">No alarms. Add one.</string>
+    <string name="new_alarm">New alarm</string>
+    <string name="next_skipped">next skipped</string>
+    <string name="always_on_lc">always on</string>
+    <string name="always_on">Always on</string>
+    <string name="none">None</string>
+    <string name="none_sound">None</string>
+    <string name="label_row">Label</string>
+    <string name="sound">Sound</string>
+    <string name="vibration">Vibration</string>
+    <string name="silence_after">Silence after</string>
+    <string name="snooze_duration">Snooze duration</string>
+    <string name="volume_ramp">Volume ramp-up</string>
+    <string name="pre_alarm_notice">Notice before alarm</string>
+    <string name="delete_after_ring">Delete after ringing</string>
+    <string name="delete_alarm">Delete alarm</string>
+    <string name="never_cap">Never</string>
+    <string name="never_lc">never</string>
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="every_day">Every day</string>
+    <string name="days_weekdays">Mon-Fri</string>
+    <string name="days_weekend">Sat, Sun</string>
+    <string name="toast_alarm_in">Alarm in %s</string>
+    <string name="sound_default">Default</string>
+    <string name="sound_custom">Custom</string>
+    <string name="list_and"> and </string>
+    <string name="permission_needed">Permission needed</string>
+    <string name="fullscreen_perm_msg">To show the alarm on a lit or locked screen, you need the “Full-screen notifications” permission.</string>
+    <string name="open_settings">Open settings</string>
+    <string name="not_now">Not now</string>
+    <string name="back">Back</string>
+    <string name="snooze">Snooze</string>
+    <string name="no_action">No action</string>
+    <string name="volume_keys_fmt">Volume keys: %s</string>
+    <string name="week_start_fmt">Week starts: %s</string>
+    <string name="monday">Monday</string>
+    <string name="saturday">Saturday</string>
+    <string name="sunday">Sunday</string>
+    <string name="alarm_volume">Alarm volume</string>
+    <string name="watch_fmt">Smartwatch alarm control: %s</string>
+    <string name="watch_on">enabled</string>
+    <string name="watch_off">disabled</string>
+    <string name="watch_on_cap">Enabled</string>
+    <string name="watch_off_cap">Disabled</string>
+    <string name="alarm_settings_title">Alarm settings</string>
+    <string name="volume_keys">Volume keys</string>
+    <string name="week_start">Week start</string>
+    <string name="watch_control_title">Smartwatch alarm control (pause = stop, next = snooze)</string>
+    <string name="close">Close</string>
+    <string name="volume_hint">System volume for alarms and timers. At zero they won’t ring.</string>
+    <string name="timer_started_fmt">Timer started: %s</string>
+    <string name="alarms_tab">Alarms</string>
+    <string name="groups_tab">Groups</string>
+    <string name="no_groups">No groups. A group gathers several alarms: you can turn them on, off and skip them together.</string>
+    <string name="new_group">New group</string>
+    <string name="no_active_in_group">No active alarm in the group</string>
+    <string name="group_default">Group</string>
+    <string name="no_alarms_in_group">No alarms in the group.</string>
+    <string name="group_skip_day">Skip next day</string>
+    <string name="group_edit">Edit group</string>
+    <string name="group_add_alarms">Add alarms</string>
+    <string name="name_row">Name</string>
+    <string name="group_delete">Delete group</string>
+    <string name="group_name_hint">Group name</string>
+    <string name="next">Next</string>
+    <string name="no_free_alarms">No free alarm: they are all in a group or always on</string>
+    <string name="choose_alarms">Choose alarms</string>
+    <string name="delete_group_title">Delete “%s”</string>
+    <string name="delete_group_q">Delete the group?</string>
+    <string name="delete">Delete</string>
+    <string name="group_only">Group only</string>
+    <string name="group_and_alarms">Alarms too</string>
+    <string name="apply_all_title">Apply to all (%s)</string>
+    <string name="vib_on_cap">Enabled</string>
+    <string name="vib_off_cap">Disabled</string>
+    <string name="choose_value">Choose a value</string>
+    <string name="apply_all">Apply to all</string>
+    <string name="days_title">Days</string>
+    <string name="select_one_day">Select at least one day</string>
+    <string name="sound_replace_fmt">“%s” replaces the sound of every alarm in the group.</string>
+    <string name="applied_to_fmt">Applied to %s</string>
+    <string name="always_on_group_msg">An always-on alarm can’t be in a group. The alarm will be removed from “%s”. Continue?</string>
+    <string name="proceed">Continue</string>
+    <string name="group_no_alarms">The group has no alarms</string>
+    <string-array name="day_short">
+        <item>Mon</item><item>Tue</item><item>Wed</item><item>Thu</item><item>Fri</item><item>Sat</item><item>Sun</item>
+    </string-array>
+    <string-array name="day_initial">
+        <item>M</item><item>T</item><item>W</item><item>T</item><item>F</item><item>S</item><item>S</item>
+    </string-array>
+    <string-array name="apply_all_options">
+        <item>Days</item><item>Sound</item><item>Vibration</item><item>Silence after</item><item>Snooze duration</item><item>Volume ramp-up</item><item>Notice before alarm</item>
+    </string-array>
+    <plurals name="minutes_n"><item quantity="one">%d minute</item><item quantity="other">%d minutes</item></plurals>
+    <plurals name="hours_n"><item quantity="one">%d hour</item><item quantity="other">%d hours</item></plurals>
+    <plurals name="days_n"><item quantity="one">%d day</item><item quantity="other">%d days</item></plurals>
+    <plurals name="seconds_n"><item quantity="one">%d second</item><item quantity="other">%d seconds</item></plurals>
+    <plurals name="alarms_count"><item quantity="one">%d alarm</item><item quantity="other">%d alarms</item></plurals>
+    <plurals name="active_count"><item quantity="one">%d active</item><item quantity="other">%d active</item></plurals>
+    <plurals name="skipped_rings"><item quantity="one">Skipped the next ring of %d alarm</item><item quantity="other">Skipped the next ring of %d alarms</item></plurals>
+    <plurals name="group_contains"><item quantity="one">The group contains %d alarm. What do you want to do?</item><item quantity="other">The group contains %d alarms. What do you want to do?</item></plurals>
 </resources>

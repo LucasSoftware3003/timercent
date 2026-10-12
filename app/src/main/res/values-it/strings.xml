@@ -15,4 +15,108 @@
     <string name="alarm_snooze_for">Posticipa di %d min</string>
     <string name="alarm_snoozed_until">Posticipata fino alle %s</string>
     <string name="alarm_missed_title">Sveglia mancata</string>
+
+    <string name="cancel">Annulla</string>
+    <string name="no_alarms">Nessuna sveglia. Aggiungine una.</string>
+    <string name="new_alarm">Nuova sveglia</string>
+    <string name="next_skipped">prossima saltata</string>
+    <string name="always_on_lc">sempre attiva</string>
+    <string name="always_on">Sempre attiva</string>
+    <string name="none">Nessuna</string>
+    <string name="none_sound">Nessuno</string>
+    <string name="label_row">Etichetta</string>
+    <string name="sound">Suono</string>
+    <string name="vibration">Vibrazione</string>
+    <string name="silence_after">Silenzia dopo</string>
+    <string name="snooze_duration">Durata posticipo</string>
+    <string name="volume_ramp">Volume crescente</string>
+    <string name="pre_alarm_notice">Avviso prima della sveglia</string>
+    <string name="delete_after_ring">Elimina dopo la suoneria</string>
+    <string name="delete_alarm">Elimina sveglia</string>
+    <string name="never_cap">Mai</string>
+    <string name="never_lc">mai</string>
+    <string name="today">Oggi</string>
+    <string name="tomorrow">Domani</string>
+    <string name="every_day">Ogni giorno</string>
+    <string name="days_weekdays">Lun-Ven</string>
+    <string name="days_weekend">Sab, Dom</string>
+    <string name="toast_alarm_in">Sveglia tra %s</string>
+    <string name="sound_default">Predefinito</string>
+    <string name="sound_custom">Personalizzato</string>
+    <string name="list_and"> e </string>
+    <string name="permission_needed">Permesso necessario</string>
+    <string name="fullscreen_perm_msg">Per mostrare la sveglia a schermo acceso o bloccato serve il permesso «Notifiche a schermo intero».</string>
+    <string name="open_settings">Apri impostazioni</string>
+    <string name="not_now">Non ora</string>
+    <string name="back">Indietro</string>
+    <string name="snooze">Posticipa</string>
+    <string name="no_action">Nessuna azione</string>
+    <string name="volume_keys_fmt">Tasti del volume: %s</string>
+    <string name="week_start_fmt">Inizio settimana: %s</string>
+    <string name="monday">Lunedì</string>
+    <string name="saturday">Sabato</string>
+    <string name="sunday">Domenica</string>
+    <string name="alarm_volume">Volume delle sveglie</string>
+    <string name="watch_fmt">Controllo sveglia dallo smartwatch: %s</string>
+    <string name="watch_on">attivi</string>
+    <string name="watch_off">disattivati</string>
+    <string name="watch_on_cap">Attivi</string>
+    <string name="watch_off_cap">Disattivati</string>
+    <string name="alarm_settings_title">Impostazioni sveglie</string>
+    <string name="volume_keys">Tasti del volume</string>
+    <string name="week_start">Inizio settimana</string>
+    <string name="watch_control_title">Controllo sveglia dallo smartwatch (pausa = ferma, avanti = posticipa)</string>
+    <string name="close">Chiudi</string>
+    <string name="volume_hint">Volume di sistema per sveglie e timer. A zero non suonano.</string>
+    <string name="timer_started_fmt">Timer avviato: %s</string>
+    <string name="alarms_tab">Sveglie</string>
+    <string name="groups_tab">Gruppi</string>
+    <string name="no_groups">Nessun gruppo. Un gruppo raccoglie più sveglie: puoi accenderle, spegnerle e saltarle insieme.</string>
+    <string name="new_group">Nuovo gruppo</string>
+    <string name="no_active_in_group">Nessuna sveglia attiva nel gruppo</string>
+    <string name="group_default">Gruppo</string>
+    <string name="no_alarms_in_group">Nessuna sveglia nel gruppo.</string>
+    <string name="group_skip_day">Salta la prossima giornata</string>
+    <string name="group_edit">Modifica gruppo</string>
+    <string name="group_add_alarms">Aggiungi sveglie</string>
+    <string name="name_row">Nome</string>
+    <string name="group_delete">Elimina gruppo</string>
+    <string name="group_name_hint">Nome del gruppo</string>
+    <string name="next">Avanti</string>
+    <string name="no_free_alarms">Nessuna sveglia libera: sono tutte in un gruppo o sempre attive</string>
+    <string name="choose_alarms">Scegli le sveglie</string>
+    <string name="delete_group_title">Elimina «%s»</string>
+    <string name="delete_group_q">Eliminare il gruppo?</string>
+    <string name="delete">Elimina</string>
+    <string name="group_only">Solo il gruppo</string>
+    <string name="group_and_alarms">Anche le sveglie</string>
+    <string name="apply_all_title">Applica a tutte (%s)</string>
+    <string name="vib_on_cap">Attiva</string>
+    <string name="vib_off_cap">Disattivata</string>
+    <string name="choose_value">Scegli un valore</string>
+    <string name="apply_all">Applica a tutte</string>
+    <string name="days_title">Giorni</string>
+    <string name="select_one_day">Seleziona almeno un giorno</string>
+    <string name="sound_replace_fmt">«%s» sostituisce il suono di ogni sveglia del gruppo.</string>
+    <string name="applied_to_fmt">Applicato a %s</string>
+    <string name="always_on_group_msg">Una sveglia sempre attiva non può stare in un gruppo. La sveglia verrà tolta da «%s». Procedo?</string>
+    <string name="proceed">Procedo</string>
+    <string name="group_no_alarms">Il gruppo non ha sveglie</string>
+    <string-array name="day_short">
+        <item>Lun</item><item>Mar</item><item>Mer</item><item>Gio</item><item>Ven</item><item>Sab</item><item>Dom</item>
+    </string-array>
+    <string-array name="day_initial">
+        <item>L</item><item>M</item><item>M</item><item>G</item><item>V</item><item>S</item><item>D</item>
+    </string-array>
+    <string-array name="apply_all_options">
+        <item>Giorni</item><item>Suono</item><item>Vibrazione</item><item>Silenzia dopo</item><item>Durata posticipo</item><item>Volume crescente</item><item>Avviso prima della sveglia</item>
+    </string-array>
+    <plurals name="minutes_n"><item quantity="one">%d minuto</item><item quantity="other">%d minuti</item></plurals>
+    <plurals name="hours_n"><item quantity="one">%d ora</item><item quantity="other">%d ore</item></plurals>
+    <plurals name="days_n"><item quantity="one">%d giorno</item><item quantity="other">%d giorni</item></plurals>
+    <plurals name="seconds_n"><item quantity="one">%d secondo</item><item quantity="other">%d secondi</item></plurals>
+    <plurals name="alarms_count"><item quantity="one">%d sveglia</item><item quantity="other">%d sveglie</item></plurals>
+    <plurals name="active_count"><item quantity="one">%d attiva</item><item quantity="other">%d attive</item></plurals>
+    <plurals name="skipped_rings"><item quantity="one">Saltata la prossima suoneria di %d sveglia</item><item quantity="other">Saltata la prossima suoneria di %d sveglie</item></plurals>
+    <plurals name="group_contains"><item quantity="one">Il gruppo contiene %d sveglia. Cosa vuoi fare?</item><item quantity="other">Il gruppo contiene %d sveglie. Cosa vuoi fare?</item></plurals>
 </resources>
