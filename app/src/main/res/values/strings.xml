@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notif_channel_running">Running</string>
+    <string name="notif_channel_timer_done">Timer finished</string>
+    <string name="notif_channel_alarms">Alarms</string>
+    <string name="notif_channel_missed">Missed alarms</string>
+    <string name="notif_channel_next">Next alarm</string>
+    <string name="default_timer_label">Timer</string>
+    <string name="timer_time_up">Time is up</string>
+    <string name="action_stop">Stop</string>
+</resources>

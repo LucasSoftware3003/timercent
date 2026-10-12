@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notif_channel_running">In corso</string>
+    <string name="notif_channel_timer_done">Timer finito</string>
+    <string name="notif_channel_alarms">Sveglie</string>
+    <string name="notif_channel_missed">Sveglie perse</string>
+    <string name="notif_channel_next">Prossima sveglia</string>
+    <string name="default_timer_label">Timer</string>
+    <string name="timer_time_up">Tempo scaduto</string>
+    <string name="action_stop">Ferma</string>
+</resources>

@@ -35,15 +35,15 @@ object Notif {
     const val UP = "up"
     fun channels(c: Context) {
         val m = c.getSystemService(NotificationManager::class.java)
-        m.createNotificationChannel(NotificationChannel(RUN, "In corso", NotificationManager.IMPORTANCE_LOW))
-        val e = NotificationChannel(RING, "Timer finito", NotificationManager.IMPORTANCE_HIGH)
+        m.createNotificationChannel(NotificationChannel(RUN, c.getString(R.string.notif_channel_running), NotificationManager.IMPORTANCE_LOW))
+        val e = NotificationChannel(RING, c.getString(R.string.notif_channel_timer_done), NotificationManager.IMPORTANCE_HIGH)
         e.setSound(null, null); e.enableVibration(false)
         m.createNotificationChannel(e)
-        val w = NotificationChannel(WAKE, "Sveglie", NotificationManager.IMPORTANCE_HIGH)
+        val w = NotificationChannel(WAKE, c.getString(R.string.notif_channel_alarms), NotificationManager.IMPORTANCE_HIGH)
         w.setSound(null, null); w.enableVibration(false)
         m.createNotificationChannel(w)
-        m.createNotificationChannel(NotificationChannel(MISS, "Sveglie perse", NotificationManager.IMPORTANCE_DEFAULT))
-        m.createNotificationChannel(NotificationChannel(UP, "Prossima sveglia", NotificationManager.IMPORTANCE_LOW))
+        m.createNotificationChannel(NotificationChannel(MISS, c.getString(R.string.notif_channel_missed), NotificationManager.IMPORTANCE_DEFAULT))
+        m.createNotificationChannel(NotificationChannel(UP, c.getString(R.string.notif_channel_next), NotificationManager.IMPORTANCE_LOW))
     }
     fun sound(c: Context): Uri =
         c.getSharedPreferences("ct", 0).getString("snd", null)?.let { Uri.parse(it) }
@@ -64,7 +64,7 @@ object Notif {
         c.getSystemService(AlarmManager::class.java)
             .setAlarmClock(AlarmManager.AlarmClockInfo(t.end, open(c)), alarmPi(c, t))
         val n = Notification.Builder(c, RUN).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-            .setContentTitle(t.label.ifEmpty { "Timer" }).setWhen(t.end).setUsesChronometer(true)
+            .setContentTitle(t.label.ifEmpty { c.getString(R.string.default_timer_label) }).setWhen(t.end).setUsesChronometer(true)
             .setChronometerCountDown(true).setOngoing(true).setContentIntent(open(c)).build()
         c.getSystemService(NotificationManager::class.java).notify(t.id.hashCode(), n)
     }
@@ -106,9 +106,9 @@ class AlarmService : Service() {
         Notif.channels(this)
         val stop = PendingIntent.getService(this, 1, Intent(this, AlarmService::class.java).setAction("STOP"), PendingIntent.FLAG_IMMUTABLE)
         val n = Notification.Builder(this, Notif.RING).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-            .setContentTitle((i?.getStringExtra("label") ?: "").ifEmpty { "Timer" }).setContentText("Tempo scaduto")
+            .setContentTitle((i?.getStringExtra("label") ?: "").ifEmpty { getString(R.string.default_timer_label) }).setContentText(getString(R.string.timer_time_up))
             .setContentIntent(Notif.open(this)).setCategory(Notification.CATEGORY_ALARM)
-            .addAction(0, "Ferma", stop).build()
+            .addAction(0, getString(R.string.action_stop), stop).build()
         if (Build.VERSION.SDK_INT >= 29) startForeground(77, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
         else startForeground(77, n)
         if (mp?.isPlaying == true && SystemClock.elapsedRealtime() - last < 3000) return START_NOT_STICKY
