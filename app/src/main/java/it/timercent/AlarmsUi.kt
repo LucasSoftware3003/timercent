@@ -3,6 +3,7 @@ package it.timercent
 import android.app.AlertDialog
 import android.app.NotificationManager
 import android.app.TimePickerDialog
+import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Typeface
