@@ -119,7 +119,7 @@ object Dials {
 
     fun removeUser(c: Context, id: String) { saveUser(c, user(c).filter { it.id != id }) }
 
-    fun all(c: Context): List<DialSpec> = PRESETS.map { it.copy(name = presetName(c, it.id)) } + user(c)
+    fun all(c: Context): List<DialSpec> = PRESETS.map { p -> p.copy().apply { name = presetName(c, p.id) } } + user(c)
     private fun presetName(c: Context, id: String): String = c.getString(when (id) {
         "p0" -> R.string.preset_classic; "p1" -> R.string.preset_quarters; "p2" -> R.string.preset_arabic
         "p3" -> R.string.preset_roman; "p4" -> R.string.preset_four; "p5" -> R.string.preset_dots
