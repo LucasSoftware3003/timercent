@@ -43,7 +43,7 @@
     <string name="toast_alarm_in">Alarm in %s</string>
     <string name="sound_default">Default</string>
     <string name="sound_custom">Custom</string>
-    <string name="list_and"> and </string>
+    <string name="list_and">" and "</string>
     <string name="permission_needed">Permission needed</string>
     <string name="fullscreen_perm_msg">To show the alarm on a lit or locked screen, you need the “Full-screen notifications” permission.</string>
     <string name="open_settings">Open settings</string>
@@ -119,4 +119,42 @@
     <plurals name="active_count"><item quantity="one">%d active</item><item quantity="other">%d active</item></plurals>
     <plurals name="skipped_rings"><item quantity="one">Skipped the next ring of %d alarm</item><item quantity="other">Skipped the next ring of %d alarms</item></plurals>
     <plurals name="group_contains"><item quantity="one">The group contains %d alarm. What do you want to do?</item><item quantity="other">The group contains %d alarms. What do you want to do?</item></plurals>
+
+    <string name="tab_timer">Timer</string>
+    <string name="tab_stopwatch">Stopwatch</string>
+    <string name="tab_clock">World clock</string>
+    <string name="options_title">Options</string>
+    <string name="menu_timer_sound">Timer sound</string>
+    <string name="menu_precision_fmt">Precision: %s</string>
+    <string name="menu_dials">Analog dials</string>
+    <string name="menu_about">Info and donations</string>
+    <string name="precision_title">Precision</string>
+    <string-array name="precision_names">
+        <item>tenths</item><item>hundredths</item><item>thousandths</item>
+    </string-array>
+    <string-array name="precision_options">
+        <item>Tenths (0.1 s)</item><item>Hundredths (0.01 s)</item><item>Thousandths (0.001 s)</item>
+    </string-array>
+    <string name="no_timers">No timers. Add one with a label and a duration.</string>
+    <string name="new_timer">New timer</string>
+    <string name="reset">Reset</string>
+    <string name="resume">Resume</string>
+    <string name="start">Start</string>
+    <string name="pause">Pause</string>
+    <string name="label_optional">Label (optional)</string>
+    <string name="add_btn">Add</string>
+    <string name="lap">Lap</string>
+    <string name="lap_n">Lap %d</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="same_zone">same time zone</string>
+    <string name="hours_short">%d h</string>
+    <string name="minutes_short">%d min</string>
+    <string name="add_city_hint">Add the cities whose time you want to see.</string>
+    <string name="add_city">Add city</string>
+    <string name="here_suffix">" (here)"</string>
+    <string name="move_up">Move up</string>
+    <string name="move_down">Move down</string>
+    <string name="search_city">Search city</string>
+    <string name="widget_digital_name">Digital clock</string>
+    <string name="widget_analog_name">Analog clock</string>
 </resources>

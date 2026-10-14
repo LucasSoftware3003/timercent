@@ -43,7 +43,7 @@
     <string name="toast_alarm_in">Sveglia tra %s</string>
     <string name="sound_default">Predefinito</string>
     <string name="sound_custom">Personalizzato</string>
-    <string name="list_and"> e </string>
+    <string name="list_and">" e "</string>
     <string name="permission_needed">Permesso necessario</string>
     <string name="fullscreen_perm_msg">Per mostrare la sveglia a schermo acceso o bloccato serve il permesso «Notifiche a schermo intero».</string>
     <string name="open_settings">Apri impostazioni</string>
@@ -119,4 +119,42 @@
     <plurals name="active_count"><item quantity="one">%d attiva</item><item quantity="other">%d attive</item></plurals>
     <plurals name="skipped_rings"><item quantity="one">Saltata la prossima suoneria di %d sveglia</item><item quantity="other">Saltata la prossima suoneria di %d sveglie</item></plurals>
     <plurals name="group_contains"><item quantity="one">Il gruppo contiene %d sveglia. Cosa vuoi fare?</item><item quantity="other">Il gruppo contiene %d sveglie. Cosa vuoi fare?</item></plurals>
+
+    <string name="tab_timer">Timer</string>
+    <string name="tab_stopwatch">Cronometro</string>
+    <string name="tab_clock">Orologio</string>
+    <string name="options_title">Opzioni</string>
+    <string name="menu_timer_sound">Suono timer</string>
+    <string name="menu_precision_fmt">Precisione: %s</string>
+    <string name="menu_dials">Quadranti analogici</string>
+    <string name="menu_about">Informazioni e donazioni</string>
+    <string name="precision_title">Precisione</string>
+    <string-array name="precision_names">
+        <item>decimi</item><item>centesimi</item><item>millesimi</item>
+    </string-array>
+    <string-array name="precision_options">
+        <item>Decimi (0.1 s)</item><item>Centesimi (0.01 s)</item><item>Millesimi (0.001 s)</item>
+    </string-array>
+    <string name="no_timers">Nessun timer. Aggiungine uno con etichetta e durata.</string>
+    <string name="new_timer">Nuovo timer</string>
+    <string name="reset">Azzera</string>
+    <string name="resume">Riprendi</string>
+    <string name="start">Avvia</string>
+    <string name="pause">Pausa</string>
+    <string name="label_optional">Etichetta (facoltativa)</string>
+    <string name="add_btn">Aggiungi</string>
+    <string name="lap">Giro</string>
+    <string name="lap_n">Giro %d</string>
+    <string name="yesterday">Ieri</string>
+    <string name="same_zone">stesso fuso</string>
+    <string name="hours_short">%d h</string>
+    <string name="minutes_short">%d min</string>
+    <string name="add_city_hint">Aggiungi le città di cui vuoi vedere l’ora.</string>
+    <string name="add_city">Aggiungi città</string>
+    <string name="here_suffix">" (qui)"</string>
+    <string name="move_up">Sposta su</string>
+    <string name="move_down">Sposta giù</string>
+    <string name="search_city">Cerca città</string>
+    <string name="widget_digital_name">Orologio digitale</string>
+    <string name="widget_analog_name">Orologio analogico</string>
 </resources>
