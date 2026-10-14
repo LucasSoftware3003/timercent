@@ -6,7 +6,7 @@ on:
     branches: [main]
     # Solo documentazione: nessuna compilazione e nessuna nuova release
     paths-ignore:
-      - "README.md"
+      - "*.md"
       - "LICENSE"
       - "docs/**"
 

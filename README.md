@@ -4,165 +4,177 @@
 
 # Timercent
 
-Timer, cronometro, orologio internazionale e sveglie per Android, con decimi e centesimi di secondo e widget completamente personalizzabili.
-Senza pubblicità, senza account, senza connessione a internet.
+**English** · [Italiano](README.it.md)
+
+Timer, stopwatch, world clock and alarms for Android, with tenths and hundredths of a second and fully customizable widgets.
+No ads, no account, no internet connection.
 
 <p align="center">
-  <strong><a href="https://github.com/LucasSoftware3003/timercent/releases/latest/download/timercent-release.apk">⬇ Scarica l'APK</a></strong>
+  <strong><a href="https://github.com/LucasSoftware3003/timercent/releases/latest/download/timercent-release.apk">⬇ Download the APK</a></strong>
   &nbsp;·&nbsp;
-  <a href="https://github.com/LucasSoftware3003/timercent/releases/latest">Ultima versione e note</a>
+  <a href="https://github.com/LucasSoftware3003/timercent/releases/latest">Latest version and notes</a>
 </p>
 
 ---
 
-## Screenshot
+## Features at a glance
 
-### Widget
+- **[Alarm groups](#alarm-groups)**: gather alarms into groups («Work», «Weekend») and manage them together: turn them all on or off at once, skip the next ring, apply a change to all of them.
+- **[Alarms](#alarms)**: days, sound, vibration, snooze, automatic silence, rising volume and the «next alarm» notification.
+- **[Timer and stopwatch](#timer-and-stopwatch)**: multiple timers running in parallel, stopwatch with laps, precision in tenths, hundredths or thousandths.
+- **[World clock](#world-clock)**: times and time zones of cities all over the world.
+- **[Widgets](#widgets)**: digital and analog widgets, customizable for each instance.
+- **[Smartwatch control](#smartwatch-control)**: stop or snooze the alarm from your wrist.
+- **[Android integration](#android-integration)**: works with voice assistants and other apps.
+
+## Screenshots
+
+### Widget examples
 
 <p align="center">
-  <img src="docs/widget-analogico-foto.jpg" alt="Widget analogico con foto di sfondo" width="48%">
-  <img src="docs/widget-analogico-quadrante-foto.jpg" alt="Widget analogico con foto dentro il quadrante" width="48%">
+  <img src="docs/widget-analogico-foto.jpg" alt="Analog widget with a background photo" width="48%">
+  <img src="docs/widget-analogico-quadrante-foto.jpg" alt="Analog widget with a photo inside the dial" width="48%">
 </p>
 <p align="center">
-  <img src="docs/widget-digitale-semitrasparente.jpg" alt="Widget digitale semitrasparente con foto" width="31%">
-  <img src="docs/widget-digitale-opaco.jpg" alt="Widget digitale opaco" width="31%">
-  <img src="docs/widget-digitale-trasparente.jpg" alt="Widget digitale trasparente con carattere corsivo" width="31%">
+  <img src="docs/widget-digitale-semitrasparente.jpg" alt="Semi-transparent digital widget with a photo" width="31%">
+  <img src="docs/widget-digitale-opaco.jpg" alt="Opaque digital widget" width="31%">
+  <img src="docs/widget-digitale-trasparente.jpg" alt="Transparent digital widget with italic font" width="31%">
 </p>
 
 ### App
 
 <p align="center">
-  <img src="docs/app-sveglie.png" alt="Sveglie" width="24%">
-  <img src="docs/app-timer.png" alt="Timer con centesimi di secondo" width="24%">
-  <img src="docs/app-cronometro.png" alt="Cronometro con giri" width="24%">
-  <img src="docs/app-orologio.png" alt="Orologio internazionale" width="24%">
+  <img src="docs/app-sveglie.png" alt="Alarms" width="24%">
+  <img src="docs/app-timer.png" alt="Timer with hundredths of a second" width="24%">
+  <img src="docs/app-cronometro.png" alt="Stopwatch with laps" width="24%">
+  <img src="docs/app-orologio.png" alt="World clock" width="24%">
 </p>
 
-### Gruppi e smartwatch
+### Groups and smartwatch
 
 <p align="center">
-  <img src="docs/app-gruppi.png" alt="Pagina Gruppi con un gruppo aperto" width="31%">
-  <img src="docs/app-gruppo-applica.png" alt="Applica a tutte le sveglie del gruppo" width="31%">
-  <img src="docs/app-impostazioni-sveglie.png" alt="Impostazioni sveglie con il controllo da smartwatch" width="31%">
+  <img src="docs/app-gruppi.png" alt="Groups page with one group open" width="31%">
+  <img src="docs/app-gruppo-applica.png" alt="Apply to all alarms in the group" width="31%">
+  <img src="docs/app-impostazioni-sveglie.png" alt="Alarm settings with smartwatch control" width="31%">
 </p>
 
-### Personalizzazione
+### Customization
 
 <p align="center">
-  <img src="docs/config-widget-analogico.png" alt="Impostazioni del widget analogico" width="40%">
-  <img src="docs/config-quadrante.png" alt="Costruttore di quadranti" width="40%">
+  <img src="docs/config-widget-analogico.png" alt="Analog widget settings" width="40%">
+  <img src="docs/config-quadrante.png" alt="Dial builder" width="40%">
 </p>
 
-## Funzioni
+## Features in detail
 
-### Timer e cronometro
+### Timer and stopwatch
 
-- **Timer multipli** in parallelo, ognuno con la propria etichetta, e suono del timer a scelta.
-- **Precisione a scelta**: decimi, centesimi o millesimi di secondo.
-- **Cronometro** con la stessa precisione e con i **giri**: tempo di ogni giro e tempo totale, con il giro migliore in verde e il peggiore in rosso.
-- Notifiche e suoneria anche con lo schermo spento.
+- **Multiple timers** in parallel, each with its own label, and a choice of timer sound.
+- **Adjustable precision**: tenths, hundredths or thousandths of a second.
+- **Stopwatch** with the same precision and **laps**: time of each lap and total time, with the best lap in green and the worst in red.
+- Notifications and ringing even with the screen off.
 
-### Interfaccia
+### Interface
 
-- Tema scuro fisso, uguale su tutti i telefoni.
-- Si passa da una scheda all'altra anche **scorrendo il dito** a destra e a sinistra.
-- Dal menu ⋮ → *Informazioni e donazioni*: versione e build, licenza e **Cerca aggiornamenti**.
+- Fixed dark theme, the same on all phones.
+- Switch between tabs by **swiping** left and right.
+- From the ⋮ menu → *About and donations*: version and build, license and **Check for updates**.
 
-### Orologio internazionale
+### World clock
 
-- Orari di città e fusi orari di tutto il mondo, in un'unica scheda.
+- Times and time zones of cities all over the world, in a single tab.
 
-### Sveglie
+### Alarms
 
-- Giorni della settimana, etichetta, suono, vibrazione e opzione «elimina dopo la suoneria».
-- Posticipo, silenziamento automatico, volume crescente e comportamento dei tasti del volume.
-- Inizio settimana e volume delle sveglie regolabili.
-- Schermata a tutto schermo alla suoneria e ripianificazione automatica dopo il riavvio del telefono, per sveglie e timer.
-- **Notifica «prossima sveglia»** con conto alla rovescia e tasto **Salta** (compare da 15 minuti a 3 ore prima, a scelta, o mai).
-- **Sempre attiva**: una sveglia con questa opzione non viene toccata dai comandi dei gruppi (vedi sotto).
+- Days of the week, label, sound, vibration and the «delete after ringing» option.
+- Snooze, automatic silence, rising volume and the behaviour of the volume keys.
+- First day of the week and alarm volume can be set.
+- Full-screen screen when the alarm rings, and automatic rescheduling after the phone restarts, for alarms and timers.
+- **«Next alarm» notification** with a countdown and a **Skip** button (appears 15 minutes to 3 hours before, your choice, or never).
+- **Always on**: an alarm with this option is not affected by group commands (see below).
 
-### Gruppi di sveglie
+### Alarm groups
 
-Nella scheda Sveglie, accanto all'elenco, c'è la pagina **Gruppi**: raccoglie più sveglie (per esempio «Lavoro» o «Weekend») e dà comandi comuni.
+In the Alarms tab, next to the list, there is the **Groups** page: it collects several alarms (for example «Work» or «Weekend») and gives them shared commands.
 
-- **Interruttore del gruppo**: accende o spegne tutte le sveglie del gruppo in un colpo solo. Dopo, ogni sveglia resta libera di accendersi e spegnersi da sola.
-- **Salta la prossima giornata**: salta la prossima suoneria di tutte le sveglie attive del gruppo, come il tasto *Salta* della notifica.
-- **Applica a tutte**: cambia in blocco una caratteristica alla volta (giorni, suono, vibrazione, silenzia dopo, durata del posticipo, volume crescente, avviso prima della sveglia) lasciando invariato il resto.
-- Una sveglia sta al massimo in **un solo gruppo**; le sveglie «sempre attive» non possono farne parte.
-- Eliminando un gruppo scegli se tenere le sveglie o eliminarle insieme a lui.
+- **Group switch**: turns all alarms in the group on or off at once. Afterwards, each alarm is free to turn on and off by itself.
+- **Skip the next day**: skips the next ring of all active alarms in the group, like the *Skip* button in the notification.
+- **Apply to all**: changes one feature at a time across the group (days, sound, vibration, silence after, snooze length, rising volume, warning before the alarm), leaving everything else unchanged.
+- An alarm can belong to **at most one group**; «always on» alarms cannot be part of one.
+- When you delete a group, you choose whether to keep its alarms or delete them together with it.
 
-### Controllo da smartwatch
+### Smartwatch control
 
-Con l'opzione **Controllo sveglia dallo smartwatch** (menu ⋮ → *Impostazioni sveglie*, spenta di default) la sveglia che suona può essere gestita dal polso:
+With the option **Smartwatch control for alarms** (⋮ menu → *Alarm settings*, off by default), the ringing alarm can be controlled from your wrist:
 
-- **Pausa** o **stop** fermano la sveglia, **traccia successiva** la posticipa.
-- Funziona con gli orologi che mostrano i controlli musica del telefono (per esempio Amazfit/Zepp).
-- Sugli orologi Wear OS compaiono i tasti **Ferma** e **Posticipa** della notifica.
+- **Pause** or **stop** stop the alarm; **next track** snoozes it.
+- Works with watches that show the phone's music controls (for example Amazfit/Zepp).
+- On Wear OS watches, the **Dismiss** and **Snooze** buttons of the notification appear.
 
-### Widget
+### Widgets
 
-Due widget, entrambi personalizzabili per ogni istanza:
+Two widgets, both customizable for each instance:
 
-- **Digitale**: 8 caratteri tra cui scegliere.
-- **Analogico**: 7 quadranti predefiniti più un **costruttore di quadranti** (forma, sfondo, foto, numeri anche con font `.ttf` importato, tacche) e lancette delle ore e dei minuti con il colore scelto separatamente tra 12.
-- Foto di sfondo del widget con scurimento e adattamento a scelta (*ridimensiona* oppure *centra e ritaglia*).
-- Data, e città o fuso orario diverso da quello del telefono.
-- **Al tocco** il widget apre la scheda che scegli: Sveglie, Timer, Cronometro o Orologio.
-- Colori di testo e quadrante con selettore a palette o codice esadecimale esatto.
+- **Digital**: 8 characters to choose from.
+- **Analog**: 7 predefined dials plus a **dial builder** (shape, background, photo, numbers, also with an imported `.ttf` font, ticks), and hour and minute hands with a colour chosen separately from 12 options.
+- Widget background photo with darkening and fit options (*resize* or *centre and crop*).
+- Date, and a city or time zone different from the phone's.
+- **On tap**, the widget opens the tab you choose: Alarms, Timer, Stopwatch or World clock.
+- Text and dial colours with a palette picker or an exact hex code.
 
-### Integrazione con Android
+### Android integration
 
-Timercent risponde alle richieste standard di sistema, quindi funziona con gli assistenti vocali e con le altre app:
+Timercent responds to the standard system requests, so it works with voice assistants and other apps:
 
-| Richiesta                      | Effetto                                             |
-| ------------------------------ | --------------------------------------------------- |
-| `SET_ALARM` con ora           | crea la sveglia (o riusa una identica già presente) |
-| `SET_TIMER` con durata        | crea il timer e lo avvia                            |
-| `SHOW_ALARMS`, `SHOW_TIMERS` | aprono la scheda corrispondente                     |
+| Request                       | Effect                                              |
+| ----------------------------- | --------------------------------------------------- |
+| `SET_ALARM` with a time       | creates the alarm (or reuses an identical one)      |
+| `SET_TIMER` with a duration   | creates the timer and starts it                     |
+| `SHOW_ALARMS`, `SHOW_TIMERS`  | open the corresponding tab                          |
 
-Per usarlo con l'assistente, al primo comando scegli Timercent come app predefinita per sveglie e timer.
+To use it with the assistant, choose Timercent as the default app for alarms and timers the first time you give a command.
 
-## Installazione
+## Installation
 
-1. Apri la pagina [**Releases**](https://github.com/LucasSoftware3003/timercent/releases) e scarica l'ultimo file `.apk`.
-2. Aprilo dal telefono e consenti l'installazione da questa fonte quando Android lo chiede.
-3. Alla prima apertura concedi il permesso per le notifiche, così timer e sveglie possono avvisarti.
+1. Open the [**Releases**](https://github.com/LucasSoftware3003/timercent/releases) page and download the latest `.apk` file.
+2. Open it on your phone and allow installation from this source when Android asks.
+3. On first launch, grant the notification permission so timers and alarms can alert you.
 
-Requisiti: **Android 8.0 (API 26) o superiore**.
+Requirements: **Android 8.0 (API 26) or higher**.
 
-L'app non è distribuita su Google Play. Poiché si installa fuori dallo store, su alcuni dispositivi Android può mostrare avvisi o richiedere conferme aggiuntive.
+The app is not distributed on Google Play. Since it is installed outside the store, some Android devices may show warnings or ask for extra confirmations.
 
-Per esempio **Google Play Protect** può bloccare l'installazione, perché non ha mai visto app di questo sviluppatore. Non significa che l'app sia pericolosa: il codice è pubblico in questo repository. Per procedere tocca *Altri dettagli* e poi **Installa comunque**.
+For example, **Google Play Protect** may block the installation, because it has never seen apps from this developer. This does not mean the app is dangerous: the code is public in this repository. To continue, tap *More details* and then **Install anyway**.
 
 <p align="center">
-  <img src="docs/installazione-play-protect.png" alt="Avviso di Google Play Protect con «Installa comunque» evidenziato" width="40%">
+  <img src="docs/installazione-play-protect.png" alt="Google Play Protect warning with «Install anyway» highlighted" width="40%">
 </p>
 
-### Aggiornamenti
+### Updates
 
-L'app non cerca aggiornamenti da sola, perché non ha accesso a internet. Per controllare se è uscita una nuova versione apri il menu ⋮ → *Informazioni e donazioni* → **Cerca aggiornamenti**: si apre nel browser la pagina delle Releases. Il numero di versione e di build dell'app si legge nella stessa schermata («Versione 1.23 · build N»).
+The app does not check for updates by itself, because it has no internet access. To check whether a new version is out, open the ⋮ menu → *About and donations* → **Check for updates**: the Releases page opens in your browser. The app's version and build number are shown on the same screen («Version 1.23 · build N»).
 
 ## Privacy
 
-- L'app **non richiede il permesso di accesso a internet**: non può inviare né ricevere dati.
-- Timer, sveglie, impostazioni, foto e font dei quadranti restano **solo sul telefono**.
-- Nessuna pubblicità, nessun tracciamento, nessun account.
-- «Cerca aggiornamenti» apre solo una pagina web nel browser: la connessione la fa il browser, non l'app.
+- The app **does not request internet access**: it cannot send or receive any data.
+- Timers, alarms, settings, photos and dial fonts stay **only on the phone**.
+- No ads, no tracking, no account.
+- «Check for updates» only opens a web page in the browser: the connection is made by the browser, not by the app.
 
-Permessi richiesti, e perché:
+Permissions requested, and why:
 
-| Permesso                                     | Motivo                                                        |
+| Permission                                   | Reason                                                        |
 | -------------------------------------------- | ------------------------------------------------------------- |
-| Notifiche                                    | avvisi di timer e sveglie                                     |
-| Sveglie e promemoria precisi                 | far suonare timer e sveglie all'ora esatta                    |
-| Notifiche a tutto schermo                    | mostrare la sveglia sopra il blocco schermo                   |
-| Servizio in primo piano (riproduzione audio) | suonare timer e sveglie                                       |
-| Vibrazione                                   | vibrazione di timer e sveglie                                 |
-| Avvio dopo il riavvio                        | riprogrammare sveglie e timer quando il telefono si riaccende |
+| Notifications                                | timer and alarm alerts                                        |
+| Exact alarms and reminders                   | make timers and alarms ring at the exact time                 |
+| Full-screen notifications                    | show the alarm over the lock screen                           |
+| Foreground service (audio playback)          | play timer and alarm sounds                                   |
+| Vibration                                    | vibrate for timers and alarms                                 |
+| Start after reboot                           | reschedule alarms and timers when the phone turns back on     |
 
-## Compilare dal sorgente
+## Building from source
 
-Requisiti: JDK 17 e Gradle 8.9 (oppure Android Studio).
+Requirements: JDK 17 and Gradle 8.9 (or Android Studio).
 
 ```
 git clone https://github.com/LucasSoftware3003/timercent.git
@@ -170,51 +182,51 @@ cd timercent
 gradle assembleDebug
 ```
 
-L'APK di debug si trova in `app/build/outputs/apk/debug/`.
+The debug APK is in `app/build/outputs/apk/debug/`.
 
-### Build automatica su GitHub Actions
+### Automatic build on GitHub Actions
 
-A ogni push sul ramo `main` il workflow [`apk.yml`](.github/workflows/apk.yml) compila un APK **release firmato** e lo pubblica nella sezione Releases, con titolo nel formato «Timercent 1.23 (build 20)»: la versione è `versionName` in `app/build.gradle.kts`, il numero di build è il contatore delle esecuzioni del workflow. Le modifiche che toccano solo `README.md`, `LICENSE` o la cartella `docs/` non avviano la compilazione. Se fai un fork, imposta questi *secrets* nel repository per ottenere l'APK firmato:
+Every push to the `main` branch runs the [`apk.yml`](.github/workflows/apk.yml) workflow, which builds a **signed release APK** and publishes it in the Releases section, with a title in the format «Timercent 1.23 (build 20)»: the version is `versionName` in `app/build.gradle.kts`, and the build number is the workflow run counter. Changes that only touch `.md` files (such as the READMEs), `LICENSE` or the `docs/` folder do not start a build. If you fork the project, set these *secrets* in the repository to get a signed APK:
 
 `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`
 
-## Struttura del progetto
+## Project structure
 
-| File                                      | Contenuto                                                                   |
+| File                                      | Contents                                                                    |
 | ----------------------------------------- | --------------------------------------------------------------------------- |
-| `MainActivity.kt`                         | schede Timer, Cronometro (con giri), Orologio, scorrimento e intent        |
-| `Alarms.kt`, `AlarmsUi.kt`                | sveglie: pianificazione, suoneria, controllo da smartwatch, notifica «prossima sveglia», interfaccia |
-| `Groups.kt`                               | gruppi di sveglie (dati); la pagina Gruppi è in `AlarmsUi.kt`               |
-| `Notif.kt`                                | canali e notifiche                                                          |
-| `Widgets.kt`, `CfgBase.kt`                | widget digitale e analogico, schermate di configurazione                    |
-| `Dials.kt`, `DialBuilder.kt`, `AnaRes.kt` | quadranti analogici e costruttore                                           |
-| `ZonePick.kt`                             | scelta di città e fusi orari                                                |
-| `About.kt`                                | schermata Informazioni e donazioni                                          |
-| `docs/`                                   | screenshot usati in questo README                                           |
+| `MainActivity.kt`                         | Timer, Stopwatch (with laps), World clock tabs, swiping and intents         |
+| `Alarms.kt`, `AlarmsUi.kt`                | alarms: scheduling, ringing, smartwatch control, «next alarm» notification, UI |
+| `Groups.kt`                               | alarm groups (data); the Groups page is in `AlarmsUi.kt`                    |
+| `Notif.kt`                                | channels and notifications                                                  |
+| `Widgets.kt`, `CfgBase.kt`                | digital and analog widgets, configuration screens                           |
+| `Dials.kt`, `DialBuilder.kt`, `AnaRes.kt` | analog dials and the dial builder                                           |
+| `ZonePick.kt`                             | city and time zone selection                                                |
+| `About.kt`                                | About and donations screen                                                  |
+| `docs/`                                   | screenshots used in this README                                             |
 
-Package: `it.timercent`. Linguaggio: Kotlin, solo API di Android: nessuna libreria esterna.
+Package: `it.timercent`. Language: Kotlin, only Android APIs: no external libraries.
 
-## Sostieni lo sviluppo
+## Support the development
 
-Timercent è gratuita e senza pubblicità. Se ti è utile puoi offrirmi un caffè con una donazione libera e facoltativa:
+Timercent is free and ad-free. If you find it useful, you can buy me a coffee with an optional, free donation:
 
 [**paypal.me/LucasSoftware3003**](https://paypal.me/LucasSoftware3003)
 
-La stessa scelta si trova nell'app, nel menu ⋮ → *Informazioni e donazioni*.
+The same option is in the app, in the ⋮ menu → *About and donations*.
 
-## Licenza
+## License
 
-Timercent è software libero, rilasciato sotto licenza **GNU GPLv3**.
+Timercent is free software, released under the **GNU GPLv3** license.
 
-- Puoi usarlo, studiarlo e modificarlo liberamente.
-- Se distribuisci una versione modificata (anche gratuita), devi rilasciarla sotto GPLv3 e rendere pubblico il sorgente.
-- Non puoi renderlo software chiuso né venderlo senza fornire il codice.
-- Nessuna garanzia: il programma è fornito «così com'è».
+- You can use, study and modify it freely.
+- If you distribute a modified version (even for free), you must release it under GPLv3 and make the source code public.
+- You cannot make it closed software or sell it without providing the code.
+- No warranty: the program is provided «as is».
 
-Testo completo: [LICENSE](LICENSE) · <https://www.gnu.org/licenses/gpl-3.0.html>
+Full text: [LICENSE](LICENSE) · <https://www.gnu.org/licenses/gpl-3.0.html>
 
 Copyright (C) 2026 Luca Serenelli (Lucas3003)
 
-## Autore
+## Author
 
 **Luca Serenelli** aka **Lucas3003**
