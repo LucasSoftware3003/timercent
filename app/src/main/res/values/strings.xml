@@ -157,4 +157,89 @@
     <string name="search_city">Search city</string>
     <string name="widget_digital_name">Digital clock</string>
     <string name="widget_analog_name">Analog clock</string>
+
+    <string name="about_title">About</string>
+    <string name="version_fmt">Version %1$s · build %2$s</string>
+    <string name="about_no_browser">No browser to open the link</string>
+    <string name="about_desc_1">Timer, stopwatch with tenths and hundredths, world clock, alarms and customizable widgets. </string>
+    <string name="about_desc_2">No ads, no account: your data stays on your phone.</string>
+    <string name="about_created_by">Created by %s</string>
+    <string name="about_license">Free software under the GPLv3 license: you can use, study and modify it, but every derived version must stay free and open source.</string>
+    <string name="donate_text">If the app is useful to you, you can buy me a coffee: donations are free and optional.</string>
+    <string name="donate_mail_fmt">" From the PayPal app you can send to this address:\n%s"</string>
+    <string name="donate_btn">Support development</string>
+    <string name="copy_paypal">Copy PayPal address</string>
+    <string name="copied_fmt">Copied: %s</string>
+    <string name="check_updates">Check for updates</string>
+    <string name="source_code">Source code</string>
+    <string name="license_btn">GPLv3 license</string>
+    <string name="sec_background">Background</string>
+    <string name="transparency">Transparency</string>
+    <string name="choose_photo">Choose photo…</string>
+    <string name="remove_photo">Remove photo</string>
+    <string name="photo_set">Background photo: set</string>
+    <string name="photo_none">Background photo: none</string>
+    <string name="dim_photo">Darken the photo (for easier reading)</string>
+    <string name="photo_fit">Photo fit</string>
+    <string name="photo_note_fit">Resize: the whole photo is shown, stretched to fill the widget; it gets distorted if the proportions differ. Center and crop: the photo keeps its proportions and whatever goes past the edges is cut off. In both cases the photo is scaled down to fit the widget.</string>
+    <string name="photo_note_digital">This photo covers the whole widget, behind the time.</string>
+    <string name="photo_note_analog">This photo covers the whole widget, behind the dial. The photo inside the dial is set in “Create or edit dial”.</string>
+    <string name="invalid_image">Invalid image</string>
+    <string name="sec_city">City / time zone</string>
+    <string name="zone_local">Time zone: phone’s local time</string>
+    <string name="zone_fmt">Time zone: %1$s (%2$s)</string>
+    <string name="choose_city">Choose city…</string>
+    <string name="local_time_btn">Local time</string>
+    <string name="city_name">City name</string>
+    <string name="analog_tz_note">On this phone the analog clock can’t use another time zone: the choice applies only to the digital one.</string>
+    <string name="font_title_digital">Font of time and date</string>
+    <string name="font_title_analog">Date font</string>
+    <string name="font">Font</string>
+    <string name="sec_dial">Dial and hands</string>
+    <string name="dial_label">Dial</string>
+    <string name="hour_hand">Hour hand color</string>
+    <string name="minute_hand">Minute hand color</string>
+    <string name="create_dial">Create or edit dial…</string>
+    <string name="sec_time">Time</string>
+    <string name="size_label">Size</string>
+    <string name="color_label">Color</string>
+    <string name="separator">Hour and minute separator</string>
+    <string name="layout">Layout</string>
+    <string name="sec_tap">On widget tap</string>
+    <string name="open_screen">Screen to open</string>
+    <string name="sec_date">Date</string>
+    <string name="show_date">Show the date</string>
+    <string name="position">Position</string>
+    <string name="format">Format</string>
+    <string name="save">Save</string>
+    <string-array name="transp_opts">
+        <item>Opaque</item><item>Semi-transparent</item><item>Transparent</item>
+    </string-array>
+    <string-array name="photo_fit_opts">
+        <item>Resize (whole photo, stretched)</item><item>Center and crop (keeps proportions)</item>
+    </string-array>
+    <string-array name="city_name_opts">
+        <item>Show next to the date</item><item>Don’t show</item>
+    </string-array>
+    <string-array name="layout_opts">
+        <item>In line</item><item>Hours above, minutes below</item>
+    </string-array>
+    <string-array name="pos_opts">
+        <item>Above</item><item>Below</item>
+    </string-array>
+    <string-array name="sep_labels">
+        <item>Two dots  :</item><item>Period  .</item><item>Comma  ,</item><item>Space</item>
+    </string-array>
+    <string-array name="tab_labels">
+        <item>Alarms</item><item>Timer</item><item>Stopwatch</item><item>World clock</item>
+    </string-array>
+    <string-array name="hand_colors">
+        <item>White</item><item>Black</item><item>Grey</item><item>Amber</item><item>Orange</item><item>Red</item><item>Pink</item><item>Purple</item><item>Light blue</item><item>Turquoise</item><item>Green</item><item>Lime</item>
+    </string-array>
+    <string-array name="font_labels">
+        <item>Default (light)</item><item>Normal</item><item>Medium</item><item>Black</item><item>Condensed</item><item>Serif</item><item>Monospace</item><item>Italic</item>
+    </string-array>
+    <string-array name="dim_labels">
+        <item>None</item><item>Light</item><item>Medium</item><item>Strong</item>
+    </string-array>
 </resources>

@@ -157,4 +157,89 @@
     <string name="search_city">Cerca città</string>
     <string name="widget_digital_name">Orologio digitale</string>
     <string name="widget_analog_name">Orologio analogico</string>
+
+    <string name="about_title">Informazioni</string>
+    <string name="version_fmt">Versione %1$s · build %2$s</string>
+    <string name="about_no_browser">Nessun browser per aprire il link</string>
+    <string name="about_desc_1">Timer, cronometro con decimi e centesimi, orologio internazionale, sveglie e widget personalizzabili. </string>
+    <string name="about_desc_2">Nessuna pubblicità, nessun account: i dati restano sul telefono.</string>
+    <string name="about_created_by">Creata da %s</string>
+    <string name="about_license">Software libero con licenza GPLv3: puoi usarlo, studiarlo e modificarlo, ma ogni versione derivata deve restare libera e con il codice aperto.</string>
+    <string name="donate_text">Se l\'app ti è utile puoi offrirmi un caffè: la donazione è libera e facoltativa.</string>
+    <string name="donate_mail_fmt">" Dall\'app PayPal puoi inviare a questo indirizzo:\n%s"</string>
+    <string name="donate_btn">Sostieni lo sviluppo</string>
+    <string name="copy_paypal">Copia l\'indirizzo PayPal</string>
+    <string name="copied_fmt">Copiato: %s</string>
+    <string name="check_updates">Cerca aggiornamenti</string>
+    <string name="source_code">Codice sorgente</string>
+    <string name="license_btn">Licenza GPLv3</string>
+    <string name="sec_background">Sfondo</string>
+    <string name="transparency">Trasparenza</string>
+    <string name="choose_photo">Scegli foto…</string>
+    <string name="remove_photo">Rimuovi foto</string>
+    <string name="photo_set">Foto di sfondo: impostata</string>
+    <string name="photo_none">Foto di sfondo: nessuna</string>
+    <string name="dim_photo">Scurisci la foto (per leggere meglio)</string>
+    <string name="photo_fit">Adattamento della foto</string>
+    <string name="photo_note_fit">Ridimensiona: si vede tutta la foto, stirata fino a riempire il widget; si deforma se le proporzioni sono diverse. Centra e ritaglia: la foto mantiene le proporzioni e si taglia ciò che esce dai bordi. In entrambi i casi la foto viene ridotta per stare nel widget.</string>
+    <string name="photo_note_digital">Questa foto copre tutto il widget, dietro l\'ora.</string>
+    <string name="photo_note_analog">Questa foto copre tutto il widget, dietro il quadrante. La foto dentro il quadrante si sceglie invece in «Crea o modifica quadrante».</string>
+    <string name="invalid_image">Immagine non valida</string>
+    <string name="sec_city">Città / fuso orario</string>
+    <string name="zone_local">Fuso: ora locale del telefono</string>
+    <string name="zone_fmt">Fuso: %1$s (%2$s)</string>
+    <string name="choose_city">Scegli città…</string>
+    <string name="local_time_btn">Ora locale</string>
+    <string name="city_name">Nome della città</string>
+    <string name="analog_tz_note">Su questo telefono l\'orologio analogico non può usare un altro fuso: la scelta vale solo per il digitale.</string>
+    <string name="font_title_digital">Carattere di ora e data</string>
+    <string name="font_title_analog">Carattere della data</string>
+    <string name="font">Carattere</string>
+    <string name="sec_dial">Quadrante e lancette</string>
+    <string name="dial_label">Quadrante</string>
+    <string name="hour_hand">Colore della lancetta delle ore</string>
+    <string name="minute_hand">Colore della lancetta dei minuti</string>
+    <string name="create_dial">Crea o modifica quadrante…</string>
+    <string name="sec_time">Ora</string>
+    <string name="size_label">Dimensione</string>
+    <string name="color_label">Colore</string>
+    <string name="separator">Separatore ore e minuti</string>
+    <string name="layout">Disposizione</string>
+    <string name="sec_tap">Al tocco del widget</string>
+    <string name="open_screen">Schermata che si apre</string>
+    <string name="sec_date">Data</string>
+    <string name="show_date">Mostra la data</string>
+    <string name="position">Posizione</string>
+    <string name="format">Formato</string>
+    <string name="save">Salva</string>
+    <string-array name="transp_opts">
+        <item>Opaco</item><item>Semitrasparente</item><item>Trasparente</item>
+    </string-array>
+    <string-array name="photo_fit_opts">
+        <item>Ridimensiona (tutta la foto, stirata)</item><item>Centra e ritaglia (non si deforma)</item>
+    </string-array>
+    <string-array name="city_name_opts">
+        <item>Mostra accanto alla data</item><item>Non mostrare</item>
+    </string-array>
+    <string-array name="layout_opts">
+        <item>In linea</item><item>Ore sopra, minuti sotto</item>
+    </string-array>
+    <string-array name="pos_opts">
+        <item>Sopra</item><item>Sotto</item>
+    </string-array>
+    <string-array name="sep_labels">
+        <item>Due punti  :</item><item>Punto  .</item><item>Virgola  ,</item><item>Spazio</item>
+    </string-array>
+    <string-array name="tab_labels">
+        <item>Sveglie</item><item>Timer</item><item>Cronometro</item><item>Orologio</item>
+    </string-array>
+    <string-array name="hand_colors">
+        <item>Bianco</item><item>Nero</item><item>Grigio</item><item>Ambra</item><item>Arancio</item><item>Rosso</item><item>Rosa</item><item>Viola</item><item>Azzurro</item><item>Turchese</item><item>Verde</item><item>Lime</item>
+    </string-array>
+    <string-array name="font_labels">
+        <item>Predefinito (leggero)</item><item>Normale</item><item>Medio</item><item>Nero</item><item>Condensato</item><item>Serif</item><item>Monospace</item><item>Corsivo</item>
+    </string-array>
+    <string-array name="dim_labels">
+        <item>Nessuna</item><item>Leggera</item><item>Media</item><item>Forte</item>
+    </string-array>
 </resources>
