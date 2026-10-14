@@ -242,4 +242,66 @@
     <string-array name="dim_labels">
         <item>Nessuna</item><item>Leggera</item><item>Media</item><item>Forte</item>
     </string-array>
+
+    <string name="exact_color">Colore esatto</string>
+    <string name="exact_color_msg">Scrivi il codice esadecimale, per esempio #FFB020</string>
+    <string name="invalid_code">Codice non valido</string>
+    <string name="choose_city_title">Scegli la città</string>
+    <string name="img_set">Immagine di sfondo: impostata</string>
+    <string name="img_none">Immagine di sfondo: nessuna</string>
+    <string name="font_imported">Carattere: file importato</string>
+    <string name="font_system">Carattere: di sistema</string>
+    <string name="dial_default_name">Quadrante</string>
+    <string name="dial_copy_fmt">%s (mio)</string>
+    <string name="dial_new_name">Mio quadrante</string>
+    <string name="sec_name">Nome</string>
+    <string name="sec_shape_bg">Forma e sfondo</string>
+    <string name="shape">Forma</string>
+    <string name="bg_color">Colore dello sfondo</string>
+    <string name="bg_transp">Trasparenza dello sfondo</string>
+    <string name="choose_image">Scegli immagine…</string>
+    <string name="remove_image">Rimuovi immagine</string>
+    <string name="image_note">Questa immagine resta dentro il quadrante e viene ritagliata a quadrato. Per una foto che copre tutto il widget usa «Scegli foto» nella configurazione del widget.</string>
+    <string name="border_width">Spessore del bordo</string>
+    <string name="border_color">Colore del bordo</string>
+    <string name="sec_numbers">Numeri</string>
+    <string name="number_type">Tipo di numeri</string>
+    <string name="import_font">Importa carattere .ttf…</string>
+    <string name="use_system_font">Usa di sistema</string>
+    <string name="number_size">Dimensione dei numeri</string>
+    <string name="number_color">Colore dei numeri</string>
+    <string name="sec_ticks">Tacche</string>
+    <string name="tick_style">Stile</string>
+    <string name="tick_length">Lunghezza</string>
+    <string name="tick_width">Spessore</string>
+    <string name="tick_color">Colore delle tacche</string>
+    <string name="sec_preview">Anteprima</string>
+    <string name="preview_hour_hand">Lancetta delle ore (solo per vedere l\'effetto)</string>
+    <string name="preview_min_hand">Lancetta dei minuti (solo per vedere l\'effetto)</string>
+    <string name="sec_save">Salvataggio</string>
+    <string name="save_as_new">Salva come nuovo</string>
+    <string name="delete_dial">Elimina quadrante</string>
+    <string name="delete_dial_title">Eliminare \"%s\"?</string>
+    <string name="delete_dial_msg">I widget che lo usano torneranno al quadrante Classico.</string>
+    <string name="invalid_font">File di caratteri non valido</string>
+    <string name="new_dial_item">+ Nuovo quadrante</string>
+    <string name="preset_classic">Classico</string>
+    <string name="preset_quarters">Solo quarti</string>
+    <string name="preset_arabic">Numeri arabi</string>
+    <string name="preset_roman">Romano chiaro</string>
+    <string name="preset_four">Quattro numeri</string>
+    <string name="preset_dots">Punti</string>
+    <string name="preset_modern">Moderno chiaro</string>
+    <string-array name="shape_opts">
+        <item>Tonda</item><item>Quadrata arrotondata</item>
+    </string-array>
+    <string-array name="op_opts">
+        <item>Opaco</item><item>Poco trasparente</item><item>Molto trasparente</item><item>Nessuno sfondo</item>
+    </string-array>
+    <string-array name="num_opts">
+        <item>Nessuno</item><item>Arabi 1-12</item><item>Arabi 12-3-6-9</item><item>Romani I-XII</item>
+    </string-array>
+    <string-array name="tick_opts">
+        <item>Nessuna</item><item>Ore (linee)</item><item>Ore e minuti (linee)</item><item>Ore (punti)</item><item>Solo quarti (linee)</item>
+    </string-array>
 </resources>

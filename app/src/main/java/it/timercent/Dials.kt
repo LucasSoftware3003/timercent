@@ -25,7 +25,7 @@ import java.io.FileOutputStream
 // Descrizione di un quadrante analogico. I colori sono ARGB opachi.
 class DialSpec(
     var id: String = "u0",
-    var name: String = "Quadrante",
+    var name: String = "",
     var shape: Int = 0,                      // 0 tonda, 1 quadrata arrotondata
     var bgCol: Int = 0xFF14181F.toInt(),
     var bgOp: Int = 0,                       // indice in Dials.ALPHAS
@@ -72,24 +72,24 @@ class DialSpec(
 object Dials {
     const val SIZE = 480
     val ALPHAS = intArrayOf(255, 190, 110, 0)
-    val OP_LBL = listOf("Opaco", "Poco trasparente", "Molto trasparente", "Nessuno sfondo")
-    val SHAPE_LBL = listOf("Tonda", "Quadrata arrotondata")
-    val NUM_LBL = listOf("Nessuno", "Arabi 1-12", "Arabi 12-3-6-9", "Romani I-XII")
-    val TICK_LBL = listOf("Nessuna", "Ore (linee)", "Ore e minuti (linee)", "Ore (punti)", "Solo quarti (linee)")
+    
+    
+    
+    
     private val ROMAN = arrayOf("I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII")
 
     private val DARK = 0xFF222222.toInt()
 
     // Il numero 0 riproduce esattamente il quadrante delle versioni precedenti
     val PRESETS: List<DialSpec> = listOf(
-        DialSpec(id = "p0", name = "Classico", bgOp = 3),
-        DialSpec(id = "p1", name = "Solo quarti", bgOp = 3, tick = 4, tickLen = 14, tickW = 11),
-        DialSpec(id = "p2", name = "Numeri arabi", bgCol = 0xFF14181F.toInt(), bdW = 2, num = 1, numSize = 15, tick = 0),
-        DialSpec(id = "p3", name = "Romano chiaro", bgCol = 0xFFF5F1E6.toInt(), bdW = 3, bdCol = DARK, num = 3, font = 5,
+        DialSpec(id = "p0", name = "", bgOp = 3),
+        DialSpec(id = "p1", name = "", bgOp = 3, tick = 4, tickLen = 14, tickW = 11),
+        DialSpec(id = "p2", name = "", bgCol = 0xFF14181F.toInt(), bdW = 2, num = 1, numSize = 15, tick = 0),
+        DialSpec(id = "p3", name = "", bgCol = 0xFFF5F1E6.toInt(), bdW = 3, bdCol = DARK, num = 3, font = 5,
             numSize = 13, numCol = DARK, tick = 1, tickCol = DARK),
-        DialSpec(id = "p4", name = "Quattro numeri", bgCol = 0xFF1B2430.toInt(), num = 2, font = 3, numSize = 22, tick = 2, tickLen = 10, tickW = 10),
-        DialSpec(id = "p5", name = "Punti", bgOp = 3, tick = 3, tickW = 12),
-        DialSpec(id = "p6", name = "Moderno chiaro", bgCol = 0xFFEEF0F3.toInt(), tick = 1, tickCol = 0xFF14181F.toInt())
+        DialSpec(id = "p4", name = "", bgCol = 0xFF1B2430.toInt(), num = 2, font = 3, numSize = 22, tick = 2, tickLen = 10, tickW = 10),
+        DialSpec(id = "p5", name = "", bgOp = 3, tick = 3, tickW = 12),
+        DialSpec(id = "p6", name = "", bgCol = 0xFFEEF0F3.toInt(), tick = 1, tickCol = 0xFF14181F.toInt())
     )
 
     fun dir(c: Context): File { val d = File(c.filesDir, "dials"); d.mkdirs(); return d }
@@ -119,7 +119,11 @@ object Dials {
 
     fun removeUser(c: Context, id: String) { saveUser(c, user(c).filter { it.id != id }) }
 
-    fun all(c: Context): List<DialSpec> = PRESETS + user(c)
+    fun all(c: Context): List<DialSpec> = PRESETS.map { it.copy(name = presetName(c, it.id)) } + user(c)
+    private fun presetName(c: Context, id: String): String = c.getString(when (id) {
+        "p0" -> R.string.preset_classic; "p1" -> R.string.preset_quarters; "p2" -> R.string.preset_arabic
+        "p3" -> R.string.preset_roman; "p4" -> R.string.preset_four; "p5" -> R.string.preset_dots
+        else -> R.string.preset_modern })
 
     fun find(c: Context, id: String): DialSpec = all(c).firstOrNull { it.id == id } ?: PRESETS[0]
 
@@ -308,7 +312,7 @@ object Dials {
         } catch (e: Exception) { f.delete(); return null }
     }
 
-    val DIM_LBL = listOf("Nessuna", "Leggera", "Media", "Forte")
+    
     private val DIM = intArrayOf(0, 60, 120, 180)
 
     // Foto scelta come sfondo del widget: si salva ridotta e si ruota secondo l'EXIF

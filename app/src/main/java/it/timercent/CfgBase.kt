@@ -111,15 +111,15 @@ open class CfgBase : Activity() {
             et.setText(String.format(java.util.Locale.ROOT, "#%06X", (if (custom != 0) custom else sel) and 0xFFFFFF))
             et.setSelection(et.text.length)
             val fl = FrameLayout(this); fl.setPadding(dp(20), dp(8), dp(20), 0); fl.addView(et)
-            AlertDialog.Builder(this).setTitle("Colore esatto")
-                .setMessage("Scrivi il codice esadecimale, per esempio #FFB020")
+            AlertDialog.Builder(this).setTitle(getString(R.string.exact_color))
+                .setMessage(getString(R.string.exact_color_msg))
                 .setView(fl)
                 .setPositiveButton("OK") { _, _ ->
                     val t = et.text.toString().trim().let { if (it.startsWith("#")) it else "#$it" }
                     val c = try { Color.parseColor(t) } catch (e: Exception) { null }
-                    if (c == null || t.length != 7) Toast.makeText(this, "Codice non valido", Toast.LENGTH_LONG).show()
+                    if (c == null || t.length != 7) Toast.makeText(this, getString(R.string.invalid_code), Toast.LENGTH_LONG).show()
                     else { custom = c or 0xFF000000.toInt(); sel = custom; paint(); on(sel) }
-                }.setNegativeButton("Annulla", null).show()
+                }.setNegativeButton(getString(R.string.cancel), null).show()
         }
         row.addView(hex)
         paint()

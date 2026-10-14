@@ -242,4 +242,66 @@
     <string-array name="dim_labels">
         <item>None</item><item>Light</item><item>Medium</item><item>Strong</item>
     </string-array>
+
+    <string name="exact_color">Exact color</string>
+    <string name="exact_color_msg">Type the hex code, for example #FFB020</string>
+    <string name="invalid_code">Invalid code</string>
+    <string name="choose_city_title">Choose city</string>
+    <string name="img_set">Background image: set</string>
+    <string name="img_none">Background image: none</string>
+    <string name="font_imported">Font: imported file</string>
+    <string name="font_system">Font: system</string>
+    <string name="dial_default_name">Dial</string>
+    <string name="dial_copy_fmt">%s (mine)</string>
+    <string name="dial_new_name">My dial</string>
+    <string name="sec_name">Name</string>
+    <string name="sec_shape_bg">Shape and background</string>
+    <string name="shape">Shape</string>
+    <string name="bg_color">Background color</string>
+    <string name="bg_transp">Background transparency</string>
+    <string name="choose_image">Choose image…</string>
+    <string name="remove_image">Remove image</string>
+    <string name="image_note">This image stays inside the dial and is cropped to a square. For a photo covering the whole widget, use “Choose photo” in the widget settings.</string>
+    <string name="border_width">Border width</string>
+    <string name="border_color">Border color</string>
+    <string name="sec_numbers">Numbers</string>
+    <string name="number_type">Number type</string>
+    <string name="import_font">Import .ttf font…</string>
+    <string name="use_system_font">Use system font</string>
+    <string name="number_size">Number size</string>
+    <string name="number_color">Number color</string>
+    <string name="sec_ticks">Ticks</string>
+    <string name="tick_style">Style</string>
+    <string name="tick_length">Length</string>
+    <string name="tick_width">Width</string>
+    <string name="tick_color">Tick color</string>
+    <string name="sec_preview">Preview</string>
+    <string name="preview_hour_hand">Hour hand (only to see the effect)</string>
+    <string name="preview_min_hand">Minute hand (only to see the effect)</string>
+    <string name="sec_save">Saving</string>
+    <string name="save_as_new">Save as new</string>
+    <string name="delete_dial">Delete dial</string>
+    <string name="delete_dial_title">Delete \"%s\"?</string>
+    <string name="delete_dial_msg">Widgets using it will go back to the Classic dial.</string>
+    <string name="invalid_font">Invalid font file</string>
+    <string name="new_dial_item">+ New dial</string>
+    <string name="preset_classic">Classic</string>
+    <string name="preset_quarters">Quarters only</string>
+    <string name="preset_arabic">Arabic numerals</string>
+    <string name="preset_roman">Light roman</string>
+    <string name="preset_four">Four numbers</string>
+    <string name="preset_dots">Dots</string>
+    <string name="preset_modern">Modern light</string>
+    <string-array name="shape_opts">
+        <item>Round</item><item>Rounded square</item>
+    </string-array>
+    <string-array name="op_opts">
+        <item>Opaque</item><item>Slightly transparent</item><item>Very transparent</item><item>No background</item>
+    </string-array>
+    <string-array name="num_opts">
+        <item>None</item><item>Arabic 1-12</item><item>Arabic 12-3-6-9</item><item>Roman I-XII</item>
+    </string-array>
+    <string-array name="tick_opts">
+        <item>None</item><item>Hours (lines)</item><item>Hours and minutes (lines)</item><item>Hours (dots)</item><item>Quarters only (lines)</item>
+    </string-array>
 </resources>
