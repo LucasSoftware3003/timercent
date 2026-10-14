@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notif_channel_running">In corso</string>
+    <string name="notif_channel_timer_done">Timer finito</string>
+    <string name="notif_channel_alarms">Sveglie</string>
+    <string name="notif_channel_missed">Sveglie perse</string>
+    <string name="notif_channel_next">Prossima sveglia</string>
+    <string name="default_timer_label">Timer</string>
+    <string name="timer_time_up">Tempo scaduto</string>
+    <string name="action_stop">Ferma</string>
+    <string name="alarm_default_label">Sveglia</string>
+    <string name="alarm_next">Prossima sveglia</string>
+    <string name="alarm_skip">Salta</string>
+    <string name="alarm_snooze_action">Posticipa (%d min)</string>
+    <string name="alarm_snooze_for">Posticipa di %d min</string>
+    <string name="alarm_snoozed_until">Posticipata fino alle %s</string>
+    <string name="alarm_missed_title">Sveglia mancata</string>
+
+    <string name="cancel">Annulla</string>
+    <string name="no_alarms">Nessuna sveglia. Aggiungine una.</string>
+    <string name="new_alarm">Nuova sveglia</string>
+    <string name="next_skipped">prossima saltata</string>
+    <string name="always_on_lc">sempre attiva</string>
+    <string name="always_on">Sempre attiva</string>
+    <string name="none">Nessuna</string>
+    <string name="none_sound">Nessuno</string>
+    <string name="label_row">Etichetta</string>
+    <string name="sound">Suono</string>
+    <string name="vibration">Vibrazione</string>
+    <string name="silence_after">Silenzia dopo</string>
+    <string name="snooze_duration">Durata posticipo</string>
+    <string name="volume_ramp">Volume crescente</string>
+    <string name="pre_alarm_notice">Avviso prima della sveglia</string>
+    <string name="delete_after_ring">Elimina dopo la suoneria</string>
+    <string name="delete_alarm">Elimina sveglia</string>
+    <string name="never_cap">Mai</string>
+    <string name="never_lc">mai</string>
+    <string name="today">Oggi</string>
+    <string name="tomorrow">Domani</string>
+    <string name="every_day">Ogni giorno</string>
+    <string name="days_weekdays">Lun-Ven</string>
+    <string name="days_weekend">Sab, Dom</string>
+    <string name="toast_alarm_in">Sveglia tra %s</string>
+    <string name="sound_default">Predefinito</string>
+    <string name="sound_custom">Personalizzato</string>
+    <string name="list_and">" e "</string>
+    <string name="permission_needed">Permesso necessario</string>
+    <string name="fullscreen_perm_msg">Per mostrare la sveglia a schermo acceso o bloccato serve il permesso «Notifiche a schermo intero».</string>
+    <string name="open_settings">Apri impostazioni</string>
+    <string name="not_now">Non ora</string>
+    <string name="back">Indietro</string>
+    <string name="snooze">Posticipa</string>
+    <string name="no_action">Nessuna azione</string>
+    <string name="volume_keys_fmt">Tasti del volume: %s</string>
+    <string name="week_start_fmt">Inizio settimana: %s</string>
+    <string name="monday">Lunedì</string>
+    <string name="saturday">Sabato</string>
+    <string name="sunday">Domenica</string>
+    <string name="alarm_volume">Volume delle sveglie</string>
+    <string name="watch_fmt">Controllo sveglia dallo smartwatch: %s</string>
+    <string name="watch_on">attivi</string>
+    <string name="watch_off">disattivati</string>
+    <string name="watch_on_cap">Attivi</string>
+    <string name="watch_off_cap">Disattivati</string>
+    <string name="alarm_settings_title">Impostazioni sveglie</string>
+    <string name="volume_keys">Tasti del volume</string>
+    <string name="week_start">Inizio settimana</string>
+    <string name="watch_control_title">Controllo sveglia dallo smartwatch (pausa = ferma, avanti = posticipa)</string>
+    <string name="close">Chiudi</string>
+    <string name="volume_hint">Volume di sistema per sveglie e timer. A zero non suonano.</string>
+    <string name="timer_started_fmt">Timer avviato: %s</string>
+    <string name="alarms_tab">Sveglie</string>
+    <string name="groups_tab">Gruppi</string>
+    <string name="no_groups">Nessun gruppo. Un gruppo raccoglie più sveglie: puoi accenderle, spegnerle e saltarle insieme.</string>
+    <string name="new_group">Nuovo gruppo</string>
+    <string name="no_active_in_group">Nessuna sveglia attiva nel gruppo</string>
+    <string name="group_default">Gruppo</string>
+    <string name="no_alarms_in_group">Nessuna sveglia nel gruppo.</string>
+    <string name="group_skip_day">Salta la prossima giornata</string>
+    <string name="group_edit">Modifica gruppo</string>
+    <string name="group_add_alarms">Aggiungi sveglie</string>
+    <string name="name_row">Nome</string>
+    <string name="group_delete">Elimina gruppo</string>
+    <string name="group_name_hint">Nome del gruppo</string>
+    <string name="next">Avanti</string>
+    <string name="no_free_alarms">Nessuna sveglia libera: sono tutte in un gruppo o sempre attive</string>
+    <string name="choose_alarms">Scegli le sveglie</string>
+    <string name="delete_group_title">Elimina «%s»</string>
+    <string name="delete_group_q">Eliminare il gruppo?</string>
+    <string name="delete">Elimina</string>
+    <string name="group_only">Solo il gruppo</string>
+    <string name="group_and_alarms">Anche le sveglie</string>
+    <string name="apply_all_title">Applica a tutte (%s)</string>
+    <string name="vib_on_cap">Attiva</string>
+    <string name="vib_off_cap">Disattivata</string>
+    <string name="choose_value">Scegli un valore</string>
+    <string name="apply_all">Applica a tutte</string>
+    <string name="days_title">Giorni</string>
+    <string name="select_one_day">Seleziona almeno un giorno</string>
+    <string name="sound_replace_fmt">«%s» sostituisce il suono di ogni sveglia del gruppo.</string>
+    <string name="applied_to_fmt">Applicato a %s</string>
+    <string name="always_on_group_msg">Una sveglia sempre attiva non può stare in un gruppo. La sveglia verrà tolta da «%s». Procedo?</string>
+    <string name="proceed">Procedo</string>
+    <string name="group_no_alarms">Il gruppo non ha sveglie</string>
+    <string-array name="day_short">
+        <item>Lun</item><item>Mar</item><item>Mer</item><item>Gio</item><item>Ven</item><item>Sab</item><item>Dom</item>
+    </string-array>
+    <string-array name="day_initial">
+        <item>L</item><item>M</item><item>M</item><item>G</item><item>V</item><item>S</item><item>D</item>
+    </string-array>
+    <string-array name="apply_all_options">
+        <item>Giorni</item><item>Suono</item><item>Vibrazione</item><item>Silenzia dopo</item><item>Durata posticipo</item><item>Volume crescente</item><item>Avviso prima della sveglia</item>
+    </string-array>
+    <plurals name="minutes_n"><item quantity="one">%d minuto</item><item quantity="other">%d minuti</item></plurals>
+    <plurals name="hours_n"><item quantity="one">%d ora</item><item quantity="other">%d ore</item></plurals>
+    <plurals name="days_n"><item quantity="one">%d giorno</item><item quantity="other">%d giorni</item></plurals>
+    <plurals name="seconds_n"><item quantity="one">%d secondo</item><item quantity="other">%d secondi</item></plurals>
+    <plurals name="alarms_count"><item quantity="one">%d sveglia</item><item quantity="other">%d sveglie</item></plurals>
+    <plurals name="active_count"><item quantity="one">%d attiva</item><item quantity="other">%d attive</item></plurals>
+    <plurals name="skipped_rings"><item quantity="one">Saltata la prossima suoneria di %d sveglia</item><item quantity="other">Saltata la prossima suoneria di %d sveglie</item></plurals>
+    <plurals name="group_contains"><item quantity="one">Il gruppo contiene %d sveglia. Cosa vuoi fare?</item><item quantity="other">Il gruppo contiene %d sveglie. Cosa vuoi fare?</item></plurals>
+
+    <string name="tab_timer">Timer</string>
+    <string name="tab_stopwatch">Cronometro</string>
+    <string name="tab_clock">Orologio</string>
+    <string name="options_title">Opzioni</string>
+    <string name="menu_timer_sound">Suono timer</string>
+    <string name="menu_precision_fmt">Precisione: %s</string>
+    <string name="menu_dials">Quadranti analogici</string>
+    <string name="menu_about">Informazioni e donazioni</string>
+    <string name="precision_title">Precisione</string>
+    <string-array name="precision_names">
+        <item>decimi</item><item>centesimi</item><item>millesimi</item>
+    </string-array>
+    <string-array name="precision_options">
+        <item>Decimi (0.1 s)</item><item>Centesimi (0.01 s)</item><item>Millesimi (0.001 s)</item>
+    </string-array>
+    <string name="no_timers">Nessun timer. Aggiungine uno con etichetta e durata.</string>
+    <string name="new_timer">Nuovo timer</string>
+    <string name="reset">Azzera</string>
+    <string name="resume">Riprendi</string>
+    <string name="start">Avvia</string>
+    <string name="pause">Pausa</string>
+    <string name="label_optional">Etichetta (facoltativa)</string>
+    <string name="add_btn">Aggiungi</string>
+    <string name="lap">Giro</string>
+    <string name="lap_n">Giro %d</string>
+    <string name="yesterday">Ieri</string>
+    <string name="same_zone">stesso fuso</string>
+    <string name="hours_short">%d h</string>
+    <string name="minutes_short">%d min</string>
+    <string name="add_city_hint">Aggiungi le città di cui vuoi vedere l’ora.</string>
+    <string name="add_city">Aggiungi città</string>
+    <string name="here_suffix">" (qui)"</string>
+    <string name="move_up">Sposta su</string>
+    <string name="move_down">Sposta giù</string>
+    <string name="search_city">Cerca città</string>
+    <string name="widget_digital_name">Orologio digitale</string>
+    <string name="widget_analog_name">Orologio analogico</string>
+
+    <string name="about_title">Informazioni</string>
+    <string name="version_fmt">Versione %1$s · build %2$s</string>
+    <string name="about_no_browser">Nessun browser per aprire il link</string>
+    <string name="about_desc_1">Timer, cronometro con decimi e centesimi, orologio internazionale, sveglie e widget personalizzabili. </string>
+    <string name="about_desc_2">Nessuna pubblicità, nessun account: i dati restano sul telefono.</string>
+    <string name="about_created_by">Creata da %s</string>
+    <string name="about_license">Software libero con licenza GPLv3: puoi usarlo, studiarlo e modificarlo, ma ogni versione derivata deve restare libera e con il codice aperto.</string>
+    <string name="donate_text">Se l\'app ti è utile puoi offrirmi un caffè: la donazione è libera e facoltativa.</string>
+    <string name="donate_mail_fmt">" Dall\'app PayPal puoi inviare a questo indirizzo:\n%s"</string>
+    <string name="donate_btn">Sostieni lo sviluppo</string>
+    <string name="copy_paypal">Copia l\'indirizzo PayPal</string>
+    <string name="copied_fmt">Copiato: %s</string>
+    <string name="check_updates">Cerca aggiornamenti</string>
+    <string name="source_code">Codice sorgente</string>
+    <string name="license_btn">Licenza GPLv3</string>
+    <string name="sec_background">Sfondo</string>
+    <string name="transparency">Trasparenza</string>
+    <string name="choose_photo">Scegli foto…</string>
+    <string name="remove_photo">Rimuovi foto</string>
+    <string name="photo_set">Foto di sfondo: impostata</string>
+    <string name="photo_none">Foto di sfondo: nessuna</string>
+    <string name="dim_photo">Scurisci la foto (per leggere meglio)</string>
+    <string name="photo_fit">Adattamento della foto</string>
+    <string name="photo_note_fit">Ridimensiona: si vede tutta la foto, stirata fino a riempire il widget; si deforma se le proporzioni sono diverse. Centra e ritaglia: la foto mantiene le proporzioni e si taglia ciò che esce dai bordi. In entrambi i casi la foto viene ridotta per stare nel widget.</string>
+    <string name="photo_note_digital">Questa foto copre tutto il widget, dietro l\'ora.</string>
+    <string name="photo_note_analog">Questa foto copre tutto il widget, dietro il quadrante. La foto dentro il quadrante si sceglie invece in «Crea o modifica quadrante».</string>
+    <string name="invalid_image">Immagine non valida</string>
+    <string name="sec_city">Città / fuso orario</string>
+    <string name="zone_local">Fuso: ora locale del telefono</string>
+    <string name="zone_fmt">Fuso: %1$s (%2$s)</string>
+    <string name="choose_city">Scegli città…</string>
+    <string name="local_time_btn">Ora locale</string>
+    <string name="city_name">Nome della città</string>
+    <string name="analog_tz_note">Su questo telefono l\'orologio analogico non può usare un altro fuso: la scelta vale solo per il digitale.</string>
+    <string name="font_title_digital">Carattere di ora e data</string>
+    <string name="font_title_analog">Carattere della data</string>
+    <string name="font">Carattere</string>
+    <string name="sec_dial">Quadrante e lancette</string>
+    <string name="dial_label">Quadrante</string>
+    <string name="hour_hand">Colore della lancetta delle ore</string>
+    <string name="minute_hand">Colore della lancetta dei minuti</string>
+    <string name="create_dial">Crea o modifica quadrante…</string>
+    <string name="sec_time">Ora</string>
+    <string name="size_label">Dimensione</string>
+    <string name="color_label">Colore</string>
+    <string name="separator">Separatore ore e minuti</string>
+    <string name="layout">Disposizione</string>
+    <string name="sec_tap">Al tocco del widget</string>
+    <string name="open_screen">Schermata che si apre</string>
+    <string name="sec_date">Data</string>
+    <string name="show_date">Mostra la data</string>
+    <string name="position">Posizione</string>
+    <string name="format">Formato</string>
+    <string name="save">Salva</string>
+    <string-array name="transp_opts">
+        <item>Opaco</item><item>Semitrasparente</item><item>Trasparente</item>
+    </string-array>
+    <string-array name="photo_fit_opts">
+        <item>Ridimensiona (tutta la foto, stirata)</item><item>Centra e ritaglia (non si deforma)</item>
+    </string-array>
+    <string-array name="city_name_opts">
+        <item>Mostra accanto alla data</item><item>Non mostrare</item>
+    </string-array>
+    <string-array name="layout_opts">
+        <item>In linea</item><item>Ore sopra, minuti sotto</item>
+    </string-array>
+    <string-array name="pos_opts">
+        <item>Sopra</item><item>Sotto</item>
+    </string-array>
+    <string-array name="sep_labels">
+        <item>Due punti  :</item><item>Punto  .</item><item>Virgola  ,</item><item>Spazio</item>
+    </string-array>
+    <string-array name="tab_labels">
+        <item>Sveglie</item><item>Timer</item><item>Cronometro</item><item>Orologio</item>
+    </string-array>
+    <string-array name="hand_colors">
+        <item>Bianco</item><item>Nero</item><item>Grigio</item><item>Ambra</item><item>Arancio</item><item>Rosso</item><item>Rosa</item><item>Viola</item><item>Azzurro</item><item>Turchese</item><item>Verde</item><item>Lime</item>
+    </string-array>
+    <string-array name="font_labels">
+        <item>Predefinito (leggero)</item><item>Normale</item><item>Medio</item><item>Nero</item><item>Condensato</item><item>Serif</item><item>Monospace</item><item>Corsivo</item>
+    </string-array>
+    <string-array name="dim_labels">
+        <item>Nessuna</item><item>Leggera</item><item>Media</item><item>Forte</item>
+    </string-array>
+
+    <string name="exact_color">Colore esatto</string>
+    <string name="exact_color_msg">Scrivi il codice esadecimale, per esempio #FFB020</string>
+    <string name="invalid_code">Codice non valido</string>
+    <string name="choose_city_title">Scegli la città</string>
+    <string name="img_set">Immagine di sfondo: impostata</string>
+    <string name="img_none">Immagine di sfondo: nessuna</string>
+    <string name="font_imported">Carattere: file importato</string>
+    <string name="font_system">Carattere: di sistema</string>
+    <string name="dial_default_name">Quadrante</string>
+    <string name="dial_copy_fmt">%s (mio)</string>
+    <string name="dial_new_name">Mio quadrante</string>
+    <string name="sec_name">Nome</string>
+    <string name="sec_shape_bg">Forma e sfondo</string>
+    <string name="shape">Forma</string>
+    <string name="bg_color">Colore dello sfondo</string>
+    <string name="bg_transp">Trasparenza dello sfondo</string>
+    <string name="choose_image">Scegli immagine…</string>
+    <string name="remove_image">Rimuovi immagine</string>
+    <string name="image_note">Questa immagine resta dentro il quadrante e viene ritagliata a quadrato. Per una foto che copre tutto il widget usa «Scegli foto» nella configurazione del widget.</string>
+    <string name="border_width">Spessore del bordo</string>
+    <string name="border_color">Colore del bordo</string>
+    <string name="sec_numbers">Numeri</string>
+    <string name="number_type">Tipo di numeri</string>
+    <string name="import_font">Importa carattere .ttf…</string>
+    <string name="use_system_font">Usa di sistema</string>
+    <string name="number_size">Dimensione dei numeri</string>
+    <string name="number_color">Colore dei numeri</string>
+    <string name="sec_ticks">Tacche</string>
+    <string name="tick_style">Stile</string>
+    <string name="tick_length">Lunghezza</string>
+    <string name="tick_width">Spessore</string>
+    <string name="tick_color">Colore delle tacche</string>
+    <string name="sec_preview">Anteprima</string>
+    <string name="preview_hour_hand">Lancetta delle ore (solo per vedere l\'effetto)</string>
+    <string name="preview_min_hand">Lancetta dei minuti (solo per vedere l\'effetto)</string>
+    <string name="sec_save">Salvataggio</string>
+    <string name="save_as_new">Salva come nuovo</string>
+    <string name="delete_dial">Elimina quadrante</string>
+    <string name="delete_dial_title">Eliminare \"%s\"?</string>
+    <string name="delete_dial_msg">I widget che lo usano torneranno al quadrante Classico.</string>
+    <string name="invalid_font">File di caratteri non valido</string>
+    <string name="new_dial_item">+ Nuovo quadrante</string>
+    <string name="preset_classic">Classico</string>
+    <string name="preset_quarters">Solo quarti</string>
+    <string name="preset_arabic">Numeri arabi</string>
+    <string name="preset_roman">Romano chiaro</string>
+    <string name="preset_four">Quattro numeri</string>
+    <string name="preset_dots">Punti</string>
+    <string name="preset_modern">Moderno chiaro</string>
+    <string-array name="shape_opts">
+        <item>Tonda</item><item>Quadrata arrotondata</item>
+    </string-array>
+    <string-array name="op_opts">
+        <item>Opaco</item><item>Poco trasparente</item><item>Molto trasparente</item><item>Nessuno sfondo</item>
+    </string-array>
+    <string-array name="num_opts">
+        <item>Nessuno</item><item>Arabi 1-12</item><item>Arabi 12-3-6-9</item><item>Romani I-XII</item>
+    </string-array>
+    <string-array name="tick_opts">
+        <item>Nessuna</item><item>Ore (linee)</item><item>Ore e minuti (linee)</item><item>Ore (punti)</item><item>Solo quarti (linee)</item>
+    </string-array>
+</resources>

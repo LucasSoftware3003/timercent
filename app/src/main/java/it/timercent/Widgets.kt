@@ -240,10 +240,10 @@ class WidgetConfig : CfgBase() {
     private lateinit var zoneInfo: TextView
 
     private fun infoZ() {
-        zoneInfo.text = if (k.zone.isEmpty()) "Fuso: ora locale del telefono" else "Fuso: " + zoneCity(k.zone) + " (" + zoneGmt(k.zone) + ")"
+        zoneInfo.text = if (k.zone.isEmpty()) getString(R.string.zone_local) else getString(R.string.zone_fmt, zoneCity(k.zone), zoneGmt(k.zone))
     }
 
-    private fun infoPh() { photoInfo.text = if (k.photo != null) "Foto di sfondo: impostata" else "Foto di sfondo: nessuna" }
+    private fun infoPh() { photoInfo.text = if (k.photo != null) getString(R.string.photo_set) else getString(R.string.photo_none) }
 
     private fun updPrev() { dialPrev.setImageBitmap(Dials.preview(this, Dials.find(this, k.dial), k.hh, k.hm)) }
 
@@ -259,7 +259,7 @@ class WidgetConfig : CfgBase() {
         super.onActivityResult(rq, rs, d)
         if (rq == 6 && rs == RESULT_OK && d?.data != null) {
             val n = Dials.importPhoto(this, d.data!!)
-            if (n != null) { k.photo = n; infoPh() } else android.widget.Toast.makeText(this, "Immagine non valida", android.widget.Toast.LENGTH_LONG).show()
+            if (n != null) { k.photo = n; infoPh() } else android.widget.Toast.makeText(this, getString(R.string.invalid_image), android.widget.Toast.LENGTH_LONG).show()
         }
         if (rq == 5) {
             if (rs == RESULT_OK) d?.getStringExtra("dial")?.let { k.dial = it }
@@ -278,61 +278,59 @@ class WidgetConfig : CfgBase() {
 
         val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(20), dp(12), dp(20), dp(24)) }
         box.addView(TextView(this).apply {
-            text = if (digital) "Orologio digitale" else "Orologio analogico"
+            text = if (digital) getString(R.string.widget_digital_name) else getString(R.string.widget_analog_name)
             setTextColor(FG); textSize = 22f; setPadding(0, dp(8), 0, 0)
         })
 
-        title(box, "Sfondo")
-        spin(box, "Trasparenza", listOf("Opaco", "Semitrasparente", "Trasparente"), k.bg) { k.bg = it }
+        title(box, getString(R.string.sec_background))
+        spin(box, getString(R.string.transparency), resources.getStringArray(R.array.transp_opts).toList(), k.bg) { k.bg = it }
         photoInfo = TextView(this)
         photoInfo.setTextColor(MUTE); photoInfo.textSize = 13f; photoInfo.setPadding(0, dp(12), 0, 0)
         box.addView(photoInfo)
         infoPh()
         val pr = LinearLayout(this)
-        val pb1 = Button(this); pb1.text = "Scegli foto…"; pb1.isAllCaps = false
+        val pb1 = Button(this); pb1.text = getString(R.string.choose_photo); pb1.isAllCaps = false
         pb1.setOnClickListener {
             startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("image/*"), 6)
         }
-        val pb2 = Button(this); pb2.text = "Rimuovi foto"; pb2.isAllCaps = false
+        val pb2 = Button(this); pb2.text = getString(R.string.remove_photo); pb2.isAllCaps = false
         pb2.setOnClickListener { k.photo = null; infoPh() }
         pr.addView(pb1, LinearLayout.LayoutParams(0, -2, 1f)); pr.addView(pb2, LinearLayout.LayoutParams(0, -2, 1f))
         box.addView(pr)
-        spin(box, "Scurisci la foto (per leggere meglio)", Dials.DIM_LBL, k.dim) { k.dim = it }
-        spin(box, "Adattamento della foto", listOf("Ridimensiona (tutta la foto, stirata)", "Centra e ritaglia (non si deforma)"), if (k.crop) 1 else 0) { k.crop = it == 1 }
-        note(box, "Ridimensiona: si vede tutta la foto, stirata fino a riempire il widget; si deforma se le proporzioni sono diverse. " +
-            "Centra e ritaglia: la foto mantiene le proporzioni e si taglia ciò che esce dai bordi. In entrambi i casi la foto viene ridotta per stare nel widget.")
-        note(box, if (digital) "Questa foto copre tutto il widget, dietro l'ora."
-            else "Questa foto copre tutto il widget, dietro il quadrante. La foto dentro il quadrante si sceglie invece in «Crea o modifica quadrante».")
+        spin(box, getString(R.string.dim_photo), resources.getStringArray(R.array.dim_labels).toList(), k.dim) { k.dim = it }
+        spin(box, getString(R.string.photo_fit), resources.getStringArray(R.array.photo_fit_opts).toList(), if (k.crop) 1 else 0) { k.crop = it == 1 }
+        note(box, getString(R.string.photo_note_fit))
+        note(box, if (digital) getString(R.string.photo_note_digital) else getString(R.string.photo_note_analog))
 
-        title(box, "Città / fuso orario")
+        title(box, getString(R.string.sec_city))
         zoneInfo = TextView(this)
         zoneInfo.setTextColor(FG); zoneInfo.textSize = 15f; zoneInfo.setPadding(0, dp(10), 0, 0)
         box.addView(zoneInfo)
         infoZ()
         val zr = LinearLayout(this)
-        val zb1 = Button(this); zb1.text = "Scegli città…"; zb1.isAllCaps = false
+        val zb1 = Button(this); zb1.text = getString(R.string.choose_city); zb1.isAllCaps = false
         zb1.setOnClickListener { pickZone(this) { id -> k.zone = id; infoZ() } }
-        val zb2 = Button(this); zb2.text = "Ora locale"; zb2.isAllCaps = false
+        val zb2 = Button(this); zb2.text = getString(R.string.local_time_btn); zb2.isAllCaps = false
         zb2.setOnClickListener { k.zone = ""; infoZ() }
         zr.addView(zb1, LinearLayout.LayoutParams(0, -2, 1f)); zr.addView(zb2, LinearLayout.LayoutParams(0, -2, 1f))
         box.addView(zr)
-        spin(box, "Nome della città", listOf("Mostra accanto alla data", "Non mostrare"), if (k.zlbl) 0 else 1) { k.zlbl = it == 0 }
+        spin(box, getString(R.string.city_name), resources.getStringArray(R.array.city_name_opts).toList(), if (k.zlbl) 0 else 1) { k.zlbl = it == 0 }
         if (!digital && !Wg.analogTzOk()) {
             val nt = TextView(this)
-            nt.text = "Su questo telefono l'orologio analogico non può usare un altro fuso: la scelta vale solo per il digitale."
+            nt.text = getString(R.string.analog_tz_note)
             nt.setTextColor(MUTE); nt.textSize = 13f; nt.setPadding(0, dp(8), 0, 0)
             box.addView(nt)
         }
 
-        title(box, if (digital) "Carattere di ora e data" else "Carattere della data")
-        spin(box, "Carattere", Wg.FONT_LBL, k.font, Wg.FONT_FAM.map { Typeface.create(it, Typeface.NORMAL) }) { k.font = it }
+        title(box, if (digital) getString(R.string.font_title_digital) else getString(R.string.font_title_analog))
+        spin(box, getString(R.string.font), resources.getStringArray(R.array.font_labels).toList(), k.font, Wg.FONT_FAM.map { Typeface.create(it, Typeface.NORMAL) }) { k.font = it }
 
         if (!digital) {
-            title(box, "Quadrante e lancette")
+            title(box, getString(R.string.sec_dial))
             dialPrev = ImageView(this)
             dialPrev.setPadding(dp(8), dp(8), dp(8), dp(8))
             dialPrev.background = GradientDrawable().apply { setColor(0xFF1B222B.toInt()); cornerRadius = dp(16).toFloat() }
-            label(box, "Quadrante")
+            label(box, getString(R.string.dial_label))
             dialSpin = Spinner(this)
             dialSpin.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(p: AdapterView<*>?, v: View?, pos: Int, i: Long) {
@@ -342,11 +340,11 @@ class WidgetConfig : CfgBase() {
             }
             box.addView(dialSpin)
             fillDials()
-            spin(box, "Colore della lancetta delle ore", Wg.HAND_LBL, k.hh) { k.hh = it; updPrev() }
-            spin(box, "Colore della lancetta dei minuti", Wg.HAND_LBL, k.hm) { k.hm = it; updPrev() }
+            spin(box, getString(R.string.hour_hand), resources.getStringArray(R.array.hand_colors).toList(), k.hh) { k.hh = it; updPrev() }
+            spin(box, getString(R.string.minute_hand), resources.getStringArray(R.array.hand_colors).toList(), k.hm) { k.hm = it; updPrev() }
             box.addView(dialPrev, LinearLayout.LayoutParams(dp(170), dp(170)).apply { topMargin = dp(12); gravity = android.view.Gravity.CENTER_HORIZONTAL })
             val nb = Button(this)
-            nb.text = "Crea o modifica quadrante…"; nb.isAllCaps = false
+            nb.text = getString(R.string.create_dial); nb.isAllCaps = false
             nb.setOnClickListener {
                 startActivityForResult(Intent(this, DialBuilder::class.java).putExtra("dial", k.dial).putExtra("hh", k.hh).putExtra("hm", k.hm), 5)
             }
@@ -354,38 +352,38 @@ class WidgetConfig : CfgBase() {
         }
 
         if (digital) {
-            title(box, "Ora")
-            seek(box, "Dimensione", 20, 120, k.tSize) { k.tSize = it }
-            colors(box, "Colore", k.tCol) { k.tCol = it }
-            val sepSpin = spin(box, "Separatore ore e minuti", Wg.SEP_LBL, k.sep) { k.sep = it }
-            spin(box, "Disposizione", listOf("In linea", "Ore sopra, minuti sotto"), if (k.stack) 1 else 0) {
+            title(box, getString(R.string.sec_time))
+            seek(box, getString(R.string.size_label), 20, 120, k.tSize) { k.tSize = it }
+            colors(box, getString(R.string.color_label), k.tCol) { k.tCol = it }
+            val sepSpin = spin(box, getString(R.string.separator), resources.getStringArray(R.array.sep_labels).toList(), k.sep) { k.sep = it }
+            spin(box, getString(R.string.layout), resources.getStringArray(R.array.layout_opts).toList(), if (k.stack) 1 else 0) {
                 k.stack = it == 1; sepSpin.isEnabled = !k.stack; sepSpin.alpha = if (k.stack) 0.4f else 1f
             }
             sepSpin.isEnabled = !k.stack; sepSpin.alpha = if (k.stack) 0.4f else 1f
         }
 
-        title(box, "Al tocco del widget")
-        spin(box, "Schermata che si apre", Wg.TAB_LBL, Wg.TAB_VAL.indexOf(k.tab).coerceAtLeast(0)) { k.tab = Wg.TAB_VAL[it] }
+        title(box, getString(R.string.sec_tap))
+        spin(box, getString(R.string.open_screen), resources.getStringArray(R.array.tab_labels).toList(), Wg.TAB_VAL.indexOf(k.tab).coerceAtLeast(0)) { k.tab = Wg.TAB_VAL[it] }
 
-        title(box, "Data")
+        title(box, getString(R.string.sec_date))
         val dBox = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         val sw = Switch(this).apply {
-            text = "Mostra la data"; setTextColor(FG); isChecked = k.dOn
+            text = getString(R.string.show_date); setTextColor(FG); isChecked = k.dOn
             setPadding(0, dp(6), 0, dp(6))
             setOnCheckedChangeListener { _, on -> k.dOn = on; dBox.visibility = if (on) View.VISIBLE else View.GONE }
         }
         box.addView(sw)
         dBox.visibility = if (k.dOn) View.VISIBLE else View.GONE
-        spin(dBox, "Posizione", listOf("Sopra", "Sotto"), if (k.dBottom) 1 else 0) { k.dBottom = it == 1 }
+        spin(dBox, getString(R.string.position), resources.getStringArray(R.array.pos_opts).toList(), if (k.dBottom) 1 else 0) { k.dBottom = it == 1 }
         val now = Date()
         val ex = Wg.DATE_FMT.map { SimpleDateFormat(it, Locale.getDefault()).format(now) }
-        spin(dBox, "Formato", ex, k.dFmt) { k.dFmt = it }
-        seek(dBox, "Dimensione", 8, 40, k.dSize) { k.dSize = it }
-        colors(dBox, "Colore", k.dCol) { k.dCol = it }
+        spin(dBox, getString(R.string.format), ex, k.dFmt) { k.dFmt = it }
+        seek(dBox, getString(R.string.size_label), 8, 40, k.dSize) { k.dSize = it }
+        colors(dBox, getString(R.string.color_label), k.dCol) { k.dCol = it }
         box.addView(dBox)
 
         box.addView(Button(this).apply {
-            text = "Salva"
+            text = getString(R.string.save)
             setOnClickListener {
                 Wg.save(this@WidgetConfig, id, k); Wg.refresh(this@WidgetConfig, id, digital)
                 setResult(RESULT_OK, Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id))

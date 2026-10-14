@@ -81,10 +81,10 @@ class MainActivity : Activity() {
         L = Store.load(this)
         prec = getSharedPreferences("ct", 0).getInt("prec", 2).coerceIn(1, 3)
         fun small(x: Button) = x.apply { textSize = 13f; minWidth = 0; maxLines = 1; setPadding(dp(2), 0, dp(2), 0); setAutoSizeTextTypeUniformWithConfiguration(9, 13, 1, TypedValue.COMPLEX_UNIT_SP) }
-        bA = small(btn("Sveglie", BG, FG) { tab = 3; render() })
-        b0 = small(btn("Timer", CARD, FG) { tab = 0; render() })
-        b1 = small(btn("Cronometro", BG, FG) { tab = 1; render() })
-        b2 = small(btn("Orologio", BG, FG) { tab = 2; render() })
+        bA = small(btn(getString(R.string.alarms_tab), BG, FG) { tab = 3; render() })
+        b0 = small(btn(getString(R.string.tab_timer), CARD, FG) { tab = 0; render() })
+        b1 = small(btn(getString(R.string.tab_stopwatch), BG, FG) { tab = 1; render() })
+        b2 = small(btn(getString(R.string.tab_clock), BG, FG) { tab = 2; render() })
         val b3 = small(btn("⋮", BG, FG) { optDlg() })
         val top = LinearLayout(this).apply { setPadding(dp(8), dp(12), dp(8), 0) }
         top.addView(bA, lp(0, -2, 1f, 2)); top.addView(b0, lp(0, -2, 1f, 2)); top.addView(b1, lp(0, -2, 1.1f, 2)); top.addView(b2, lp(0, -2, 1f, 2)); top.addView(b3, lp(0, -2, 0.45f, 2))
@@ -175,16 +175,16 @@ class MainActivity : Activity() {
     }
 
     fun optDlg() {
-        val names = listOf("decimi", "centesimi", "millesimi")
-        AlertDialog.Builder(this).setTitle("Opzioni")
-            .setItems(arrayOf("Suono timer", "Precisione: " + names[prec - 1], "Impostazioni sveglie", "Quadranti analogici", "Informazioni e donazioni")) { _, w -> if (w == 0) pickSound() else if (w == 1) precDlg() else if (w == 2) alarmSettings() else if (w == 3) dialMenu() else aboutDlg() }
+        val names = resources.getStringArray(R.array.precision_names)
+        AlertDialog.Builder(this).setTitle(getString(R.string.options_title))
+            .setItems(arrayOf(getString(R.string.menu_timer_sound), getString(R.string.menu_precision_fmt, names[prec - 1]), getString(R.string.alarm_settings_title), getString(R.string.menu_dials), getString(R.string.menu_about))) { _, w -> if (w == 0) pickSound() else if (w == 1) precDlg() else if (w == 2) alarmSettings() else if (w == 3) dialMenu() else aboutDlg() }
             .show()
     }
     fun precDlg() {
-        AlertDialog.Builder(this).setTitle("Precisione")
-            .setSingleChoiceItems(arrayOf("Decimi (0.1 s)", "Centesimi (0.01 s)", "Millesimi (0.001 s)"), prec - 1) { d, w ->
+        AlertDialog.Builder(this).setTitle(getString(R.string.precision_title))
+            .setSingleChoiceItems(resources.getStringArray(R.array.precision_options), prec - 1) { d, w ->
                 prec = w + 1; getSharedPreferences("ct", 0).edit().putInt("prec", prec).apply(); d.dismiss(); render()
-            }.setNegativeButton("Chiudi", null).show()
+            }.setNegativeButton(getString(R.string.close), null).show()
     }
 
     fun render() {
@@ -195,8 +195,8 @@ class MainActivity : Activity() {
         (bA.background as GradientDrawable).setColor(if (tab == 3) CARD else BG)
         if (tab == 0) {
             L.forEach { card(it) }
-            if (L.isEmpty()) body.addView(tvw("Nessun timer. Aggiungine uno con etichetta e durata.", 15f, MUTE).apply { setPadding(dp(8), dp(24), dp(8), dp(24)) })
-            body.addView(btn("Nuovo timer", CARD, FG) { addDlg() })
+            if (L.isEmpty()) body.addView(tvw(getString(R.string.no_timers), 15f, MUTE).apply { setPadding(dp(8), dp(24), dp(8), dp(24)) })
+            body.addView(btn(getString(R.string.new_timer), CARD, FG) { addDlg() })
         } else if (tab == 1) stopwatch() else if (tab == 3) alarmsTab() else world()
     }
 
@@ -209,7 +209,7 @@ class MainActivity : Activity() {
             background = GradientDrawable().apply { setColor(CARD); cornerRadius = dp(20).toFloat(); if (done) setStroke(dp(3), ACC) }
         }
         val top = LinearLayout(this)
-        top.addView(tvw(t.label.ifEmpty { "Timer" }, 18f, FG).apply { typeface = Typeface.DEFAULT_BOLD; maxLines = 1 }, lp(0, -2, 1f))
+        top.addView(tvw(t.label.ifEmpty { getString(R.string.default_timer_label) }, 18f, FG).apply { typeface = Typeface.DEFAULT_BOLD; maxLines = 1 }, lp(0, -2, 1f))
         top.addView(tvw("✕", 20f, MUTE).apply {
             setPadding(dp(12), 0, dp(4), 0)
             setOnClickListener { Notif.stop(this@MainActivity, t); L.remove(t); save(); render() }
@@ -217,10 +217,10 @@ class MainActivity : Activity() {
         val time = tvw(fmt(rem(t)), 46f, if (done) ACC else FG); light(time); fit(time, 46)
         tv[t.id] = time
         val row = LinearLayout(this)
-        if (!done) row.addView(btn("Azzera", BG, FG) {
+        if (!done) row.addView(btn(getString(R.string.reset), BG, FG) {
             Notif.stop(this, t); t.end = 0; t.left = t.ms; save(); render()
         }, lp(0, -2, 1f, 4))
-        val label = if (done) "Ferma" else if (run) "Pausa" else if (t.left < t.ms) "Riprendi" else "Avvia"
+        val label = if (done) getString(R.string.action_stop) else if (run) getString(R.string.pause) else if (t.left < t.ms) getString(R.string.resume) else getString(R.string.start)
         row.addView(btn(label, if (run) ACC else GO, DARK) {
             val d = t.end > 0 && rem(t) <= 0
             if (d) { Notif.stop(this, t); Notif.halt(this); t.end = 0; t.left = t.ms }
@@ -258,7 +258,7 @@ class MainActivity : Activity() {
     }
 
     fun addDlg() {
-        val lb = EditText(this).apply { hint = "Etichetta (facoltativa)"; textSize = 18f }
+        val lb = EditText(this).apply { hint = getString(R.string.label_optional); textSize = 18f }
         var d = ""
         val disp = tvw("", 38f, FG).apply { gravity = Gravity.CENTER; fontFeatureSettings = "tnum" }
         fun refresh() { val p = d.padStart(6, '0'); disp.text = "${p.substring(0, 2)}h ${p.substring(2, 4)}m ${p.substring(4)}s" }
@@ -276,12 +276,12 @@ class MainActivity : Activity() {
         }
         val c = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(8), dp(16), 0) }
         c.addView(lb); c.addView(disp, lp(-1, -2).apply { topMargin = dp(16); bottomMargin = dp(12) }); c.addView(grid)
-        AlertDialog.Builder(this).setTitle("Nuovo timer").setView(c)
-            .setPositiveButton("Aggiungi") { _, _ ->
+        AlertDialog.Builder(this).setTitle(getString(R.string.new_timer)).setView(c)
+            .setPositiveButton(getString(R.string.add_btn)) { _, _ ->
                 val p = d.padStart(6, '0')
                 val ms = (p.substring(0, 2).toLong() * 3600 + p.substring(2, 4).toLong() * 60 + p.substring(4).toLong()) * 1000
                 if (ms > 0) { L.add(T(System.currentTimeMillis().toString(), lb.text.toString().trim(), ms, ms, 0)); save(); render() }
-            }.setNegativeButton("Annulla", null).show()
+            }.setNegativeButton(getString(R.string.cancel), null).show()
     }
 
     fun stopwatch() {
@@ -290,9 +290,9 @@ class MainActivity : Activity() {
         body.addView(d, lp(-1, -2).apply { topMargin = dp(40); bottomMargin = dp(32) })
         val r = LinearLayout(this)
         // In corsa il pulsante di sinistra segna un giro; in pausa azzera cronometro e giri
-        if (swRun) r.addView(btn("Giro", CARD, FG) { laps.add(swNow()); render() }, lp(0, -2, 1f, 4))
-        else r.addView(btn("Azzera", CARD, FG) { swAcc = 0; swRun = false; laps.clear(); render() }, lp(0, -2, 1f, 4))
-        r.addView(btn(if (swRun) "Pausa" else "Avvia", if (swRun) ACC else GO, DARK) {
+        if (swRun) r.addView(btn(getString(R.string.lap), CARD, FG) { laps.add(swNow()); render() }, lp(0, -2, 1f, 4))
+        else r.addView(btn(getString(R.string.reset), CARD, FG) { swAcc = 0; swRun = false; laps.clear(); render() }, lp(0, -2, 1f, 4))
+        r.addView(btn(if (swRun) getString(R.string.pause) else getString(R.string.start), if (swRun) ACC else GO, DARK) {
             if (swRun) { swAcc = swNow(); swRun = false } else { swT0 = SystemClock.elapsedRealtime(); swRun = true }
             render()
         }, lp(0, -2, 1f, 4))
@@ -320,10 +320,10 @@ class MainActivity : Activity() {
             return lapTv
         }
         // Giro in corso (solo mentre il cronometro corre)
-        if (swRun) swLapTv = row("Giro " + (n + 1), fmt(swNow() - laps[n - 1]), "", FG)
+        if (swRun) swLapTv = row(getString(R.string.lap_n, n + 1), fmt(swNow() - laps[n - 1]), "", FG)
         for (i in n - 1 downTo 0) {
             val col = if (i == best) GO else if (i == worst) 0xFFF87171.toInt() else FG
-            row("Giro " + (i + 1), fmt(times[i]), fmt(laps[i]), col)
+            row(getString(R.string.lap_n, i + 1), fmt(times[i]), fmt(laps[i]), col)
         }
         body.addView(box, lp(-1, -2).apply { topMargin = dp(20) })
     }
@@ -365,11 +365,11 @@ class MainActivity : Activity() {
     fun subText(z: java.time.ZoneId, now: java.time.Instant): String {
         val here = java.time.ZoneId.systemDefault()
         val d = java.time.temporal.ChronoUnit.DAYS.between(now.atZone(here).toLocalDate(), now.atZone(z).toLocalDate())
-        val day = when (d) { 0L -> "Oggi"; 1L -> "Domani"; -1L -> "Ieri"; else -> "" }
+        val day = when (d) { 0L -> getString(R.string.today); 1L -> getString(R.string.tomorrow); -1L -> getString(R.string.yesterday); else -> "" }
         val diff = (z.rules.getOffset(now).totalSeconds - here.rules.getOffset(now).totalSeconds) / 60
-        val off = if (diff == 0) "stesso fuso" else {
+        val off = if (diff == 0) getString(R.string.same_zone) else {
             val a = Math.abs(diff); val hh = a / 60; val mm = a % 60
-            (if (diff > 0) "+" else "-") + (if (hh > 0) "$hh h" else "") + (if (hh > 0 && mm > 0) " " else "") + (if (mm > 0) "$mm min" else "")
+            (if (diff > 0) "+" else "-") + (if (hh > 0) getString(R.string.hours_short, hh) else "") + (if (hh > 0 && mm > 0) " " else "") + (if (mm > 0) getString(R.string.minutes_short, mm) else "")
         }
         return listOf(day, off).filter { it.isNotEmpty() }.joinToString(" · ")
     }
@@ -388,8 +388,8 @@ class MainActivity : Activity() {
         worldCard(java.time.ZoneId.systemDefault().id, true, 0, mutableListOf())
         val l = zones()
         l.forEachIndexed { i, id -> worldCard(id, false, i, l) }
-        if (l.isEmpty()) body.addView(tvw("Aggiungi le città di cui vuoi vedere l'ora.", 15f, MUTE).apply { setPadding(dp(8), dp(12), dp(8), dp(24)) })
-        body.addView(btn("Aggiungi città", CARD, FG) { cityDlg() })
+        if (l.isEmpty()) body.addView(tvw(getString(R.string.add_city_hint), 15f, MUTE).apply { setPadding(dp(8), dp(12), dp(8), dp(24)) })
+        body.addView(btn(getString(R.string.add_city), CARD, FG) { cityDlg() })
         updWorld()
     }
 
@@ -400,7 +400,7 @@ class MainActivity : Activity() {
             background = GradientDrawable().apply { setColor(CARD); cornerRadius = dp(20).toFloat() }
         }
         val left = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-        left.addView(tvw(cityName(id) + if (local) " (qui)" else "", 18f, FG).apply { typeface = Typeface.DEFAULT_BOLD; maxLines = 1 })
+        left.addView(tvw(cityName(id) + if (local) getString(R.string.here_suffix) else "", 18f, FG).apply { typeface = Typeface.DEFAULT_BOLD; maxLines = 1 })
         val sub = tvw("", 13f, MUTE)
         left.addView(sub)
         val time = tvw("", 36f, FG); light(time)
@@ -419,11 +419,11 @@ class MainActivity : Activity() {
 
     fun moveDlg(i: Int, l: MutableList<String>) {
         val o = ArrayList<String>()
-        if (i > 0) o.add("Sposta su")
-        if (i < l.size - 1) o.add("Sposta giù")
+        if (i > 0) o.add(getString(R.string.move_up))
+        if (i < l.size - 1) o.add(getString(R.string.move_down))
         if (o.isEmpty()) return
         AlertDialog.Builder(this).setTitle(cityName(l[i])).setItems(o.toTypedArray()) { _, w ->
-            val j = if (o[w] == "Sposta su") i - 1 else i + 1
+            val j = if (o[w] == getString(R.string.move_up)) i - 1 else i + 1
             val x = l[i]; l[i] = l[j]; l[j] = x; saveZones(l); render()
         }.show()
     }
@@ -442,7 +442,7 @@ class MainActivity : Activity() {
             ad.clear(); ad.addAll(shown.map { "${it.first}  (${it.third})" }); ad.notifyDataSetChanged()
         }
         filt("")
-        val et = EditText(this).apply { hint = "Cerca città"; setSingleLine() }
+        val et = EditText(this).apply { hint = getString(R.string.search_city); setSingleLine() }
         et.addTextChangedListener(object : android.text.TextWatcher {
             override fun afterTextChanged(s: android.text.Editable?) { filt(s?.toString() ?: "") }
             override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
@@ -457,6 +457,6 @@ class MainActivity : Activity() {
             val l = zones(); if (id !in l) { l.add(id); saveZones(l) }
             dlg?.dismiss(); render()
         }
-        dlg = AlertDialog.Builder(this).setTitle("Aggiungi città").setView(c).setNegativeButton("Chiudi", null).show()
+        dlg = AlertDialog.Builder(this).setTitle(getString(R.string.add_city)).setView(c).setNegativeButton(getString(R.string.close), null).show()
     }
 }

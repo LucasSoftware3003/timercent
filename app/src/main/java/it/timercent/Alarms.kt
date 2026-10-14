@@ -142,10 +142,10 @@ object Alarms {
         if (t <= now) return
         Notif.channels(c)
         val n = Notification.Builder(c, Notif.UP).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-            .setContentTitle(a.label.ifEmpty { "Sveglia" } + " · " + hm(c, t)).setContentText("Prossima sveglia")
+            .setContentTitle(a.label.ifEmpty { c.getString(R.string.alarm_default_label) } + " · " + hm(c, t)).setContentText(c.getString(R.string.alarm_next))
             .setWhen(t).setUsesChronometer(true).setChronometerCountDown(true)
             .setTimeoutAfter(t - now + 60000L)
-            .setContentIntent(openTab(c)).addAction(0, "Salta", pi(c, a, SKIP)).build()
+            .setContentIntent(openTab(c)).addAction(0, c.getString(R.string.alarm_skip), pi(c, a, SKIP)).build()
         c.getSystemService(NotificationManager::class.java).notify(npre(a.id), n)
     }
 
@@ -261,7 +261,7 @@ class WakeService : Service() {
                 or android.media.session.PlaybackState.ACTION_STOP or android.media.session.PlaybackState.ACTION_SKIP_TO_NEXT)
             .setState(android.media.session.PlaybackState.STATE_PLAYING, 0L, 1f).build())
         s.setMetadata(android.media.MediaMetadata.Builder()
-            .putString(android.media.MediaMetadata.METADATA_KEY_TITLE, label.ifEmpty { "Sveglia" })
+            .putString(android.media.MediaMetadata.METADATA_KEY_TITLE, label.ifEmpty { getString(R.string.alarm_default_label) })
             .putString(android.media.MediaMetadata.METADATA_KEY_ARTIST, "Timercent").build())
         s.isActive = true
         ms = s
@@ -280,14 +280,14 @@ class WakeService : Service() {
         val snz = a?.snz ?: 10
         val snzA = Notification.Action.Builder(
             android.graphics.drawable.Icon.createWithResource(this, android.R.drawable.ic_lock_idle_alarm),
-            "Posticipa ($snz min)", act("SNOOZE", 2)).build()
+            getString(R.string.alarm_snooze_action, snz), act("SNOOZE", 2)).build()
         val stopA = Notification.Action.Builder(
             android.graphics.drawable.Icon.createWithResource(this, android.R.drawable.ic_menu_close_clear_cancel),
-            "Ferma", act("STOP", 3)).build()
+            getString(R.string.action_stop), act("STOP", 3)).build()
         // Stesse due azioni anche per gli orologi Wear OS (quelli con app propria, come Zepp, le ignorano)
         val wear = Notification.WearableExtender().addAction(stopA).addAction(snzA)
         val nb = Notification.Builder(this, Notif.WAKE).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-            .setContentTitle(label.ifEmpty { "Sveglia" }).setContentText(Alarms.hm(this, System.currentTimeMillis()))
+            .setContentTitle(label.ifEmpty { getString(R.string.alarm_default_label) }).setContentText(Alarms.hm(this, System.currentTimeMillis()))
             .setCategory(Notification.CATEGORY_ALARM).setOngoing(true).setOnlyAlertOnce(true)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setFullScreenIntent(ringPi(label, snz), true).setContentIntent(ringPi(label, snz))
@@ -348,13 +348,13 @@ class WakeService : Service() {
         if (snooze) {
             val t = Alarms.snooze(this, a)
             nm.notify(Alarms.nid(a.id), Notification.Builder(this, Notif.RUN).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-                .setContentTitle(a.label.ifEmpty { "Sveglia" }).setContentText("Posticipata fino alle " + Alarms.hm(this, t))
+                .setContentTitle(a.label.ifEmpty { getString(R.string.alarm_default_label) }).setContentText(getString(R.string.alarm_snoozed_until, Alarms.hm(this, t)))
                 .setCategory(Notification.CATEGORY_ALARM).setOngoing(true).setContentIntent(Alarms.openTab(this))
-                .addAction(0, "Ferma", Alarms.snoozeOffPi(this, a)).build())
+                .addAction(0, getString(R.string.action_stop), Alarms.snoozeOffPi(this, a)).build())
         } else {
             if (a.days == 0 && a.del) Alarms.remove(this, a.id)
             if (missed) nm.notify(Alarms.nid(a.id), Notification.Builder(this, Notif.MISS).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-                .setContentTitle("Sveglia mancata").setContentText((a.label.ifEmpty { "Sveglia" }) + " · " + Alarms.hm(this, System.currentTimeMillis()))
+                .setContentTitle(getString(R.string.alarm_missed_title)).setContentText((a.label.ifEmpty { getString(R.string.alarm_default_label) }) + " · " + Alarms.hm(this, System.currentTimeMillis()))
                 .setAutoCancel(true).setContentIntent(Alarms.openTab(this)).build())
         }
     }
@@ -429,15 +429,15 @@ class RingActivity : Activity() {
             typeface = Typeface.create("sans-serif-light", Typeface.NORMAL); gravity = Gravity.CENTER
         }
         val label = TextView(this).apply {
-            text = intent.getStringExtra("label")?.ifEmpty { null } ?: "Sveglia"
+            text = intent.getStringExtra("label")?.ifEmpty { null } ?: getString(R.string.alarm_default_label)
             textSize = 24f; setTextColor(ACC); gravity = Gravity.CENTER
         }
         val snz = intent.getIntExtra("snz", 10)
         root.addView(clock); root.addView(label)
         root.addView(Space(this), LinearLayout.LayoutParams(0, 0, 1f))
-        root.addView(btn("Posticipa di $snz min", CARD, FG) { act("SNOOZE") },
+        root.addView(btn(getString(R.string.alarm_snooze_for, snz), CARD, FG) { act("SNOOZE") },
             LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = d(16) })
-        root.addView(btn("Ferma", ACC, DARK) { act("STOP") }, LinearLayout.LayoutParams(-1, -2))
+        root.addView(btn(getString(R.string.action_stop), ACC, DARK) { act("STOP") }, LinearLayout.LayoutParams(-1, -2))
         setContentView(root)
     }
 

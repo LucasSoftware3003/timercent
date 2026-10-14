@@ -39,7 +39,7 @@ fun pickZone(a: Activity, onPick: (String) -> Unit) {
     }
     filt("")
     val et = EditText(a)
-    et.hint = "Cerca città"; et.setSingleLine()
+    et.hint = a.getString(R.string.search_city); et.setSingleLine()
     et.addTextChangedListener(object : android.text.TextWatcher {
         override fun afterTextChanged(s: android.text.Editable?) { filt(s?.toString() ?: "") }
         override fun beforeTextChanged(s: CharSequence?, x: Int, y: Int, z: Int) {}
@@ -52,5 +52,5 @@ fun pickZone(a: Activity, onPick: (String) -> Unit) {
     c.addView(et); c.addView(lv, LinearLayout.LayoutParams(-1, dp(320)))
     var dlg: AlertDialog? = null
     lv.setOnItemClickListener { _, _, pos, _ -> onPick(shown[pos].second); dlg?.dismiss() }
-    dlg = AlertDialog.Builder(a).setTitle("Scegli la città").setView(c).setNegativeButton("Annulla", null).show()
+    dlg = AlertDialog.Builder(a).setTitle(a.getString(R.string.choose_city_title)).setView(c).setNegativeButton(a.getString(R.string.cancel), null).show()
 }
