@@ -19,11 +19,11 @@ No ads, no account, no internet connection.
 
 ## Features at a glance
 
+- **[Timer and stopwatch](#timer-and-stopwatch)**: multiple timers running in parallel, stopwatch with laps, precision in tenths, hundredths or thousandths.
+- **[Widgets](#widgets)**: digital and analog widgets, highly customizable for each instance.
 - **[Alarm groups](#alarm-groups)**: gather alarms into groups («Work», «Weekend») and manage them together: turn them all on or off at once, skip the next ring, apply a change to all of them.
 - **[Alarms](#alarms)**: days, sound, vibration, snooze, automatic silence, rising volume and the «next alarm» notification.
-- **[Timer and stopwatch](#timer-and-stopwatch)**: multiple timers running in parallel, stopwatch with laps, precision in tenths, hundredths or thousandths.
 - **[World clock](#world-clock)**: times and time zones of cities all over the world.
-- **[Widgets](#widgets)**: digital and analog widgets, customizable for each instance.
 - **[Smartwatch control](#smartwatch-control)**: stop or snooze the alarm from your wrist.
 - **[Android integration](#android-integration)**: works with voice assistants and other apps.
 

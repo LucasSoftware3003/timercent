@@ -19,11 +19,11 @@ Senza pubblicità, senza account, senza connessione a internet.
 
 ## Elenco funzioni
 
+- **[Timer e cronometro](#timer-e-cronometro)**: timer multipli in parallelo, cronometro con giri, precisione a decimi, centesimi o millesimi.
+- **[Widget](#widget)**: widget digitale e analogico, altamente personalizzabili per ogni istanza.
 - **[Gruppi di sveglie](#gruppi-di-sveglie)**: raccogli le sveglie in gruppi («Lavoro», «Weekend») e gestiscile insieme: accendi o spegni tutto in un colpo, salta la prossima suoneria, applica una modifica a tutte.
 - **[Sveglie](#sveglie)**: giorni, suono, vibrazione, posticipo, silenziamento automatico, volume crescente e notifica «prossima sveglia».
-- **[Timer e cronometro](#timer-e-cronometro)**: timer multipli in parallelo, cronometro con giri, precisione a decimi, centesimi o millesimi.
 - **[Orologio internazionale](#orologio-internazionale)**: orari di città e fusi orari di tutto il mondo.
-- **[Widget](#widget)**: widget digitale e analogico, personalizzabili per ogni istanza.
 - **[Controllo da smartwatch](#controllo-da-smartwatch)**: ferma o posticipa la sveglia dal polso.
 - **[Integrazione con Android](#integrazione-con-android)**: funziona con gli assistenti vocali e con le altre app.
 
