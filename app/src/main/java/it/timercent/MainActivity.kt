@@ -112,7 +112,7 @@ class MainActivity : Activity() {
     private fun tabFor(i: android.content.Intent?): Int? = when (i?.action) {
         "android.intent.action.SHOW_ALARMS", "android.intent.action.SET_ALARM" -> 3
         "android.intent.action.SHOW_TIMERS", "android.intent.action.SET_TIMER" -> 0
-        else -> if (i?.hasExtra("tab") == true) i.getIntExtra("tab", 0) else null
+        else -> if (i?.hasExtra("tab") == true) i.getIntExtra("tab", 0).takeIf { it in 0..3 } else null
     }
     override fun onNewIntent(intent: android.content.Intent) {
         super.onNewIntent(intent); setIntent(intent)
@@ -177,7 +177,7 @@ class MainActivity : Activity() {
     fun optDlg() {
         val names = resources.getStringArray(R.array.precision_names)
         AlertDialog.Builder(this).setTitle(getString(R.string.options_title))
-            .setItems(arrayOf(getString(R.string.menu_timer_sound), getString(R.string.menu_precision_fmt, names[prec - 1]), getString(R.string.alarm_settings_title), getString(R.string.menu_dials), getString(R.string.menu_about))) { _, w -> if (w == 0) pickSound() else if (w == 1) precDlg() else if (w == 2) alarmSettings() else if (w == 3) dialMenu() else aboutDlg() }
+            .setItems(arrayOf(getString(R.string.menu_timer_sound), getString(R.string.menu_precision_fmt, names[prec - 1]), getString(R.string.alarm_settings_title), getString(R.string.menu_dials), getString(R.string.menu_backup_fmt, if (getSharedPreferences("ct", 0).getBoolean("backup", false)) getString(R.string.backup_on) else getString(R.string.backup_off)), getString(R.string.menu_about))) { _, w -> if (w == 0) pickSound() else if (w == 1) precDlg() else if (w == 2) alarmSettings() else if (w == 3) dialMenu() else if (w == 4) backupDlg() else aboutDlg() }
             .show()
     }
     fun precDlg() {
@@ -185,6 +185,20 @@ class MainActivity : Activity() {
             .setSingleChoiceItems(resources.getStringArray(R.array.precision_options), prec - 1) { d, w ->
                 prec = w + 1; getSharedPreferences("ct", 0).edit().putInt("prec", prec).apply(); d.dismiss(); render()
             }.setNegativeButton(getString(R.string.close), null).show()
+    }
+
+    fun backupDlg() {
+        val p = getSharedPreferences("ct", 0)
+        val c = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(22), dp(10), dp(22), 0) }
+        c.addView(tvw(getString(R.string.backup_hint), 14f, MUTE))
+        val g = android.widget.RadioGroup(this)
+        g.addView(android.widget.RadioButton(this).apply { text = getString(R.string.backup_off); id = 1; setTextColor(FG) })
+        g.addView(android.widget.RadioButton(this).apply { text = getString(R.string.backup_on); id = 2; setTextColor(FG) })
+        g.check(if (p.getBoolean("backup", false)) 2 else 1)
+        g.setOnCheckedChangeListener { _, id -> p.edit().putBoolean("backup", id == 2).apply() }
+        c.addView(g)
+        AlertDialog.Builder(this).setTitle(getString(R.string.backup_title)).setView(c)
+            .setNegativeButton(getString(R.string.close), null).show()
     }
 
     fun render() {

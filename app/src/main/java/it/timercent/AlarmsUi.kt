@@ -310,10 +310,15 @@ fun MainActivity.alarmFromIntent(i: Intent): Boolean {
     // Calendar: domenica = 1 ... sabato = 7; da noi bit 0 = lunedì ... bit 6 = domenica
     var days = 0
     i.getIntegerArrayListExtra(AlarmClock.EXTRA_DAYS)?.forEach { if (it in 1..7) days = days or (1 shl ((it + 5) % 7)) }
-    val label = i.getStringExtra(AlarmClock.EXTRA_MESSAGE)?.trim() ?: ""
+    val label = i.getStringExtra(AlarmClock.EXTRA_MESSAGE)?.trim()?.take(100) ?: ""
     val vib = i.getBooleanExtra(AlarmClock.EXTRA_VIBRATE, true)
     val ring = i.getStringExtra(AlarmClock.EXTRA_RINGTONE)
-    val snd: String? = if (ring == null) null else if (ring == AlarmClock.VALUE_RINGTONE_SILENT) "" else ring
+    // Solo suono di sistema (content://) o silenzio: altri valori (file:// e simili) vengono ignorati
+    val snd: String? = when {
+        ring == AlarmClock.VALUE_RINGTONE_SILENT -> ""
+        ring != null && ring.startsWith("content://") -> ring
+        else -> null
+    }
     val a = Alarms.load(this).firstOrNull { it.h == h && it.m == m && it.days == days && it.label == label }
         ?: Al(System.currentTimeMillis().toString(), h, m, days, label, true, vib, snd, false)
     a.on = true; a.skip = 0L
@@ -330,7 +335,7 @@ fun MainActivity.timerFromIntent(i: Intent): Boolean {
     val s = i.getIntExtra(AlarmClock.EXTRA_LENGTH, 0)
     if (s !in 1..86400) return false
     val ms = s * 1000L
-    val t = T(System.currentTimeMillis().toString(), i.getStringExtra(AlarmClock.EXTRA_MESSAGE)?.trim() ?: "", ms, ms, 0)
+    val t = T(System.currentTimeMillis().toString(), i.getStringExtra(AlarmClock.EXTRA_MESSAGE)?.trim()?.take(100) ?: "", ms, ms, 0)
     t.end = System.currentTimeMillis() + ms
     val l = Store.load(this)
     l.add(t); Store.save(this, l)

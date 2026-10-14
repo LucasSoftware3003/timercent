@@ -304,4 +304,9 @@
     <string-array name="tick_opts">
         <item>None</item><item>Hours (lines)</item><item>Hours and minutes (lines)</item><item>Hours (dots)</item><item>Quarters only (lines)</item>
     </string-array>
+    <string name="menu_backup_fmt">Google backup: %s</string>
+    <string name="backup_title">Google backup</string>
+    <string name="backup_on">On</string>
+    <string name="backup_off">Off</string>
+    <string name="backup_hint">Off by default. When on, your alarms, timers, settings and imported files can be saved to your Google account backup.</string>
 </resources>

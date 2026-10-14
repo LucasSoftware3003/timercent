@@ -157,7 +157,7 @@ L'app non cerca aggiornamenti da sola, perché non ha accesso a internet. Per co
 ## Privacy
 
 - L'app **non richiede il permesso di accesso a internet**: non può inviare né ricevere dati.
-- Timer, sveglie, impostazioni, foto e font dei quadranti restano **solo sul telefono**.
+- Timer, sveglie, impostazioni, foto e font dei quadranti restano **solo sul telefono**, a meno che tu non attivi il backup di Google (disattivato di default, nel menu ⋮ → *Opzioni* → *Backup di Google*).
 - Nessuna pubblicità, nessun tracciamento, nessun account.
 - «Cerca aggiornamenti» apre solo una pagina web nel browser: la connessione la fa il browser, non l'app.
 

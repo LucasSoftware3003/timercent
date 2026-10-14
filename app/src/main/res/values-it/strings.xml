@@ -304,4 +304,9 @@
     <string-array name="tick_opts">
         <item>Nessuna</item><item>Ore (linee)</item><item>Ore e minuti (linee)</item><item>Ore (punti)</item><item>Solo quarti (linee)</item>
     </string-array>
+    <string name="menu_backup_fmt">Backup di Google: %s</string>
+    <string name="backup_title">Backup di Google</string>
+    <string name="backup_on">Attivo</string>
+    <string name="backup_off">Disattivo</string>
+    <string name="backup_hint">Disattivato di default. Se attivo, sveglie, timer, impostazioni e file importati possono essere salvati nel backup del tuo account Google.</string>
 </resources>

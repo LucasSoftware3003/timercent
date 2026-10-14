@@ -157,7 +157,7 @@ The app does not check for updates by itself, because it has no internet access.
 ## Privacy
 
 - The app **does not request internet access**: it cannot send or receive any data.
-- Timers, alarms, settings, photos and dial fonts stay **only on the phone**.
+- Timers, alarms, settings, photos and dial fonts stay **only on the phone**, unless you turn on Google backup (off by default, in the ⋮ menu → *Options* → *Google backup*).
 - No ads, no tracking, no account.
 - «Check for updates» only opens a web page in the browser: the connection is made by the browser, not by the app.
 
