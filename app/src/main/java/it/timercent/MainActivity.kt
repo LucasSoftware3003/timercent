@@ -208,7 +208,8 @@ class MainActivity : Activity() {
         (b2.background as GradientDrawable).setColor(if (tab == 2) CARD else BG)
         (bA.background as GradientDrawable).setColor(if (tab == 3) CARD else BG)
         if (tab == 0) {
-            L.forEach { card(it) }
+            // Ordine crescente di durata; a parità resta l'ordine di creazione (sortedBy è stabile). La lista salvata non cambia.
+            L.sortedBy { it.ms }.forEach { card(it) }
             if (L.isEmpty()) body.addView(tvw(getString(R.string.no_timers), 15f, MUTE).apply { setPadding(dp(8), dp(24), dp(8), dp(24)) })
             body.addView(btn(getString(R.string.new_timer), CARD, FG) { addDlg() })
         } else if (tab == 1) stopwatch() else if (tab == 3) alarmsTab() else world()
@@ -223,7 +224,11 @@ class MainActivity : Activity() {
             background = GradientDrawable().apply { setColor(CARD); cornerRadius = dp(20).toFloat(); if (done) setStroke(dp(3), ACC) }
         }
         val top = LinearLayout(this)
-        top.addView(tvw(t.label.ifEmpty { getString(R.string.default_timer_label) }, 18f, FG).apply { typeface = Typeface.DEFAULT_BOLD; maxLines = 1 }, lp(0, -2, 1f))
+        // Tocco sull'etichetta: la modifica senza dover rifare il timer
+        top.addView(tvw(t.label.ifEmpty { getString(R.string.default_timer_label) }, 18f, FG).apply {
+            typeface = Typeface.DEFAULT_BOLD; maxLines = 1
+            setOnClickListener { labelDlg(t) }
+        }, lp(0, -2, 1f))
         top.addView(tvw("✕", 20f, MUTE).apply {
             setPadding(dp(12), 0, dp(4), 0)
             setOnClickListener { Notif.stop(this@MainActivity, t); L.remove(t); save(); render() }
@@ -233,6 +238,10 @@ class MainActivity : Activity() {
         val row = LinearLayout(this)
         if (!done) row.addView(btn(getString(R.string.reset), BG, FG) {
             Notif.stop(this, t); t.end = 0; t.left = t.ms; save(); render()
+        }, lp(0, -2, 1f, 4))
+        // Timer scaduto: +1 minuto lo riavvia per un minuto, senza toccare la durata originale (l'azzeramento torna a quella)
+        if (done) row.addView(btn(getString(R.string.add_one_minute), BG, FG) {
+            Notif.stop(this, t); Notif.halt(this); Notif.addMinute(this, t); save(); render()
         }, lp(0, -2, 1f, 4))
         val label = if (done) getString(R.string.action_stop) else if (run) getString(R.string.pause) else if (t.left < t.ms) getString(R.string.resume) else getString(R.string.start)
         row.addView(btn(label, if (run) ACC else GO, DARK) {
@@ -244,6 +253,19 @@ class MainActivity : Activity() {
         }, lp(0, -2, 1f, 4))
         c.addView(top); c.addView(time); c.addView(row)
         body.addView(c, lp(-1, -2).apply { bottomMargin = dp(12) })
+    }
+
+    fun labelDlg(t: T) {
+        val et = EditText(this).apply { setText(t.label); hint = getString(R.string.label_optional); setSingleLine(); setSelection(text.length) }
+        val box = FrameLayout(this).apply { setPadding(dp(20), dp(8), dp(20), 0); addView(et) }
+        AlertDialog.Builder(this).setTitle(getString(R.string.label_row)).setView(box)
+            .setPositiveButton("OK") { _, _ ->
+                t.label = et.text.toString().trim().take(100)
+                // Timer in corsa: la notifica e l'allarme programmato portano l'etichetta, vanno rifatti con quella nuova
+                if (t.end > System.currentTimeMillis()) Notif.start(this, t)
+                save(); render()
+            }
+            .setNegativeButton(getString(R.string.cancel), null).show()
     }
 
     fun pickSound() {

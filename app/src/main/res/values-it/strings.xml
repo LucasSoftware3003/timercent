@@ -142,6 +142,7 @@
     <string name="start">Avvia</string>
     <string name="pause">Pausa</string>
     <string name="label_optional">Etichetta (facoltativa)</string>
+    <string name="add_one_minute">+1 min</string>
     <string name="add_btn">Aggiungi</string>
     <string name="lap">Giro</string>
     <string name="lap_n">Giro %d</string>

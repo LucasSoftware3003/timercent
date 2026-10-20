@@ -68,6 +68,11 @@ object Notif {
             .setChronometerCountDown(true).setOngoing(true).setContentIntent(open(c)).build()
         c.getSystemService(NotificationManager::class.java).notify(t.id.hashCode(), n)
     }
+    // Timer scaduto: riparte per un minuto. La durata originale (ms) resta, così «Azzera» torna a quella.
+    fun addMinute(c: Context, t: T) {
+        t.left = 60000L; t.end = System.currentTimeMillis() + 60000L
+        start(c, t)
+    }
     fun fire(c: Context, t: T) {
         stop(c, t)
         c.startForegroundService(Intent(c, AlarmService::class.java).putExtra("label", t.label).putExtra("id", t.id))
@@ -98,16 +103,27 @@ class AlarmService : Service() {
         Store.save(this, l); ids.clear()
         sendBroadcast(Intent("it.timercent.REFRESH").setPackage(packageName))
     }
+    // Azione «+1 min» della notifica: i timer scaduti ripartono per un minuto
+    private fun addMinute() {
+        if (ids.isEmpty()) return
+        val l = Store.load(this)
+        l.forEach { if (it.id in ids) Notif.addMinute(this, it) }
+        Store.save(this, l); ids.clear()
+        sendBroadcast(Intent("it.timercent.REFRESH").setPackage(packageName))
+    }
     private val h = Handler(Looper.getMainLooper())
     override fun onBind(i: Intent?): IBinder? = null
     override fun onStartCommand(i: Intent?, f: Int, id: Int): Int {
         if (i?.action == "STOP") { resetTimers(); stopSelf(); return START_NOT_STICKY }
+        if (i?.action == "ADD1") { addMinute(); stopSelf(); return START_NOT_STICKY }
         i?.getStringExtra("id")?.let { if (it.isNotEmpty()) ids.add(it) }
         Notif.channels(this)
         val stop = PendingIntent.getService(this, 1, Intent(this, AlarmService::class.java).setAction("STOP"), PendingIntent.FLAG_IMMUTABLE)
+        val add1 = PendingIntent.getService(this, 2, Intent(this, AlarmService::class.java).setAction("ADD1"), PendingIntent.FLAG_IMMUTABLE)
         val n = Notification.Builder(this, Notif.RING).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle((i?.getStringExtra("label") ?: "").ifEmpty { getString(R.string.default_timer_label) }).setContentText(getString(R.string.timer_time_up))
             .setContentIntent(Notif.open(this)).setCategory(Notification.CATEGORY_ALARM)
+            .addAction(0, getString(R.string.add_one_minute), add1)
             .addAction(0, getString(R.string.action_stop), stop).build()
         if (Build.VERSION.SDK_INT >= 29) startForeground(77, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
         else startForeground(77, n)

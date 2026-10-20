@@ -142,6 +142,7 @@
     <string name="start">Start</string>
     <string name="pause">Pause</string>
     <string name="label_optional">Label (optional)</string>
+    <string name="add_one_minute">+1 min</string>
     <string name="add_btn">Add</string>
     <string name="lap">Lap</string>
     <string name="lap_n">Lap %d</string>
