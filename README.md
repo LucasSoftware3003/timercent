@@ -24,7 +24,7 @@ No ads, no account, no internet connection.
 - **[Alarm groups](#alarm-groups)**: gather alarms into groups («Work», «Weekend») and manage them together: turn them all on or off at once, skip the next ring, apply a change to all of them.
 - **[Alarms](#alarms)**: days, sound, vibration, snooze, automatic silence, rising volume and the «next alarm» notification.
 - **[World clock](#world-clock)**: times and time zones of cities all over the world.
-- **[Smartwatch control](#smartwatch-control)**: stop or snooze the alarm from your wrist.
+- **[Smartwatch control](#smartwatch-control)**: stop or snooze alarms and timers from your wrist.
 - **[Android integration](#android-integration)**: works with voice assistants and other apps.
 
 ## Screenshots
@@ -69,7 +69,8 @@ No ads, no account, no internet connection.
 
 ### Timer and stopwatch
 
-- **Multiple timers** in parallel, each with its own label, and a choice of timer sound.
+- **Multiple timers** in parallel, each with its own label (**tap it to edit**), sorted by increasing duration, and a choice of timer sound.
+- When a timer ends you can **stop it** or add **+1 minute**, from the tab or from the notification.
 - **Adjustable precision**: tenths, hundredths or thousandths of a second.
 - **Stopwatch** with the same precision and **laps**: time of each lap and total time, with the best lap in green and the worst in red.
 - Notifications and ringing even with the screen off.
@@ -105,11 +106,11 @@ In the Alarms tab, next to the list, there is the **Groups** page: it collects s
 
 ### Smartwatch control
 
-With the option **Smartwatch control for alarms** (⋮ menu → *Alarm settings*, off by default), the ringing alarm can be controlled from your wrist:
+With the option **Smartwatch control for alarms and timers** (⋮ menu → *Alarm settings*, off by default), the ringing alarm or timer can be controlled from your wrist:
 
-- **Pause** or **stop** stop the alarm; **next track** snoozes it.
+- **Pause** or **stop** stop the alarm or timer; **next track** snoozes the alarm or adds **+1 minute** to the timer.
 - Works with watches that show the phone's music controls (for example Amazfit/Zepp).
-- On Wear OS watches, the **Dismiss** and **Snooze** buttons of the notification appear.
+- On Wear OS watches, the **Dismiss** and **Snooze** buttons (**+1 min** for timers) of the notification appear.
 
 ### Widgets
 

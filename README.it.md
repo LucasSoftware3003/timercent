@@ -24,7 +24,7 @@ Senza pubblicità, senza account, senza connessione a internet.
 - **[Gruppi di sveglie](#gruppi-di-sveglie)**: raccogli le sveglie in gruppi («Lavoro», «Weekend») e gestiscile insieme: accendi o spegni tutto in un colpo, salta la prossima suoneria, applica una modifica a tutte.
 - **[Sveglie](#sveglie)**: giorni, suono, vibrazione, posticipo, silenziamento automatico, volume crescente e notifica «prossima sveglia».
 - **[Orologio internazionale](#orologio-internazionale)**: orari di città e fusi orari di tutto il mondo.
-- **[Controllo da smartwatch](#controllo-da-smartwatch)**: ferma o posticipa la sveglia dal polso.
+- **[Controllo da smartwatch](#controllo-da-smartwatch)**: ferma o posticipa sveglie e timer dal polso.
 - **[Integrazione con Android](#integrazione-con-android)**: funziona con gli assistenti vocali e con le altre app.
 
 ## Screenshot
@@ -69,7 +69,8 @@ Senza pubblicità, senza account, senza connessione a internet.
 
 ### Timer e cronometro
 
-- **Timer multipli** in parallelo, ognuno con la propria etichetta, e suono del timer a scelta.
+- **Timer multipli** in parallelo, ognuno con la propria etichetta (che puoi **modificare toccandola**), in ordine di durata crescente, e suono del timer a scelta.
+- Quando un timer scade puoi **fermarlo** o aggiungere **+1 minuto**, dalla scheda o dalla notifica.
 - **Precisione a scelta**: decimi, centesimi o millesimi di secondo.
 - **Cronometro** con la stessa precisione e con i **giri**: tempo di ogni giro e tempo totale, con il giro migliore in verde e il peggiore in rosso.
 - Notifiche e suoneria anche con lo schermo spento.
@@ -105,11 +106,11 @@ Nella scheda Sveglie, accanto all'elenco, c'è la pagina **Gruppi**: raccoglie p
 
 ### Controllo da smartwatch
 
-Con l'opzione **Controllo sveglia dallo smartwatch** (menu ⋮ → *Impostazioni sveglie*, spenta di default) la sveglia che suona può essere gestita dal polso:
+Con l'opzione **Controllo sveglie e timer dallo smartwatch** (menu ⋮ → *Impostazioni sveglie*, spenta di default) la sveglia o il timer che suona può essere gestito dal polso:
 
-- **Pausa** o **stop** fermano la sveglia, **traccia successiva** la posticipa.
+- **Pausa** o **stop** fermano la sveglia o il timer, **traccia successiva** posticipa la sveglia o aggiunge **+1 minuto** al timer.
 - Funziona con gli orologi che mostrano i controlli musica del telefono (per esempio Amazfit/Zepp).
-- Sugli orologi Wear OS compaiono i tasti **Ferma** e **Posticipa** della notifica.
+- Sugli orologi Wear OS compaiono i tasti **Ferma** e **Posticipa** (**+1 min** per i timer) della notifica.
 
 ### Widget
 

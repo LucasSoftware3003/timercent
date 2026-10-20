@@ -65,7 +65,7 @@
     <string name="alarm_settings_title">Impostazioni sveglie</string>
     <string name="volume_keys">Tasti del volume</string>
     <string name="week_start">Inizio settimana</string>
-    <string name="watch_control_title">Controllo sveglia dallo smartwatch (pausa = ferma, avanti = posticipa)</string>
+    <string name="watch_control_title">Controllo sveglie e timer dallo smartwatch (pausa = ferma, avanti = posticipa / +1 minuto)</string>
     <string name="close">Chiudi</string>
     <string name="volume_hint">Volume di sistema per sveglie e timer. A zero non suonano.</string>
     <string name="timer_started_fmt">Timer avviato: %s</string>

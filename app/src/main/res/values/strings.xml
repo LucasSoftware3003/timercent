@@ -65,7 +65,7 @@
     <string name="alarm_settings_title">Alarm settings</string>
     <string name="volume_keys">Volume keys</string>
     <string name="week_start">Week start</string>
-    <string name="watch_control_title">Smartwatch alarm control (pause = stop, next = snooze)</string>
+    <string name="watch_control_title">Smartwatch alarm and timer control (pause = stop, next = snooze / +1 minute)</string>
     <string name="close">Close</string>
     <string name="volume_hint">System volume for alarms and timers. At zero they won’t ring.</string>
     <string name="timer_started_fmt">Timer started: %s</string>
