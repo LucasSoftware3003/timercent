@@ -111,6 +111,40 @@ class AlarmService : Service() {
         Store.save(this, l); ids.clear()
         sendBroadcast(Intent("it.timercent.REFRESH").setPackage(packageName))
     }
+    // Sessione multimediale per l'orologio: «pausa»/«stop» fermano e azzerano il timer, «traccia successiva» aggiunge 1 minuto
+    private var ms: android.media.session.MediaSession? = null
+    private fun session(label: String): android.media.session.MediaSession {
+        ms?.let { return it }
+        val s = android.media.session.MediaSession(this, "Timercent timer")
+        s.setCallback(object : android.media.session.MediaSession.Callback() {
+            override fun onPause() { resetTimers(); stopSelf() }
+            override fun onStop() { resetTimers(); stopSelf() }
+            override fun onSkipToNext() { addMinute(); stopSelf() }
+        }, h)
+        s.setPlaybackState(android.media.session.PlaybackState.Builder()
+            .setActions(android.media.session.PlaybackState.ACTION_PAUSE or android.media.session.PlaybackState.ACTION_PLAY_PAUSE
+                or android.media.session.PlaybackState.ACTION_STOP or android.media.session.PlaybackState.ACTION_SKIP_TO_NEXT)
+            .setState(android.media.session.PlaybackState.STATE_PLAYING, 0L, 1f).build())
+        s.setMetadata(android.media.MediaMetadata.Builder()
+            .putString(android.media.MediaMetadata.METADATA_KEY_TITLE, label)
+            .putString(android.media.MediaMetadata.METADATA_KEY_ARTIST, "Timercent").build())
+        s.isActive = true
+        ms = s
+        return s
+    }
+    // Come per la sveglia: prima STATE_STOPPED, così l'orologio non resta bloccato sulla schermata musica
+    private fun closeSession() {
+        val s = ms ?: return
+        ms = null
+        try {
+            s.setPlaybackState(android.media.session.PlaybackState.Builder().setActions(0L)
+                .setState(android.media.session.PlaybackState.STATE_STOPPED, 0L, 0f).build())
+            s.setMetadata(null)
+        } catch (e: Exception) { }
+        Handler(Looper.getMainLooper()).postDelayed({
+            try { s.isActive = false; s.release() } catch (e: Exception) { }
+        }, 1500)
+    }
     private val h = Handler(Looper.getMainLooper())
     override fun onBind(i: Intent?): IBinder? = null
     override fun onStartCommand(i: Intent?, f: Int, id: Int): Int {
@@ -120,11 +154,22 @@ class AlarmService : Service() {
         Notif.channels(this)
         val stop = PendingIntent.getService(this, 1, Intent(this, AlarmService::class.java).setAction("STOP"), PendingIntent.FLAG_IMMUTABLE)
         val add1 = PendingIntent.getService(this, 2, Intent(this, AlarmService::class.java).setAction("ADD1"), PendingIntent.FLAG_IMMUTABLE)
-        val n = Notification.Builder(this, Notif.RING).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-            .setContentTitle((i?.getStringExtra("label") ?: "").ifEmpty { getString(R.string.default_timer_label) }).setContentText(getString(R.string.timer_time_up))
+        val label = (i?.getStringExtra("label") ?: "").ifEmpty { getString(R.string.default_timer_label) }
+        val addA = Notification.Action.Builder(
+            android.graphics.drawable.Icon.createWithResource(this, android.R.drawable.ic_lock_idle_alarm),
+            getString(R.string.add_one_minute), add1).build()
+        val stopA = Notification.Action.Builder(
+            android.graphics.drawable.Icon.createWithResource(this, android.R.drawable.ic_menu_close_clear_cancel),
+            getString(R.string.action_stop), stop).build()
+        val nb = Notification.Builder(this, Notif.RING).setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setContentTitle(label).setContentText(getString(R.string.timer_time_up))
             .setContentIntent(Notif.open(this)).setCategory(Notification.CATEGORY_ALARM)
-            .addAction(0, getString(R.string.add_one_minute), add1)
-            .addAction(0, getString(R.string.action_stop), stop).build()
+            .addAction(addA).addAction(stopA)
+        // Stesse regole della sveglia: con «Controlli smartwatch» attivo la notifica è legata a una sessione multimediale,
+        // così i controlli musica dell'orologio (es. Amazfit/Zepp) agiscono sul timer
+        if (Alarms.p(this).getInt("a_watch", 0) == 1)
+            nb.setStyle(Notification.MediaStyle().setMediaSession(session(label).sessionToken).setShowActionsInCompactView(0, 1))
+        val n = nb.extend(Notification.WearableExtender().addAction(stopA).addAction(addA)).build()
         if (Build.VERSION.SDK_INT >= 29) startForeground(77, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
         else startForeground(77, n)
         if (mp?.isPlaying == true && SystemClock.elapsedRealtime() - last < 3000) return START_NOT_STICKY
@@ -143,6 +188,7 @@ class AlarmService : Service() {
     }
     override fun onDestroy() {
         mp?.release(); mp = null
+        closeSession()
         try { getSystemService(Vibrator::class.java).cancel() } catch (e: Exception) { }
         h.removeCallbacksAndMessages(null)
         super.onDestroy()
