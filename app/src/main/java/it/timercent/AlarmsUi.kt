@@ -124,7 +124,6 @@ fun MainActivity.alarmsTab() {
     val l = Alarms.load(this).sortedBy { it.h * 60 + it.m }
     if (l.isEmpty()) body.addView(tvw(getString(R.string.no_alarms), 15f, MUTE).apply { setPadding(dp(8), dp(24), dp(8), dp(24)) })
     l.forEach { alarmCard(it) }
-    body.addView(btn(getString(R.string.new_alarm), CARD, FG) { newAlarm() })
 }
 
 private fun MainActivity.alarmCard(a: Al) {
@@ -346,7 +345,7 @@ fun MainActivity.timerFromIntent(i: Intent): Boolean {
 
 // ---------- Gruppi ----------
 // La scheda Sveglie ha due pagine: l'elenco di tutte le sveglie e quella dei gruppi, che raccoglie i comandi comuni
-private var alGroups = false
+var alGroups = false
 private var expGr: String? = null
 
 private fun MainActivity.alSwitcher() {
@@ -360,7 +359,6 @@ private fun MainActivity.groupsTab() {
     val gl = Groups.load(this)
     if (gl.isEmpty()) body.addView(tvw(getString(R.string.no_groups), 15f, MUTE).apply { setPadding(dp(8), dp(24), dp(8), dp(24)) })
     gl.forEach { groupCard(it) }
-    body.addView(btn(getString(R.string.new_group), CARD, FG) { newGroup() })
 }
 
 // Accende o spegne una sveglia come fa il suo interruttore nell'elenco
@@ -448,7 +446,7 @@ private fun MainActivity.nameBox(cur: String): Pair<FrameLayout, EditText> {
     return Pair(box, et)
 }
 
-private fun MainActivity.newGroup() {
+fun MainActivity.newGroup() {
     val (box, et) = nameBox("")
     AlertDialog.Builder(this).setTitle(getString(R.string.new_group)).setView(box)
         .setPositiveButton(getString(R.string.next)) { _, _ ->

@@ -155,6 +155,9 @@ class AlarmService : Service() {
         val stop = PendingIntent.getService(this, 1, Intent(this, AlarmService::class.java).setAction("STOP"), PendingIntent.FLAG_IMMUTABLE)
         val add1 = PendingIntent.getService(this, 2, Intent(this, AlarmService::class.java).setAction("ADD1"), PendingIntent.FLAG_IMMUTABLE)
         val label = (i?.getStringExtra("label") ?: "").ifEmpty { getString(R.string.default_timer_label) }
+        // Impostazione "Controlli smartwatch" (a_watch): crea la sessione media così i controlli
+        // musica dell'orologio (es. Amazfit/Zepp) agiscono sul timer scaduto
+        if (Alarms.p(this).getInt("a_watch", 0) == 1) session(label)
         val addA = Notification.Action.Builder(
             android.graphics.drawable.Icon.createWithResource(this, android.R.drawable.ic_lock_idle_alarm),
             getString(R.string.add_one_minute), add1).build()
@@ -165,10 +168,10 @@ class AlarmService : Service() {
             .setContentTitle(label).setContentText(getString(R.string.timer_time_up))
             .setContentIntent(Notif.open(this)).setCategory(Notification.CATEGORY_ALARM)
             .addAction(addA).addAction(stopA)
-        // Stesse regole della sveglia: con «Controlli smartwatch» attivo la notifica è legata a una sessione multimediale,
-        // così i controlli musica dell'orologio (es. Amazfit/Zepp) agiscono sul timer
-        if (Alarms.p(this).getInt("a_watch", 0) == 1)
-            nb.setStyle(Notification.MediaStyle().setMediaSession(session(label).sessionToken).setShowActionsInCompactView(0, 1))
+        // La notifica non usa MediaStyle: con quello il pannello notifiche la sposterebbe nella sezione
+        // musica (swipe giù) invece di mostrarla nella barra in alto. La sessione media resta attiva per
+        // l'orologio (i controlli musica dell'orologio agiscono su di essa) e i WearableExtender action
+        // restano disponibili per gli orologi Wear OS con app propria.
         val n = nb.extend(Notification.WearableExtender().addAction(stopA).addAction(addA)).build()
         if (Build.VERSION.SDK_INT >= 29) startForeground(77, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
         else startForeground(77, n)

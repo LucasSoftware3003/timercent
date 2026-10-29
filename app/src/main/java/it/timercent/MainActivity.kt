@@ -33,6 +33,7 @@ class MainActivity : Activity() {
     lateinit var b1: Button
     lateinit var b2: Button
     lateinit var bA: Button
+    lateinit var fab: Button
     var expAl: String? = null
     var pickAl: String? = null
     val h = Handler(Looper.getMainLooper())
@@ -91,7 +92,19 @@ class MainActivity : Activity() {
         body = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(12), dp(12), dp(12), dp(24)) }
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(BG) }
         root.addView(top)
-        root.addView(ScrollView(this).apply { addView(body) }, LinearLayout.LayoutParams(-1, 0, 1f))
+        val content = FrameLayout(this)
+        content.addView(ScrollView(this).apply { addView(body) }, FrameLayout.LayoutParams(-1, -1))
+        // Pulsante flottante: sempre visibile in sovraimpressione, senza dover scorrere fino in fondo
+        fab = Button(this).apply {
+            text = "＋"; isAllCaps = false; textSize = 28f; setTextColor(DARK)
+            minWidth = 0; minHeight = 0; setPadding(0, 0, 0, 0)
+            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(ACC) }
+            elevation = dp(6).toFloat()
+        }
+        content.addView(fab, FrameLayout.LayoutParams(dp(64), dp(64), Gravity.END or Gravity.BOTTOM).apply {
+            setMargins(0, dp(20), dp(20), dp(24))
+        })
+        root.addView(content, LinearLayout.LayoutParams(-1, 0, 1f))
         setContentView(root)
         tabFor(intent)?.let { tab = it }
         if (b == null) handleIntent(intent, true)
@@ -211,8 +224,18 @@ class MainActivity : Activity() {
             // Ordine crescente di durata; a parità resta l'ordine di creazione (sortedBy è stabile). La lista salvata non cambia.
             L.sortedBy { it.ms }.forEach { card(it) }
             if (L.isEmpty()) body.addView(tvw(getString(R.string.no_timers), 15f, MUTE).apply { setPadding(dp(8), dp(24), dp(8), dp(24)) })
-            body.addView(btn(getString(R.string.new_timer), CARD, FG) { addDlg() })
         } else if (tab == 1) stopwatch() else if (tab == 3) alarmsTab() else world()
+        // Pulsante flottante: «aggiungi» per Timer, Sveglie (con la pagina gruppi) e Orologio mondiale
+        when {
+            tab == 0 -> { fab.visibility = View.VISIBLE; fab.contentDescription = getString(R.string.new_timer); fab.setOnClickListener { addDlg() } }
+            tab == 3 -> {
+                fab.visibility = View.VISIBLE
+                if (alGroups) { fab.contentDescription = getString(R.string.new_group); fab.setOnClickListener { newGroup() } }
+                else { fab.contentDescription = getString(R.string.new_alarm); fab.setOnClickListener { newAlarm() } }
+            }
+            tab == 2 -> { fab.visibility = View.VISIBLE; fab.contentDescription = getString(R.string.add_city); fab.setOnClickListener { cityDlg() } }
+            else -> fab.visibility = View.GONE
+        }
     }
 
     fun card(t: T) {
@@ -425,7 +448,6 @@ class MainActivity : Activity() {
         val l = zones()
         l.forEachIndexed { i, id -> worldCard(id, false, i, l) }
         if (l.isEmpty()) body.addView(tvw(getString(R.string.add_city_hint), 15f, MUTE).apply { setPadding(dp(8), dp(12), dp(8), dp(24)) })
-        body.addView(btn(getString(R.string.add_city), CARD, FG) { cityDlg() })
         updWorld()
     }
 

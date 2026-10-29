@@ -278,6 +278,9 @@ class WakeService : Service() {
         val a = i?.getStringExtra("id")?.let { Alarms.find(this, it) }
         val label = a?.label ?: ""
         val snz = a?.snz ?: 10
+        // Impostazione "Controlli smartwatch" (a_watch): crea la sessione media così i controlli
+        // musica dell'orologio (es. Amazfit/Zepp) agiscono sulla sveglia in suoneria
+        if (Alarms.p(this).getInt("a_watch", 0) == 1) session(label)
         val snzA = Notification.Action.Builder(
             android.graphics.drawable.Icon.createWithResource(this, android.R.drawable.ic_lock_idle_alarm),
             getString(R.string.alarm_snooze_action, snz), act("SNOOZE", 2)).build()
@@ -293,10 +296,10 @@ class WakeService : Service() {
             .setFullScreenIntent(ringPi(label, snz), true).setContentIntent(ringPi(label, snz))
             .addAction(snzA)
             .addAction(stopA)
-        // Impostazione "Controlli smartwatch" (a_watch, spenta di default): notifica "multimediale" legata a una
-        // sessione, così i controlli musica dell'orologio (es. Amazfit/Zepp) agiscono sulla sveglia
-        if (Alarms.p(this).getInt("a_watch", 0) == 1)
-            nb.setStyle(Notification.MediaStyle().setMediaSession(session(label).sessionToken).setShowActionsInCompactView(0, 1))
+        // La notifica non usa MediaStyle: con quello il pannello notifiche la sposterebbe nella sezione
+        // musica (swipe giù) invece di mostrarla nella barra in alto. La sessione media resta attiva per
+        // l'orologio (i controlli musica dell'orologio agiscono su di essa) e i WearableExtender action
+        // restano disponibili per gli orologi Wear OS con app propria.
         val n = nb.extend(wear).build()
         if (Build.VERSION.SDK_INT >= 29) startForeground(78, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
         else startForeground(78, n)
