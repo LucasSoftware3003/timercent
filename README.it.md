@@ -70,7 +70,8 @@ Senza pubblicità, senza account, senza connessione a internet.
 ### Timer e cronometro
 
 - **Timer multipli** in parallelo, ognuno con la propria etichetta (che puoi **modificare toccandola**), in ordine di durata crescente, e suono del timer a scelta.
-- Quando un timer scade puoi **fermarlo** o aggiungere **+1 minuto**, dalla scheda o dalla notifica.
+- Creando un timer puoi scegliere **Aggiungi** (lo avvii in seguito) o **Aggiungi e avvia** (parte subito).
+- **+1 minuto** è disponibile anche mentre il timer sta andando (modifica al volo, solo per quella volta: la durata originale resta), e quando un timer scade puoi **fermarlo** o aggiungere **+1 minuto**, dalla scheda o dalla notifica.
 - **Precisione a scelta**: decimi, centesimi o millesimi di secondo.
 - **Cronometro** con la stessa precisione e con i **giri**: tempo di ogni giro e tempo totale, con il giro migliore in verde e il peggiore in rosso.
 - Notifiche e suoneria anche con lo schermo spento.

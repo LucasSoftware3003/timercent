@@ -144,6 +144,7 @@
     <string name="label_optional">Etichetta (facoltativa)</string>
     <string name="add_one_minute">+1 min</string>
     <string name="add_btn">Aggiungi</string>
+    <string name="add_and_start_btn">Aggiungi e avvia</string>
     <string name="lap">Giro</string>
     <string name="lap_n">Giro %d</string>
     <string name="yesterday">Ieri</string>

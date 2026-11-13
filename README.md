@@ -70,7 +70,8 @@ No ads, no account, no internet connection.
 ### Timer and stopwatch
 
 - **Multiple timers** in parallel, each with its own label (**tap it to edit**), sorted by increasing duration, and a choice of timer sound.
-- When a timer ends you can **stop it** or add **+1 minute**, from the tab or from the notification.
+- When creating a timer you can choose **Add** (start it later) or **Add and start** (it starts right away).
+- **+1 minute** is available while the timer is running too (a one-off tweak, the original duration is kept), and when it ends you can **stop it** or add **+1 minute**, from the tab or from the notification.
 - **Adjustable precision**: tenths, hundredths or thousandths of a second.
 - **Stopwatch** with the same precision and **laps**: time of each lap and total time, with the best lap in green and the worst in red.
 - Notifications and ringing even with the screen off.

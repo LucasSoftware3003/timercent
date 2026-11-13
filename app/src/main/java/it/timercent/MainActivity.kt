@@ -262,9 +262,12 @@ class MainActivity : Activity() {
         if (!done) row.addView(btn(getString(R.string.reset), BG, FG) {
             Notif.stop(this, t); t.end = 0; t.left = t.ms; save(); render()
         }, lp(0, -2, 1f, 4))
-        // Timer scaduto: +1 minuto lo riavvia per un minuto, senza toccare la durata originale (l'azzeramento torna a quella)
-        if (done) row.addView(btn(getString(R.string.add_one_minute), BG, FG) {
-            Notif.stop(this, t); Notif.halt(this); Notif.addMinute(this, t); save(); render()
+        // +1 minuto, senza toccare la durata originale (l'azzeramento torna a quella):
+        // timer scaduto → riparte per un minuto; timer in corsa → la scadenza si sposta di un minuto (modifica al volo, solo per questa volta)
+        if (run) row.addView(btn(getString(R.string.add_one_minute), BG, FG) {
+            if (rem(t) <= 0) { Notif.stop(this, t); Notif.halt(this); Notif.addMinute(this, t) }
+            else { t.end += 60000L; Notif.start(this, t) }
+            save(); render()
         }, lp(0, -2, 1f, 4))
         val label = if (done) getString(R.string.action_stop) else if (run) getString(R.string.pause) else if (t.left < t.ms) getString(R.string.resume) else getString(R.string.start)
         row.addView(btn(label, if (run) ACC else GO, DARK) {
@@ -335,12 +338,19 @@ class MainActivity : Activity() {
         }
         val c = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(8), dp(16), 0) }
         c.addView(lb); c.addView(disp, lp(-1, -2).apply { topMargin = dp(16); bottomMargin = dp(12) }); c.addView(grid)
+        // Crea il timer dalle cifre digitate; con start = true parte subito, altrimenti resta fermo da avviare in seguito
+        fun create(start: Boolean) {
+            val p = d.padStart(6, '0')
+            val ms = (p.substring(0, 2).toLong() * 3600 + p.substring(2, 4).toLong() * 60 + p.substring(4).toLong()) * 1000
+            if (ms <= 0) return
+            val t = T(System.currentTimeMillis().toString(), lb.text.toString().trim(), ms, ms, 0)
+            if (start) { t.end = System.currentTimeMillis() + t.left; Notif.start(this, t) }
+            L.add(t); save(); render()
+        }
         AlertDialog.Builder(this).setTitle(getString(R.string.new_timer)).setView(c)
-            .setPositiveButton(getString(R.string.add_btn)) { _, _ ->
-                val p = d.padStart(6, '0')
-                val ms = (p.substring(0, 2).toLong() * 3600 + p.substring(2, 4).toLong() * 60 + p.substring(4).toLong()) * 1000
-                if (ms > 0) { L.add(T(System.currentTimeMillis().toString(), lb.text.toString().trim(), ms, ms, 0)); save(); render() }
-            }.setNegativeButton(getString(R.string.cancel), null).show()
+            .setPositiveButton(getString(R.string.add_btn)) { _, _ -> create(false) }
+            .setNeutralButton(getString(R.string.add_and_start_btn)) { _, _ -> create(true) }
+            .setNegativeButton(getString(R.string.cancel), null).show()
     }
 
     fun stopwatch() {
