@@ -69,7 +69,7 @@ No ads, no account, no internet connection.
 
 ### Timer and stopwatch
 
-- **Multiple timers** in parallel, each with its own label (**tap it to edit**), sorted by increasing duration, and a choice of timer sound.
+- **Multiple timers** in parallel, each with its own label (**tap it to edit**), running ones on top (the next to finish first), the others sorted by increasing duration, and a choice of timer sound.
 - When creating a timer you can choose **Add** (start it later) or **Add and start** (it starts right away).
 - **+1 minute** is available while the timer is running too (a one-off tweak, the original duration is kept), and when it ends you can **stop it** or add **+1 minute**, from the tab or from the notification.
 - **Adjustable precision**: tenths, hundredths or thousandths of a second.

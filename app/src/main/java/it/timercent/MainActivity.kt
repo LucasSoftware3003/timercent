@@ -221,8 +221,9 @@ class MainActivity : Activity() {
         (b2.background as GradientDrawable).setColor(if (tab == 2) CARD else BG)
         (bA.background as GradientDrawable).setColor(if (tab == 3) CARD else BG)
         if (tab == 0) {
-            // Ordine crescente di durata; a parità resta l'ordine di creazione (sortedBy è stabile). La lista salvata non cambia.
-            L.sortedBy { it.ms }.forEach { card(it) }
+            // In cima i timer in esecuzione (scaduti compresi), dal primo a finire; sotto quelli fermi o in pausa, per durata crescente.
+            // A parità resta l'ordine di creazione (sortedWith è stabile). La lista salvata non cambia.
+            L.sortedWith(compareBy<T>({ if (it.end > 0) 0 else 1 }, { if (it.end > 0) it.end else it.ms })).forEach { card(it) }
             if (L.isEmpty()) body.addView(tvw(getString(R.string.no_timers), 15f, MUTE).apply { setPadding(dp(8), dp(24), dp(8), dp(24)) })
         } else if (tab == 1) stopwatch() else if (tab == 3) alarmsTab() else world()
         // Pulsante flottante: «aggiungi» per Timer, Sveglie (con la pagina gruppi) e Orologio mondiale
