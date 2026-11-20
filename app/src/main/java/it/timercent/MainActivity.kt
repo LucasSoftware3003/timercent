@@ -29,6 +29,9 @@ internal val DARK = 0xFF111111.toInt()
 class MainActivity : Activity() {
     lateinit var L: MutableList<T>
     lateinit var body: LinearLayout
+    lateinit var sv: ScrollView
+    var focusId: String? = null              // timer appena modificato: dopo render() la vista lo segue se si è spostato fuori schermo
+    var focusView: View? = null
     lateinit var b0: Button
     lateinit var b1: Button
     lateinit var b2: Button
@@ -93,7 +96,8 @@ class MainActivity : Activity() {
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(BG) }
         root.addView(top)
         val content = FrameLayout(this)
-        content.addView(ScrollView(this).apply { addView(body) }, FrameLayout.LayoutParams(-1, -1))
+        sv = ScrollView(this).apply { addView(body) }
+        content.addView(sv, FrameLayout.LayoutParams(-1, -1))
         // Pulsante flottante: sempre visibile in sovraimpressione, senza dover scorrere fino in fondo
         fab = Button(this).apply {
             text = "＋"; isAllCaps = false; textSize = 28f; setTextColor(DARK)
@@ -215,7 +219,7 @@ class MainActivity : Activity() {
     }
 
     fun render() {
-        body.removeAllViews(); tv.clear(); fin.clear(); swTv = null; swLapTv = null; wRows.clear()
+        body.removeAllViews(); tv.clear(); fin.clear(); swTv = null; swLapTv = null; wRows.clear(); focusView = null
         (b0.background as GradientDrawable).setColor(if (tab == 0) CARD else BG)
         (b1.background as GradientDrawable).setColor(if (tab == 1) CARD else BG)
         (b2.background as GradientDrawable).setColor(if (tab == 2) CARD else BG)
@@ -237,6 +241,14 @@ class MainActivity : Activity() {
             tab == 2 -> { fab.visibility = View.VISIBLE; fab.contentDescription = getString(R.string.add_city); fab.setOnClickListener { cityDlg() } }
             else -> fab.visibility = View.GONE
         }
+        // Il timer appena avviato/fermato cambia posizione nella lista: se dopo il riordino non è più visibile, la vista lo segue
+        val f = focusView; focusId = null
+        if (f != null) sv.viewTreeObserver.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                sv.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                if (f.top < sv.scrollY || f.bottom > sv.scrollY + sv.height) sv.smoothScrollTo(0, maxOf(0, f.top - dp(12)))
+            }
+        })
     }
 
     fun card(t: T) {
@@ -244,6 +256,7 @@ class MainActivity : Activity() {
         val done = run && rem(t) <= 0
         if (done) fin.add(t.id)
         val c = LinearLayout(this).apply {
+            if (t.id == focusId) focusView = this
             orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(12), dp(16), dp(16))
             background = GradientDrawable().apply { setColor(CARD); cornerRadius = dp(20).toFloat(); if (done) setStroke(dp(3), ACC) }
         }
@@ -261,14 +274,14 @@ class MainActivity : Activity() {
         tv[t.id] = time
         val row = LinearLayout(this)
         if (!done) row.addView(btn(getString(R.string.reset), BG, FG) {
-            Notif.stop(this, t); t.end = 0; t.left = t.ms; save(); render()
+            Notif.stop(this, t); t.end = 0; t.left = t.ms; focusId = t.id; save(); render()
         }, lp(0, -2, 1f, 4))
         // +1 minuto, senza toccare la durata originale (l'azzeramento torna a quella):
         // timer scaduto → riparte per un minuto; timer in corsa → la scadenza si sposta di un minuto (modifica al volo, solo per questa volta)
         if (run) row.addView(btn(getString(R.string.add_one_minute), BG, FG) {
             if (rem(t) <= 0) { Notif.stop(this, t); Notif.halt(this); Notif.addMinute(this, t) }
             else { t.end += 60000L; Notif.start(this, t) }
-            save(); render()
+            focusId = t.id; save(); render()
         }, lp(0, -2, 1f, 4))
         val label = if (done) getString(R.string.action_stop) else if (run) getString(R.string.pause) else if (t.left < t.ms) getString(R.string.resume) else getString(R.string.start)
         row.addView(btn(label, if (run) ACC else GO, DARK) {
@@ -276,7 +289,7 @@ class MainActivity : Activity() {
             if (d) { Notif.stop(this, t); Notif.halt(this); t.end = 0; t.left = t.ms }
             else if (t.end > 0) { t.left = rem(t); t.end = 0; Notif.stop(this, t) }
             else { if (t.left <= 0) t.left = t.ms; t.end = System.currentTimeMillis() + t.left; Notif.start(this, t) }
-            save(); render()
+            focusId = t.id; save(); render()
         }, lp(0, -2, 1f, 4))
         c.addView(top); c.addView(time); c.addView(row)
         body.addView(c, lp(-1, -2).apply { bottomMargin = dp(12) })
@@ -346,7 +359,7 @@ class MainActivity : Activity() {
             if (ms <= 0) return
             val t = T(System.currentTimeMillis().toString(), lb.text.toString().trim(), ms, ms, 0)
             if (start) { t.end = System.currentTimeMillis() + t.left; Notif.start(this, t) }
-            L.add(t); save(); render()
+            L.add(t); focusId = t.id; save(); render()
         }
         AlertDialog.Builder(this).setTitle(getString(R.string.new_timer)).setView(c)
             .setPositiveButton(getString(R.string.add_btn)) { _, _ -> create(false) }
