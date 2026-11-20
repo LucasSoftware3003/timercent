@@ -73,6 +73,7 @@ class MainActivity : Activity() {
     }
     fun fit(v: TextView, max: Int) { v.maxLines = 1; v.setAutoSizeTextTypeUniformWithConfiguration(14, max, 1, TypedValue.COMPLEX_UNIT_SP) }
     fun rem(t: T) = if (t.end > 0) maxOf(0L, t.end - System.currentTimeMillis()) else t.left
+    fun paused(t: T) = t.end == 0L && t.left < t.ms     // fermo ma non azzerato (la durata originale non è stata ripristinata)
     fun swNow() = swAcc + (if (swRun) SystemClock.elapsedRealtime() - swT0 else 0L)
     fun save() = Store.save(this, L)
     fun light(v: TextView) { v.fontFeatureSettings = "tnum"; v.typeface = Typeface.create("sans-serif-light", Typeface.NORMAL) }
@@ -225,9 +226,9 @@ class MainActivity : Activity() {
         (b2.background as GradientDrawable).setColor(if (tab == 2) CARD else BG)
         (bA.background as GradientDrawable).setColor(if (tab == 3) CARD else BG)
         if (tab == 0) {
-            // In cima i timer in esecuzione (scaduti compresi), dal primo a finire; sotto quelli fermi o in pausa, per durata crescente.
-            // A parità resta l'ordine di creazione (sortedWith è stabile). La lista salvata non cambia.
-            L.sortedWith(compareBy<T>({ if (it.end > 0) 0 else 1 }, { if (it.end > 0) it.end else it.ms })).forEach { card(it) }
+            // In cima i timer in esecuzione (scaduti compresi), dal primo a finire; poi quelli in pausa (non azzerati), dal tempo residuo minore;
+            // infine quelli fermi, per durata crescente. A parità resta l'ordine di creazione (sortedWith è stabile). La lista salvata non cambia.
+            L.sortedWith(compareBy<T>({ if (it.end > 0) 0 else if (paused(it)) 1 else 2 }, { if (it.end > 0) it.end else if (paused(it)) it.left else it.ms })).forEach { card(it) }
             if (L.isEmpty()) body.addView(tvw(getString(R.string.no_timers), 15f, MUTE).apply { setPadding(dp(8), dp(24), dp(8), dp(24)) })
         } else if (tab == 1) stopwatch() else if (tab == 3) alarmsTab() else world()
         // Pulsante flottante: «aggiungi» per Timer, Sveglie (con la pagina gruppi) e Orologio mondiale
@@ -258,7 +259,7 @@ class MainActivity : Activity() {
         val c = LinearLayout(this).apply {
             if (t.id == focusId) focusView = this
             orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(12), dp(16), dp(16))
-            background = GradientDrawable().apply { setColor(CARD); cornerRadius = dp(20).toFloat(); if (done) setStroke(dp(3), ACC) }
+            background = GradientDrawable().apply { setColor(CARD); cornerRadius = dp(20).toFloat(); if (done || paused(t)) setStroke(dp(3), ACC) }   // riquadro arancio: scaduto o in pausa
         }
         val top = LinearLayout(this)
         // Tocco sull'etichetta: la modifica senza dover rifare il timer
